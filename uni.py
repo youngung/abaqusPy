@@ -1,7 +1,10 @@
 """
-modelAExample.py
+A simple example to generate uniaxial specimen using
+ABQUS Python scripting feature.
 
-A simple example: Creating a part.
+
+Youngung Jeong
+youngung.jeong@gmail.com
 """
 
 import os
@@ -149,10 +152,11 @@ rd=12.5   * 1e-3 ## radius
 xyCoords = tensileBar(pl=pl,gw=gw,tw=tw,tl=tl,rd=rd).T
 
 myModel = mdb.Model(name='UniaxialTension')
-mySketch = myModel.ConstrainedSketch(
-    name='E8',sheetSize=1.0)
+mySketch = myModel.ConstrainedSketch(name='E8_Sketch',sheetSize=1.0)
     
 #s.ArcByCenterEnds(center=?, point1=?,point2?)
+
+totalLength=np.max(xyCoords[:,0])-np.min(xyCoords[:,0]) ## total length of specimen.
 
 for i in xrange(len(xyCoords)):
     mySketch.Spot(point=xyCoords[i])
@@ -204,8 +208,97 @@ draw_line(18,20)
 
 
 ###### ----------Generating specimen dimensions.
+myPart = myModel.Part(name='E8', dimensionality=THREE_D,type=DEFORMABLE_BODY)
 
 
 
-myPart = myModel.Part(name='E8', dimensionality=THREE_D,
-                      type=DEFORMABLE_BODY)
+def findEdgeBetween(i0,i1):
+    x0,y0=xyCoords[i0]
+    x1,y1=xyCoords[i1]
+    x=(x0+x1)/2.
+    y=(y0+y1)/2.
+    return myPart.edges.findAt(x,y,0.)
+
+
+## Features.
+featShell=myPart.BaseShell(sketch=mySketch)
+session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
+                  
+
+#myPart.edges.findat
+#edge0=findEdgeBetween(12,13)
+#edge1=findEdgeBetween(14,15)
+
+edge0=myPart.edges.findAt((0,0.0001,0))
+edge1=myPart.edges[edge0.index-1:edge0.index+1]
+myPart.Set(edges=edge1,name='leftEnd')
+
+
+xyt=np.array(xyCoords).T
+xs=xyt[0]
+xMax=np.max(xs)
+edge0=myPart.edges.findAt((xMax,0.0001,0))
+edge1=myPart.edges[edge0.index:edge0.index+2]
+myPart.Set(edges=edge1,name='rightEnd')
+
+
+## create datum for material orientation
+# - create three datum points
+# assuming that x//RD, y//TD and z//ND
+# x
+
+dato=myPart.DatumPointByCoordinate(coords=(0,    0,    0))
+datx=myPart.DatumPointByCoordinate(coords=(tw/2.,0,    0))
+daty=myPart.DatumPointByCoordinate(coords=(0.   ,tw/2.,0))
+
+
+datO=myPart.DatumPointByCoordinate(coords=(totalLength      ,0,    0))
+datX=myPart.DatumPointByCoordinate(coords=(totalLength-tw/2.,0,    0))
+datY=myPart.DatumPointByCoordinate(coords=(totalLength      ,tw/2.,0))
+
+datC=myPart.DatumPointByCoordinate(coords=(totalLength/2., tw/2.,0))
+datC_up=myPart.DatumPointByCoordinate(coords=(totalLength/2., tw/2.+gw/2.,0))
+datC_down=myPart.DatumPointByCoordinate(coords=(totalLength/2., tw/2.-gw/2.,0))
+
+datC_Left=myPart.DatumPointByCoordinate(coords=(totalLength/2.-pl/2., tw/2.,0))
+datC_LeftUp=myPart.DatumPointByCoordinate(coords=(totalLength/2.-pl/2., tw/2.+gw/2.,0))
+datC_LeftDown=myPart.DatumPointByCoordinate(coords=(totalLength/2.-pl/2., tw/2.-gw/2.,0))
+
+datC_Right=myPart.DatumPointByCoordinate(coords=(totalLength/2.+pl/2., tw/2.,0))
+datC_RightUp=myPart.DatumPointByCoordinate(coords=(totalLength/2.+pl/2., tw/2.+gw/2.,0))
+datC_RightDown=myPart.DatumPointByCoordinate(coords=(totalLength/2.+pl/2., tw/2.-gw/2.,0))
+
+cSysDefault = myPart.DatumCsysByDefault(CARTESIAN)
+
+
+## renaming datums.
+myPart.features.changeKey(fromName=cSysDefault.name,toName='cSysDefault')
+
+
+#myPart.DatumCsysByOffset(coordSysType=CARTESIAN, datumCoordSys=cSysDefault, point=((totalLength/2.,0.,0.),))
+
+
+#e=myPart.edges
+# two lines for CSYSM
+#l1=e.findAt((0.001,0,0),)
+#l2=e.findAt((0,0.001,0),)
+#myPart.DatumCsysByTwoLines(CARTESIAN,line1=l1,line2=l2)
+
+
+#myPart.Set(edges=(edge0,edge1),name='leftEnd')
+#myPart.edges.getByBoundingBox(xMax=-0.1, xMin=1,yMin=-0.1, yMax=1, zMin=-0.1,zMax=1.)
+
+
+#myPart.BaseSolidExtrude(sketch=mySketch,depth=20)
+
+
+
+
+
+
+
+
+
+
+
+
