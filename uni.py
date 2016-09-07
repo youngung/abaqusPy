@@ -19,6 +19,8 @@ import part
 import regionToolset
 import numpy as np
 
+from caeModules import *
+
 
 ###### ----------Generating specimen dimensions.
 def drawE8_Sketch(
@@ -139,6 +141,10 @@ def tensileBar(pl=57,   ## Parallel length
     return xyt
 ## --
 
+#[SI unit system]
+# length in meters]
+# Pressure in Pa: N/m^2
+
 ## dimension in meter
 pl=57.    * 1e-3
 gw=12.5   * 1e-3
@@ -256,15 +262,13 @@ datC_Right=rDC(coords=(totalLength/2.+pl/2., tw/2.,0))
 datC_RightUp=rDC(coords=(totalLength/2.+pl/2., tw/2.+gw/2.,0))
 datC_RightDown=rDC(coords=(totalLength/2.+pl/2., tw/2.-gw/2.,0))
 
-## Define Point Datums at the endge of Grip.
+# Define Point Datums at the two edges of Grips.
 datPs=np.empty((2,3),dtype='object')
 xs=[tl,tl+pl+2.*roundLength]
 ys=[0,tw/2.,tw]
 for i in xrange(2):
     for j in xrange(3):
         datPs[i,j] = rDC(coords=(xs[i],ys[j],0))
-
-#datP=np.array(dtype='obj')
 
 
 #cSysDefault = myPart.DatumCsysByDefault(CARTESIAN)
@@ -276,15 +280,16 @@ session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
 
 
 ## Create My material
+#Elasto-Plastic metal
 myMat=myModel.Material('Metal')
-myMat.Elastic(table=((30.e9,0.3),))
-
+myMat.Elastic(table=((2.1E13,0.30),))
+myMat.Plastic(table=((400.E6, 0.0), (
+    420.E6, 0.02), (500.E6, 0.2), (600.E6, 0.5),))
 
 ## Create Shell Section!
 myShellSection=myModel.HomogeneousShellSection(
     name='SpecimenSection',preIntegrate=ON,
-    material='Metal',thickness=1.e-3,poissonDefinition=DEFAULT, temperature=GRADIENT)
-
+    material=myMat.name,thickness=1.e-3,poissonDefinition=DEFAULT, temperature=GRADIENT)
 
 ## Assign material orientation
 myPart.MaterialOrientation(localCsys=cSysMat,axis=AXIS_3)
@@ -292,7 +297,6 @@ myPart.MaterialOrientation(localCsys=cSysMat,axis=AXIS_3)
 ## Assign section to plate
 region=regionToolset.Region(faces=myPart.faces[:])
 myPart.SectionAssignment(region=region,sectionName=myShellSection.name)
-
 
 ## retrieve assembly
 myAssembly = myModel.rootAssembly
@@ -302,7 +306,6 @@ myAssembly.DatumCsysByDefault(CARTESIAN)
 # Instance the part E8
 myAssembly.Instance(name='MySpecimen', part=myPart, dependent=ON)
 myInstance=myAssembly.instances['MySpecimen']
-
 
 ## Partition the plate
 #- transPlane  -  along transverse direction to the specimen axis
@@ -317,9 +320,14 @@ myPart.features.changeKey(fromName=transPlane.name,toName='pLeftPlane')
 #- pRightPlane
 transPlane=myPart.PartitionFaceByShortestPath(faces=myPart.faces[:],point1=datC_RightDown,point2=datC_RightUp)
 myPart.features.changeKey(fromName=transPlane.name,toName='pRightPlane')
+#- gLeftPlane
+transPlane=myPart.PartitionFaceByShortestPath(faces=myPart.faces[:],point1=datPs[0,0],point2=datPs[0,2])
+myPart.features.changeKey(fromName=transPlane.name,toName='gLeftPlane')
+#- gRightPlane
+transPlane=myPart.PartitionFaceByShortestPath(faces=myPart.faces[:],point1=datPs[1,0],point2=datPs[1,2])
+myPart.features.changeKey(fromName=transPlane.name,toName='gRightPlane')
 
-
-## MidSpan
+# MidSpan
 SpecimenNameInAssembly=myAssembly.instances.items()[0][0]
 edges=myAssembly.instances[SpecimenNameInAssembly].edges
 
@@ -336,23 +344,40 @@ setTransSpan(dat=datC,name='MidSpan')
 setTransSpan(dat=datC_Left,name='ParallelLeft')
 setTransSpan(dat=datC_Right,name='ParallelRight')
 
-#coord1=np.array(datC.pointOn)
-#coord2=np.array(datC.pointOn)
-#coord1[1]=coord1[1]-tw/4.
-#coord2[1]=coord2[1]+tw/4.
-#C1=tuple(coord1);C2=tuple(coord2)
-#myAssembly.Set(edges=(edges.findAt((C1,),(C2,))), name='MidSpan')
-
-# Start of parallel
-#coord1=np.array(datC
-# End of parallel
-
-
+setTransSpan(dat=datPs[0,1],name='GripLeft')
+setTransSpan(dat=datPs[1,1],name='GripRight')
 
 
 ## Create a static general step
-myModel.StaticStep(name='Tension',previous='Initial',description='Uniaxial tension', timePeriod=1,adiabatic=OFF,maxNumInc=100,
-                   stabilization=None,timeIncrementationMethod=AUTOMATIC, initialInc=1,minInc=1e-5,maxInc=1,
+myModel.StaticStep(name='Tension',previous='Initial',description='Uniaxial tension',
+                   timePeriod=1,
+                   adiabatic=OFF,maxNumInc=100,
+                   stabilization=None,timeIncrementationMethod=AUTOMATIC,
+                   initialInc=1,minInc=1e-5,maxInc=1,
+                   matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
+
+
+## Define boundary conditions...
+epsRate=1e-3 #0.001/sec
+delEpsMax=1e-4 ## I want incremental step less than ...
+minTimeInc=delEpsMax/epsRate
+# approximate gauge length:
+L0=0.95*pl
+vel=epsRate*L0 ## velocity
+
+## total (engi) strain wanted: 0.2
+totalStrain = 0.5
+Lf=(1.+totalStrain)*L0
+totalDisplace=Lf-L0
+deltaTime=totalDisplace/vel ## total delta Time
+
+##
+
+myModel.StaticStep(name='TensionContinue',previous='Tension',description='Uniaxial Tension',
+                   timePeriod=deltaTime,
+                   adiabatic=OFF,maxNumInc=2000,
+                   stabilization=None,timeIncrementationMethod=AUTOMATIC,
+                   initialInc=minTimeInc,minInc=minTimeInc,maxInc=minTimeInc*10.,
                    matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
 ## view
 session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Tension')
@@ -360,9 +385,9 @@ session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Tension')
 
 ## Modify output request
 # Field output
-myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('S','E','U',))
+myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('E','U','S'))
 # History output
-myModel.historyOutputRequests['H-Output-1'].setValues(variables=('U3',),region=myAssembly.sets['MidSpan'])
+myModel.historyOutputRequests['H-Output-1'].setValues(variables=('E11',),region=myAssembly.sets['MidSpan'])
 
 session.viewports['Viewport: 1'].assemblyDisplay.setValues(loads=ON, bcs=ON,
     predefinedFields=ON)
@@ -375,33 +400,28 @@ myModel.EncastreBC(name='EncastreOri',createStepName='Tension',region=regionTool
 
 myModel.XsymmBC(name='FixLeftEndX', createStepName='Tension',region=myInstance.sets['leftEnd'])
 myModel.ZsymmBC(name='FixLeftEndZ', createStepName='Tension',region=myInstance.sets['leftEnd'])
-myModel.XsymmBC(name='FixRightEndZ',createStepName='Tension',region=myInstance.sets['rightEnd'])
+myModel.ZsymmBC(name='FixRightEndZ',createStepName='Tension',region=myInstance.sets['rightEnd'])
 
 # Velocity
 myModel.VelocityBC(name='StretchX', createStepName='Tension',region=myInstance.sets['rightEnd'])
+myModel.boundaryConditions['StretchX'].setValuesInStep(
+    stepName='TensionContinue',
+    v1=vel,vr3=0.)
 
 
-
-## Mesh
+## Generate Mesh
 elemType1 = mesh.ElemType(elemCode=S4R, elemLibrary=STANDARD)
 elemType2 = mesh.ElemType(elemCode=S3, elemLibrary=STANDARD)
 f = myPart.faces
 faces = f.getSequenceFromMask(mask=('[#f ]', ), )
 pickedRegions =(faces, )
 myPart.setElementType(regions=pickedRegions, elemTypes=(elemType1, elemType2))
-myPart.seedPart(size=0.002, minSizeFactor=0.1)
+myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
+#myPart.seedPart(size=0.001, minSizeFactor=0.1) ## finer meshing
 myPart.generateMesh()
 
+## Create Job
 
-
-
-# mdb.meshEditOptions.setValues(enableUndo=True, maxUndoCacheElements=0.5)
-# myPart.generateMesh()
-
-
-# #c0=datOri.pointOn
-# #vs=myInstance.vertices.findAt((c0,))
-# #myModel.YsymmBC(name='Yfix',createStepName='Tension',region=regionToolset.Region(vertices=vs))
-# #myModel.ZsymmBC(name='Zfix',createStepName='Tension',region=regionToolset.Region(vertices=vs))
-
-
+mdb.Job(name='TensileE8',model=myModel.name,description='PythonScriptedUniaxialTensile')
+myAssembly.regenerate()
+mdb.saveAs(myModel.name)
