@@ -150,7 +150,7 @@ def tensileBar(pl=57,   ## Parallel length
 pl=57.    * 1e-3
 gw=12.5   * 1e-3
 tw=20.    * 1e-3
-tl=50.0   * 1e-3
+tl=20.0   * 1e-3
 rd=12.5   * 1e-3 ## Radius
 xyCoords = tensileBar(pl=pl,gw=gw,tw=tw,tl=tl,rd=rd).T
 
@@ -345,6 +345,12 @@ edges=myAssembly.instances[SpecimenNameInAssembly].edges
 
 # Assign MidSpan using datum called datC: which is located in the center of specimen
 def setTransSpan(dat,name):
+    """
+    Define a set attribute within myAssembly using
+    the given datum <dat>. Select two neighboring edges that
+    are aligned transverse to the axial direction of the specimen.
+    Give the <name> to this set.
+    """
     coord1=np.array(dat.pointOn)
     coord2=np.array(dat.pointOn)
     coord1[1]=coord1[1]-tw/4.
@@ -352,10 +358,12 @@ def setTransSpan(dat,name):
     C1=tuple(coord1);C2=tuple(coord2)
     myAssembly.Set(edges=(edges.findAt((C1,),(C2,))), name=name)
 
+
+
+## trans line sets.
 setTransSpan(dat=datC,name='MidSpan')
 setTransSpan(dat=datC_Left,name='ParallelLeft')
 setTransSpan(dat=datC_Right,name='ParallelRight')
-
 setTransSpan(dat=datPs[0,1],name='GripLeft')
 setTransSpan(dat=datPs[1,1],name='GripRight')
 
@@ -368,28 +376,30 @@ myModel.StaticStep(name='Tension',previous='Initial',description='Uniaxial tensi
                    initialInc=1,minInc=1e-5,maxInc=1,
                    matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
 
-
 ## Define boundary conditions...
 epsRate=1.e-3 #0.001/sec
 delEpsMax=1.e-5 ## I want incremental step less than ...
-minTimeInc=delEpsMax/epsRate
+maxTimeInc=delEpsMax/epsRate
+minTimeInc=maxTimeInc/100
 # approximate gauge length:
 L0=0.95*pl
 vel=epsRate*L0 ## velocity
 
 ## total (engi) strain wanted: 0.2
-totalStrain = 0.2
+totalStrain = 0.05
 Lf=(1.+totalStrain)*L0
 totalDisplace=Lf-L0
 deltaTime=totalDisplace/vel ## total delta Time
 
-##
+print 'minInc:', minTimeInc
+print 'maxInc:', maxTimeInc
+
 
 myModel.StaticStep(name='TensionContinue',previous='Tension',description='Uniaxial Tension',
                    timePeriod=deltaTime,
                    adiabatic=OFF,maxNumInc=1000,
                    stabilization=None,timeIncrementationMethod=AUTOMATIC,
-                   initialInc=minTimeInc,minInc=minTimeInc,maxInc=minTimeInc*100.,
+                   initialInc=minTimeInc,minInc=minTimeInc,maxInc=maxTimeInc,
                    matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
 ## view
 session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Tension')
@@ -399,7 +409,8 @@ session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Tension')
 # Field output
 myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('E','U','S','PE'))
 # History output
-myModel.historyOutputRequests['H-Output-1'].setValues(variables=('E11',),region=myAssembly.sets['MidSpan'])
+myModel.historyOutputRequests['H-Output-1'].setValues(
+    variables=('E11',),region=myAssembly.sets['MidSpan'])
 
 session.viewports['Viewport: 1'].assemblyDisplay.setValues(loads=ON, bcs=ON,
     predefinedFields=ON)
@@ -431,12 +442,57 @@ f = myPart.faces
 faces = f.getSequenceFromMask(mask=('[#f ]', ), )
 pickedRegions =(faces, )
 myPart.setElementType(regions=pickedRegions, elemTypes=(elemType1, elemType2))
-#myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
-myPart.seedPart(size=0.001, minSizeFactor=0.1) ## finer meshing
+myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
+#myPart.seedPart(size=0.001, minSizeFactor=0.1) ## finer meshing
 myPart.generateMesh()
+
+
+
+## single nodal set
+def setNodeCoord(dat,name):
+    """
+    Define a set attribute within myInstance using
+    the given datum <dat>. Select a <single> node
+    <datum> is assumed to be a point datum.
+
+    Arguments
+    ---------
+    dat
+    name
+    """
+    if type(dat).__name__!='DatumPoint': raise SyntaxError, 'Datum should be DatumPoint type'
+
+    delta=1e-4 ## the boundary used for bounding box.
+
+    coordinate = np.array(dat.pointOn)
+    x,y,z=tuple(coordinate)
+    xmin,ymin,zmin=tuple(coordinate-delta)
+    xmax,ymax,zmax=tuple(coordinate+delta)
+
+    ## myInstance=myModel.rootAssembly.instances['MySpecimen']
+    ## nodes=myInstance.nodes.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
+
+    a = mdb.models['UniaxialTension'].rootAssembly
+    session.viewports['Viewport: 1'].setValues(displayedObject=a)
+    a = mdb.models['UniaxialTension'].rootAssembly
+    n1 = a.instances['MySpecimen'].nodes
+    nodes = n1.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
+
+    ## nodes is type 'Sequence'. see if there a <single> node in the sequence.
+    if nodes.__len__()==1:
+        myAssembly.Set(nodes=(nodes),name=name)
+    elif nodes.__len__()==0:
+        print 'No nodes found'
+    elif nodes.__len__()>1:
+        pass
+
+
+
 
 ## Create Job
 
 mdb.Job(name='TensileE8',model=myModel.name,description='PythonScriptedUniaxialTensile')
 myAssembly.regenerate()
+setNodeCoord(datC,name='Center')
+#myAssembly.regenerate()
 mdb.saveAs(myModel.name)
