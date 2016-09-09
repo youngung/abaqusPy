@@ -7,20 +7,15 @@ Youngung Jeong
 youngung.jeong@gmail.com
 """
 
-import os
 
 from abaqus import *
+from caeModules import *
 from abaqusConstants import *
 backwardCompatibility.setValues(includeDeprecated=True,
                                 reportDeprecated=False)
 
-import sketch
-import part
-import regionToolset
+import sketch, part, regionToolset, os
 import numpy as np
-
-from caeModules import *
-
 
 ###### ----------Generating specimen dimensions.
 def drawE8_Sketch(
@@ -378,15 +373,15 @@ myModel.StaticStep(name='Tension',previous='Initial',description='Uniaxial tensi
 
 ## Define boundary conditions...
 epsRate=1.e-3 #0.001/sec
-delEpsMax=1.e-5 ## I want incremental step less than ...
+delEpsMax=1.e-3 ## I want incremental step less than ...
 maxTimeInc=delEpsMax/epsRate
-minTimeInc=maxTimeInc/100
+minTimeInc=maxTimeInc/1000.
 # approximate gauge length:
 L0=0.95*pl
 vel=epsRate*L0 ## velocity
 
 ## total (engi) strain wanted: 0.2
-totalStrain = 0.05
+totalStrain = 0.01
 Lf=(1.+totalStrain)*L0
 totalDisplace=Lf-L0
 deltaTime=totalDisplace/vel ## total delta Time
@@ -397,7 +392,7 @@ print 'maxInc:', maxTimeInc
 
 myModel.StaticStep(name='TensionContinue',previous='Tension',description='Uniaxial Tension',
                    timePeriod=deltaTime,
-                   adiabatic=OFF,maxNumInc=1000,
+                   adiabatic=OFF,maxNumInc=500,
                    stabilization=None,timeIncrementationMethod=AUTOMATIC,
                    initialInc=minTimeInc,minInc=minTimeInc,maxInc=maxTimeInc,
                    matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
@@ -472,19 +467,23 @@ def setNodeCoord(dat,name):
     ## myInstance=myModel.rootAssembly.instances['MySpecimen']
     ## nodes=myInstance.nodes.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
 
-    a = mdb.models['UniaxialTension'].rootAssembly
-    session.viewports['Viewport: 1'].setValues(displayedObject=a)
-    a = mdb.models['UniaxialTension'].rootAssembly
-    n1 = a.instances['MySpecimen'].nodes
-    nodes = n1.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
 
-    ## nodes is type 'Sequence'. see if there a <single> node in the sequence.
-    if nodes.__len__()==1:
-        myAssembly.Set(nodes=(nodes),name=name)
-    elif nodes.__len__()==0:
-        print 'No nodes found'
-    elif nodes.__len__()>1:
-        pass
+
+    ## assign node to "part" first.
+    selectedNodes=myPart.nodes.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
+    myPart.Set(nodes=(selectedNodes),name=name)
+
+    ## session.viewports['Viewport: 1'].setValues(displayedObject=a)
+    # a = mdb.models['UniaxialTension'].rootAssembly
+    # n1 = a.instances['MySpecimen'].nodes
+    # nodes = n1.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
+    # ## nodes is type 'Sequence'. see if there a <single> node in the sequence.
+    # if nodes.__len__()==1:
+    #     myAssembly.Set(nodes=(nodes),name=name)
+    # elif nodes.__len__()==0:
+    #     print 'No nodes found'
+    # elif nodes.__len__()>1:
+    #     pass
 
 
 
@@ -494,5 +493,5 @@ def setNodeCoord(dat,name):
 mdb.Job(name='TensileE8',model=myModel.name,description='PythonScriptedUniaxialTensile')
 myAssembly.regenerate()
 setNodeCoord(datC,name='Center')
-#myAssembly.regenerate()
+myAssembly.regenerate()
 mdb.saveAs(myModel.name)
