@@ -152,47 +152,6 @@ myAssembly.DatumCsysByDefault(CARTESIAN)
 myAssembly.Instance(name='MySpecimen', part=myPart, dependent=ON)
 myInstance=myAssembly.instances['MySpecimen']
 
-# ## Partition the plate
-# #- transPlane  -  along transverse direction to the specimen axis
-# transPlane=myPart.PartitionFaceByShortestPath(faces=myPart.faces[:],point1=datC_up,point2=datC_down)
-# myPart.features.changeKey(fromName=transPlane.name,toName='transPlane')
-# #- axialPlane  -  along longitudinal direction of the specimen.
-# axialPlane=myPart.PartitionFaceByShortestPath(faces=myPart.faces[:],point1=datC_Lend,point2=datC_Rend)
-# myPart.features.changeKey(fromName=axialPlane.name,toName='axialPlane')
-# #- pLeftPlane
-# transPlane=myPart.PartitionFaceByShortestPath(faces=myPart.faces[:],point1=datC_LeftDown,point2=datC_LeftUp)
-# myPart.features.changeKey(fromName=transPlane.name,toName='pLeftPlane')
-# #- pRightPlane
-# transPlane=myPart.PartitionFaceByShortestPath(faces=myPart.faces[:],point1=datC_RightDown,point2=datC_RightUp)
-# myPart.features.changeKey(fromName=transPlane.name,toName='pRightPlane')
-# #- gLeftPlane
-# transPlane=myPart.PartitionFaceByShortestPath(faces=myPart.faces[:],point1=datPs[0,0],point2=datPs[0,2])
-# myPart.features.changeKey(fromName=transPlane.name,toName='gLeftPlane')
-# #- gRightPlane
-# transPlane=myPart.PartitionFaceByShortestPath(faces=myPart.faces[:],point1=datPs[1,0],point2=datPs[1,2])
-# myPart.features.changeKey(fromName=transPlane.name,toName='gRightPlane')
-
-# # MidSpan
-# SpecimenNameInAssembly=myAssembly.instances.items()[0][0]
-# edges=myAssembly.instances[SpecimenNameInAssembly].edges
-
-# # Assign MidSpan using datum called datC: which is located in the center of specimen
-# def setTransSpan(dat,name):
-#     coord1=np.array(dat.pointOn)
-#     coord2=np.array(dat.pointOn)
-#     coord1[1]=coord1[1]-tw/4.
-#     coord2[1]=coord2[1]+tw/4.
-#     C1=tuple(coord1);C2=tuple(coord2)
-#     myAssembly.Set(edges=(edges.findAt((C1,),(C2,))), name=name)
-
-# setTransSpan(dat=datC,name='MidSpan')
-# setTransSpan(dat=datC_Left,name='ParallelLeft')
-# setTransSpan(dat=datC_Right,name='ParallelRight')
-
-# setTransSpan(dat=datPs[0,1],name='GripLeft')
-# setTransSpan(dat=datPs[1,1],name='GripRight')
-
-
 # ## Create a static general step
 myModel.StaticStep(name='Tension',previous='Initial',description='Uniaxial tension',
                    timePeriod=1,
