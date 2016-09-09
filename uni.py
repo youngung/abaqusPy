@@ -145,12 +145,13 @@ def tensileBar(pl=57,   ## Parallel length
 # length in meters]
 # Pressure in Pa: N/m^2
 
-## dimension in meter
+## dimension in meter (default values are given in millimeters).
+## thus a factor of 1e-3 is required.
 pl=57.    * 1e-3
 gw=12.5   * 1e-3
 tw=20.    * 1e-3
 tl=50.0   * 1e-3
-rd=12.5   * 1e-3 ## radius
+rd=12.5   * 1e-3 ## Radius
 xyCoords = tensileBar(pl=pl,gw=gw,tw=tw,tl=tl,rd=rd).T
 
 myModel = mdb.Model(name='UniaxialTension')
@@ -202,7 +203,6 @@ draw_line(1,7)
 draw_line(8,10)
 draw_line(11,17)
 draw_line(18,20)
-
 
 ###### ----------Generating specimen dimensions.
 myPart = myModel.Part(name='E8', dimensionality=THREE_D,type=DEFORMABLE_BODY)
@@ -281,15 +281,27 @@ session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
 
 ## Create My material
 #Elasto-Plastic metal
-myMat=myModel.Material('Metal')
-myMat.Elastic(table=((2.1E13,0.30),))
+#- Young's modulus for steel:
+Young=200.*1e9#[Convert GPa to Pa - Pa is a SI unit: N/m^2]
+# Yield strength: 400MPa
+
+myMat=myModel.Material('Metal') ## moduls:
+myMat.Elastic(table=((Young,0.30),))
 myMat.Plastic(table=((400.E6, 0.0), (
-    420.E6, 0.02), (500.E6, 0.2), (600.E6, 0.5),))
+    420.E6, 0.02), (500.E6, 0.2), (600.E6, 0.5)))
 
 ## Create Shell Section!
 myShellSection=myModel.HomogeneousShellSection(
-    name='SpecimenSection',preIntegrate=ON,
-    material=myMat.name,thickness=1.e-3,poissonDefinition=DEFAULT, temperature=GRADIENT)
+    name='SpecimenSection',
+    preIntegrate=OFF, material='Metal', thicknessType=UNIFORM, thickness=1e-3,
+    thicknessField='', idealization=NO_IDEALIZATION, poissonDefinition=DEFAULT,
+    thicknessModulus=None, temperature=GRADIENT, useDensity=OFF,
+    integrationRule=SIMPSON, numIntPts=5)
+
+#myShellSection=myModel.HomogeneousSolidSection(
+#    name='SpecimenSection',
+#    material=myMat.name,thickness=1.e-3)
+
 
 ## Assign material orientation
 myPart.MaterialOrientation(localCsys=cSysMat,axis=AXIS_3)
@@ -358,15 +370,15 @@ myModel.StaticStep(name='Tension',previous='Initial',description='Uniaxial tensi
 
 
 ## Define boundary conditions...
-epsRate=1e-3 #0.001/sec
-delEpsMax=1e-4 ## I want incremental step less than ...
+epsRate=1.e-3 #0.001/sec
+delEpsMax=1.e-5 ## I want incremental step less than ...
 minTimeInc=delEpsMax/epsRate
 # approximate gauge length:
 L0=0.95*pl
 vel=epsRate*L0 ## velocity
 
 ## total (engi) strain wanted: 0.2
-totalStrain = 0.5
+totalStrain = 0.2
 Lf=(1.+totalStrain)*L0
 totalDisplace=Lf-L0
 deltaTime=totalDisplace/vel ## total delta Time
@@ -375,9 +387,9 @@ deltaTime=totalDisplace/vel ## total delta Time
 
 myModel.StaticStep(name='TensionContinue',previous='Tension',description='Uniaxial Tension',
                    timePeriod=deltaTime,
-                   adiabatic=OFF,maxNumInc=2000,
+                   adiabatic=OFF,maxNumInc=1000,
                    stabilization=None,timeIncrementationMethod=AUTOMATIC,
-                   initialInc=minTimeInc,minInc=minTimeInc,maxInc=minTimeInc*10.,
+                   initialInc=minTimeInc,minInc=minTimeInc,maxInc=minTimeInc*100.,
                    matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
 ## view
 session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Tension')
@@ -385,7 +397,7 @@ session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Tension')
 
 ## Modify output request
 # Field output
-myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('E','U','S'))
+myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('E','U','S','PE'))
 # History output
 myModel.historyOutputRequests['H-Output-1'].setValues(variables=('E11',),region=myAssembly.sets['MidSpan'])
 
@@ -406,18 +418,21 @@ myModel.ZsymmBC(name='FixRightEndZ',createStepName='Tension',region=myInstance.s
 myModel.VelocityBC(name='StretchX', createStepName='Tension',region=myInstance.sets['rightEnd'])
 myModel.boundaryConditions['StretchX'].setValuesInStep(
     stepName='TensionContinue',
-    v1=vel,vr3=0.)
+    v1=vel*10,vr3=0.)
 
 
 ## Generate Mesh
 elemType1 = mesh.ElemType(elemCode=S4R, elemLibrary=STANDARD)
 elemType2 = mesh.ElemType(elemCode=S3, elemLibrary=STANDARD)
+#elemType1 = mesh.ElemType(elemCode=S8R5)
+#elemType2 = mesh.ElemType(elemCode=STRI65)
+
 f = myPart.faces
 faces = f.getSequenceFromMask(mask=('[#f ]', ), )
 pickedRegions =(faces, )
 myPart.setElementType(regions=pickedRegions, elemTypes=(elemType1, elemType2))
-myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
-#myPart.seedPart(size=0.001, minSizeFactor=0.1) ## finer meshing
+#myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
+myPart.seedPart(size=0.001, minSizeFactor=0.1) ## finer meshing
 myPart.generateMesh()
 
 ## Create Job
