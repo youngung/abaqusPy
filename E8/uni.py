@@ -286,9 +286,10 @@ myMat.Plastic(table=((400.E6, 0.0), (
     420.E6, 0.02), (500.E6, 0.2), (600.E6, 0.5)))
 
 ## Create Shell Section!
+thickness=1e-3
 myShellSection=myModel.HomogeneousShellSection(
     name='SpecimenSection',
-    preIntegrate=OFF, material='Metal', thicknessType=UNIFORM, thickness=1e-3,
+    preIntegrate=OFF, material=myMat.name, thicknessType=UNIFORM, thickness=thickness,
     thicknessField='', idealization=NO_IDEALIZATION, poissonDefinition=DEFAULT,
     thicknessModulus=None, temperature=GRADIENT, useDensity=OFF,
     integrationRule=SIMPSON, numIntPts=5)
@@ -442,7 +443,6 @@ myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
 myPart.generateMesh()
 
 
-
 ## single nodal set
 def setNodeCoord(dat,name):
     """
@@ -467,25 +467,9 @@ def setNodeCoord(dat,name):
     ## myInstance=myModel.rootAssembly.instances['MySpecimen']
     ## nodes=myInstance.nodes.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
 
-
-
-    ## assign node to "part" first.
+    ## assign node to "part". Regenerating assembly will inherit the node.
     selectedNodes=myPart.nodes.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
     myPart.Set(nodes=(selectedNodes),name=name)
-
-    ## session.viewports['Viewport: 1'].setValues(displayedObject=a)
-    # a = mdb.models['UniaxialTension'].rootAssembly
-    # n1 = a.instances['MySpecimen'].nodes
-    # nodes = n1.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
-    # ## nodes is type 'Sequence'. see if there a <single> node in the sequence.
-    # if nodes.__len__()==1:
-    #     myAssembly.Set(nodes=(nodes),name=name)
-    # elif nodes.__len__()==0:
-    #     print 'No nodes found'
-    # elif nodes.__len__()>1:
-    #     pass
-
-
 
 
 ## Create Job

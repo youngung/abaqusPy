@@ -38,7 +38,7 @@ def square(length=1.e-3):
 
 length=1.e-3
 xyCoords=square(length=length)
-    
+
 myModel = mdb.Model(name='OneElementTest')
 mySketch = myModel.ConstrainedSketch(name='Square_Sketch',sheetSize=length)
 
@@ -123,18 +123,26 @@ session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
 # #Elasto-Plastic metal
 # #- Young's modulus for steel:
 Young=200.*1e9#[Convert GPa to Pa - Pa is a SI unit: N/m^2]
-# # Yield strength: 400MPa 
+# # Yield strength: 400MPa
 
 myMat=myModel.Material('Metal') ## moduls:
 myMat.Elastic(table=((Young,0.30),))
+
 myMat.Plastic(table=((400.E6, 0.0), (420.E6, 0.02), (500.E6, 0.2), (600.E6, 0.5),))
 
 # ## Create Shell Section!
 thickness = 1e-3 ## 1 mm thickness
+# myShellSection=myModel.HomogeneousShellSection(
+#     name='SpecimenSection',preIntegrate=ON,
+#     material=myMat.name,thickness=1.e-3,
+#     poissonDefinition=DEFAULT, temperature=GRADIENT)
+
 myShellSection=myModel.HomogeneousShellSection(
-    name='SpecimenSection',preIntegrate=ON,
-    material=myMat.name,thickness=1.e-3,
-    poissonDefinition=DEFAULT, temperature=GRADIENT)
+    name='SpecimenSection',
+    preIntegrate=OFF, material=myMat.name, thicknessType=UNIFORM, thickness=thickness,
+    thicknessField='', idealization=NO_IDEALIZATION, poissonDefinition=DEFAULT,
+    thicknessModulus=None, temperature=GRADIENT, useDensity=OFF,
+    integrationRule=SIMPSON, numIntPts=5)
 
 # ## Assign material orientation
 myPart.MaterialOrientation(localCsys=cSysMat,axis=AXIS_3)
@@ -159,7 +167,6 @@ myModel.StaticStep(name='Tension',previous='Initial',description='Uniaxial tensi
                    stabilization=None,timeIncrementationMethod=AUTOMATIC,
                    initialInc=1,minInc=1e-5,maxInc=1,
                    matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
-
 
 # ## Define boundary conditions...
 epsRate=1e-3 #0.001/sec
@@ -225,8 +232,48 @@ myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
 #myPart.seedPart(size=0.001, minSizeFactor=0.1) ## finer meshing
 myPart.generateMesh()
 
-## Create Job
+## single nodal set - plausible only after 'meshing' is completed.
+def setNodeCoord(dat,name):
+    """
+    Define a set attribute within myInstance using
+    the given datum <dat>. Select a <single> node
+    <datum> is assumed to be a point datum.
 
-mdb.Job(name='OneElement',model=myModel.name,description='PythonScriptedOneElement')
+    Arguments
+    ---------
+    dat
+    name
+    """
+    if type(dat).__name__!='DatumPoint': raise SyntaxError, 'Datum should be DatumPoint type'
+
+    delta=1e-4 ## the boundary used for bounding box.
+
+    coordinate = np.array(dat.pointOn)
+    x,y,z=tuple(coordinate)
+    xmin,ymin,zmin=tuple(coordinate-delta)
+    xmax,ymax,zmax=tuple(coordinate+delta)
+
+    ## myInstance=myModel.rootAssembly.instances['MySpecimen']
+    ## nodes=myInstance.nodes.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
+
+    ## assign node to "part" first.
+    selectedNodes=myPart.nodes.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
+    myPart.Set(nodes=(selectedNodes),name=name)
+
+
+## additional procedure that requires 'meshed' information.
 myAssembly.regenerate()
+myAssembly.Set(elements=myInstance.elements[:],name='ORIGIN')
+myAssembly.regenerate()
+
+myModel.HistoryOutputRequest(name='StressStrain',
+                             createStepName='Tension',variables=('S11','E11'),
+                             region=myAssembly.sets['ORIGIN'],sectionPoints=DEFAULT,rebar=EXCLUDE)
+myAssembly.regenerate()
+
+## Create Job
+mdb.Job(name='OneElement',model=myModel.name,description='PythonScriptedOneElement')
 mdb.saveAs(myModel.name)
+
+## submit the job
+mdb.jobs['OneElement'].submit(consistencyChecking=OFF)

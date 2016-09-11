@@ -1,3 +1,5 @@
+*guiState*
+core.*
 *.ipynb_checkpoints
 *.bdf
 *.deps
