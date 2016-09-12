@@ -10,8 +10,7 @@ youngung.jeong@gmail.com
 ## add the site-package of my own...
 import os
 os.sys.path.append('/home/younguj/anaconda2/lib/python2.7/site-packages/')
-
-
+import abaquspy.mats.ifsteel
 
 from abaqus import *
 from abaqusConstants import *
@@ -129,10 +128,11 @@ session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
 Young=200.*1e9#[Convert GPa to Pa - Pa is a SI unit: N/m^2]
 # # Yield strength: 400MPa
 
-myMat=myModel.Material('Metal') ## moduls:
-myMat.Elastic(table=((Young,0.30),))
+myMat=myModel.Material('IFsteel') ## moduls:
+abaquspy.mats.ifsteel.iso(myMat)
 
-myMat.Plastic(table=((400.E6, 0.0), (420.E6, 0.02), (500.E6, 0.2), (600.E6, 0.5),))
+# myMat.Elastic(table=((Young,0.30),))
+# myMat.Plastic(table=((400.E6, 0.0), (420.E6, 0.02), (500.E6, 0.2), (600.E6, 0.5),))
 
 # ## Create Shell Section!
 thickness = 1e-3 ## 1 mm thickness

@@ -56,19 +56,19 @@ lastFrame=stepObj.frames[-1]
 nFrame=lastFrame.frameId
 
 
-
-
 ## extract E11/S11
 odb = session.odbs['/home/younguj/abaqus/exercise/uten/one/OneElement.odb']
 e11=odb.steps['TensionContinue'].historyRegions['Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['E11'].data
 s11=odb.steps['TensionContinue'].historyRegions['Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['S11'].data
-e11=np.array(e11)
-s11=np.array(s11)
-
-
-e11=e11[:,1]
-s11=s11[:,1]
+e11=np.array(e11); s11=np.array(s11)
+## Discard the time stamps.
+e11=e11[:,1]; s11=s11[:,1]
 
 FlowCurve=np.array([e11,s11]).T
 import numpy as np
-np.savetxt('strstr.txt',FlowCurve)
+path=os.getcwd()
+fn=os.path.join(path,'strstr.txt')
+np.savetxt(fn,FlowCurve)
+
+
+## may want to plot the result...
