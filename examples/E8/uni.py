@@ -1,6 +1,6 @@
 """
 A simple example to generate uniaxial specimen using
-ABQUS Python scripting feature.
+Abaqus Python script feature
 
 
 Youngung Jeong

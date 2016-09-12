@@ -1,5 +1,10 @@
 """
 """
+
+import os
+path_site_packages='/home/younguj/anaconda2/lib/python2.7/site-packages/'
+os.sys.path.append(path_site_packages)
+
 import abaquspy.plots.plotter
 import abaquspy.mats.ifsteel as ifsteel
 import numpy as np

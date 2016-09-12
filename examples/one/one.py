@@ -1,6 +1,6 @@
 """
-A simple example to generate uniaxial specimen using
-ABQUS Python scripting feature.
+A simple example to generate one element model using
+Abaqus Python script feature
 
 
 Youngung Jeong
@@ -9,50 +9,53 @@ youngung.jeong@gmail.com
 
 ## add the site-package of my own...
 import os
-os.sys.path.append('/home/younguj/anaconda2/lib/python2.7/site-packages/')
+import numpy as np
+
+## Load my local packages by adding path_site_packge to system path
+## I found this allows to load personal packages within Abaqus PDE.
+## Yet, I don't know how reliable this method is.
+path_site_packages='/home/younguj/anaconda2/lib/python2.7/site-packages/'
+os.sys.path.append(path_site_packages)
 import abaquspy.mats.ifsteel
+import abaquspy.lib.datums
+rPDC=abaquspy.lib.datums.returnPointDatumCoords
 
 from abaqus import *
 from abaqusConstants import *
+from caeModules import *
+import sketch, part, regionToolset
 backwardCompatibility.setValues(includeDeprecated=True,
                                 reportDeprecated=False)
 
-import sketch
-import part
-import regionToolset
-import numpy as np
-
-from caeModules import *
+##
+Theta = 45. ## [in degree] cSym is ccw from global (lab) axis X
 
 
 ###### ----------Generating specimen dimensions.
-#[SI unit system]
+# [SI unit system]
 # length in meters]
 # Pressure in Pa: N/m^2
-
-## dimension in meter (default values are given in millimeters).
-## thus a factor of 1e-3 is required.
+# dimension in meter (default values are given in millimeters).
+# thus a factor of 1e-3 is required.
 def square(length=1.e-3):
     """
     """
     xyCoords=[[0,0],[1,0],[1,1],[0,1],[0,0]]
     xyCoords=np.array(xyCoords) * length
     return xyCoords
-
 length=1.e-3
 xyCoords=square(length=length)
 
+#### Model declaration
 myModel = mdb.Model(name='OneElementTest')
+
+#### MySketch
 mySketch = myModel.ConstrainedSketch(name='Square_Sketch',sheetSize=length)
-
-#s.ArcByCenterEnds(center=?, point1=?,point2?)
+### Sketch details.
+## Connecting the four corners.
 totalLength=np.max(xyCoords[:,0])-np.min(xyCoords[:,0]) ## total length of specimen.
-
-for i in xrange(len(xyCoords)):
-    mySketch.Spot(point=xyCoords[i])
-
-g,v,d,c=mySketch.geometry, mySketch.vertices, mySketch.dimensions, mySketch.constraints
-
+for i in xrange(len(xyCoords)): mySketch.Spot(point=xyCoords[i])
+#g,v,d,c=mySketch.geometry, mySketch.vertices, mySketch.dimensions, mySketch.constraints
 for i in xrange(len(xyCoords)-1):
     p1=tuple(xyCoords[i])
     p2=tuple(xyCoords[i+1])
@@ -60,22 +63,17 @@ for i in xrange(len(xyCoords)-1):
     mySketch.Line(point1=p1,point2=p2)
 
 
-###### ----------Generating specimen dimensions.
-myPart = myModel.Part(name='oneElement', dimensionality=THREE_D,type=DEFORMABLE_BODY)
-
-# def findEdgeBetween(i0,i1):
-#     x0,y0=xyCoords[i0]
-#     x1,y1=xyCoords[i1]
-#     x=(x0+x1)/2.
-#     y=(y0+y1)/2.
-#     return myPart.edges.findAt(x,y,0.)
-
-
-# ## Features.
+#### Part module
+myPart = myModel.Part(name='oneElement',
+                      dimensionality=THREE_D,
+                      type=DEFORMABLE_BODY)
+### Features
+# Using the Sketch generate BasedShell.
 featShell=myPart.BaseShell(sketch=mySketch)
 myPart.features.changeKey(fromName=featShell.name,toName='myBaseShell')
 session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
 
+## Edge sets pertaining to Part
 edge0=myPart.edges.findAt((0,0.0001,0))
 edges=myPart.edges[edge0.index:edge0.index+1]
 myPart.Set(edges=edges,name='leftEnd')
@@ -83,64 +81,36 @@ edge0=myPart.edges.findAt((length,0.0001,0))
 edges=myPart.edges[edge0.index:edge0.index+1]
 myPart.Set(edges=edges,name='rightEnd')
 
-# ## create datum for material orientation
-# # - create three datum points
-# # assuming that x//RD, y//TD and z//ND
-def returnDatumCoords(coords):
-    ## below returns a feature
-    f=myPart.DatumPointByCoordinate(coords=coords)
-    ## convert feature to datum
-    return myPart.datums[f.id]
-rDC=returnDatumCoords # alias
+## Define various point Datums
+# Coordinate datum for material orientation
+# assuming that x//RD, y//TD and z//ND
+datOri= rPDC(myPart, coords=(0,                0,    0))
+dat10 = rPDC(myPart, coords=(length,           0,    0))
+datRC = rPDC(myPart, coords=(length,   length/2.,    0))
+dat11 = rPDC(myPart, coords=(length,      length,    0))
+datC  = rPDC(myPart, coords=(length/2.,length/2.,    0))
 
-datOri= rDC(coords=(0,0,0))
-dat10 = rDC(coords=(length,0,    0))
-datRC = rDC(coords=(length,length/2.,    0))
-dat11 = rDC(coords=(length,length,0))
-datC=rDC(coords=(length/2., length/2.,0))
-# datC_up=rDC(coords=(totalLength/2., tw/2.+gw/2.,0))
-# datC_down=rDC(coords=(totalLength/2., tw/2.-gw/2.,0))
-# datC_Lend=rDC(coords=(0,tw/2.,0))
-# datC_Rend=rDC(coords=(totalLength,tw/2.,0))
 
-# datC_Left=rDC(coords=(totalLength/2.-pl/2., tw/2.,0))
-# datC_LeftUp=rDC(coords=(totalLength/2.-pl/2., tw/2.+gw/2.,0))
-# datC_LeftDown=rDC(coords=(totalLength/2.-pl/2., tw/2.-gw/2.,0))
-
-# datC_Right=rDC(coords=(totalLength/2.+pl/2., tw/2.,0))
-# datC_RightUp=rDC(coords=(totalLength/2.+pl/2., tw/2.+gw/2.,0))
-# datC_RightDown=rDC(coords=(totalLength/2.+pl/2., tw/2.-gw/2.,0))
-
-# # Define Point Datums at the two edges of Grips.
-
+## Define Point Datums at the two edges of Grips.
 SysDefault = myPart.DatumCsysByDefault(CARTESIAN)
-cSysMat     = myPart.DatumCsysByThreePoints(CARTESIAN,origin=datC,
-                                            point1=datRC,point2=dat11,name='matCsys')
+cSysMat = abaquspy.lib.datums.returnCsymPlanarAngle(
+    myPart,datC,radius=length/3.,angle=Theta*np.pi/180.)
+# cSysMat    = myPart.DatumCsysByThreePoints(
+#     CARTESIAN,origin=datC,
+#     point1=datRC,point2=dat11,name='matCsys')
 
 ## Shell
 myPart.BaseShell(sketch=mySketch)
 session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
 
-
-# ## Create My material
-# #Elasto-Plastic metal
-# #- Young's modulus for steel:
-Young=200.*1e9#[Convert GPa to Pa - Pa is a SI unit: N/m^2]
-# # Yield strength: 400MPa
-
-myMat=myModel.Material('IFsteel') ## moduls:
+#### Create My material
+## Use abaquspy.mats.ifsteel module to retrieve material characteristics
+## of the IF steel
+myMat = myModel.Material('IFsteel') ## moduls:
 abaquspy.mats.ifsteel.iso(myMat)
-
-# myMat.Elastic(table=((Young,0.30),))
-# myMat.Plastic(table=((400.E6, 0.0), (420.E6, 0.02), (500.E6, 0.2), (600.E6, 0.5),))
 
 # ## Create Shell Section!
 thickness = 1e-3 ## 1 mm thickness
-# myShellSection=myModel.HomogeneousShellSection(
-#     name='SpecimenSection',preIntegrate=ON,
-#     material=myMat.name,thickness=1.e-3,
-#     poissonDefinition=DEFAULT, temperature=GRADIENT)
-
 myShellSection=myModel.HomogeneousShellSection(
     name='SpecimenSection',
     preIntegrate=OFF, material=myMat.name, thicknessType=UNIFORM, thickness=thickness,
@@ -148,19 +118,19 @@ myShellSection=myModel.HomogeneousShellSection(
     thicknessModulus=None, temperature=GRADIENT, useDensity=OFF,
     integrationRule=SIMPSON, numIntPts=5)
 
-# ## Assign material orientation
+### Assign material orientation
 myPart.MaterialOrientation(localCsys=cSysMat,axis=AXIS_3)
 
-# ## Assign section to plate
+### Assign section to plate
 region=regionToolset.Region(faces=myPart.faces[:])
 myPart.SectionAssignment(region=region,sectionName=myShellSection.name)
 
-# ## retrieve assembly
+### retrieve assembly
 myAssembly = myModel.rootAssembly
 session.viewports['Viewport: 1'].setValues(displayedObject=myAssembly)
-# Set cSys to myAssembly
+## Set cSys to myAssembly
 myAssembly.DatumCsysByDefault(CARTESIAN)
-# Instance the part E8
+## Instance the part E8
 myAssembly.Instance(name='MySpecimen', part=myPart, dependent=ON)
 myInstance=myAssembly.instances['MySpecimen']
 
@@ -182,13 +152,12 @@ L0=1.*length ## one element
 vel=epsRate*L0 ## velocity
 
 # ## total (engi) strain wanted: 0.2
-totalStrain = 0.5
+totalStrain = 0.1
 Lf=(1.+totalStrain)*L0
 totalDisplace=Lf-L0
 deltaTime=totalDisplace/vel ## total delta Time
 
 ##
-
 myModel.StaticStep(name='TensionContinue',previous='Tension',description='Uniaxial Tension',
                    timePeriod=deltaTime,
                    adiabatic=OFF,maxNumInc=2000,
@@ -203,17 +172,15 @@ session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Tension')
 # Field output
 myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('E','U','S'))
 # History output
-#myModel.historyOutputRequests['H-Output-1'].setValues(variables=('E11',),region=myAssembly.sets['MidSpan'])
-
-# session.viewports['Viewport: 1'].assemblyDisplay.setValues(loads=ON, bcs=ON,
-#     predefinedFields=ON)
+# myModel.historyOutputRequests['H-Output-1'].setValues(variables=('E11',),region=myAssembly.sets['MidSpan'])
 
 
 # ## Apply BC
 c0=datOri.pointOn
 vs=myInstance.vertices.findAt((c0,))
+## Encastre
 myModel.EncastreBC(name='EncastreOri',createStepName='Tension',region=regionToolset.Region(vertices=vs))
-
+## Symmetric constraints
 myModel.XsymmBC(name='FixLeftEndX', createStepName='Tension',region=myInstance.sets['leftEnd'])
 myModel.ZsymmBC(name='FixLeftEndZ', createStepName='Tension',region=myInstance.sets['leftEnd'])
 myModel.ZsymmBC(name='FixRightEndZ',createStepName='Tension',region=myInstance.sets['rightEnd'])
@@ -224,46 +191,16 @@ myModel.boundaryConditions['StretchX'].setValuesInStep(
     stepName='TensionContinue',
     v1=vel,vr3=0.)
 
-
 # ## Generate Mesh
 elemType1 = mesh.ElemType(elemCode=S4R, elemLibrary=STANDARD)
-elemType2 = mesh.ElemType(elemCode=S3, elemLibrary=STANDARD)
-f = myPart.faces
-faces = f.getSequenceFromMask(mask=('[#f ]', ), )
+elemType2 = mesh.ElemType(elemCode=S3,  elemLibrary=STANDARD)
+#f = myPart.faces
+faces=myPart.faces[:]# = f.getSequenceFromMask(mask=('[#f ]', ), )
 pickedRegions =(faces, )
 myPart.setElementType(regions=pickedRegions, elemTypes=(elemType1, elemType2))
 myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
 #myPart.seedPart(size=0.001, minSizeFactor=0.1) ## finer meshing
 myPart.generateMesh()
-
-## single nodal set - plausible only after 'meshing' is completed.
-def setNodeCoord(dat,name):
-    """
-    Define a set attribute within myInstance using
-    the given datum <dat>. Select a <single> node
-    <datum> is assumed to be a point datum.
-
-    Arguments
-    ---------
-    dat
-    name
-    """
-    if type(dat).__name__!='DatumPoint': raise SyntaxError, 'Datum should be DatumPoint type'
-
-    delta=1e-4 ## the boundary used for bounding box.
-
-    coordinate = np.array(dat.pointOn)
-    x,y,z=tuple(coordinate)
-    xmin,ymin,zmin=tuple(coordinate-delta)
-    xmax,ymax,zmax=tuple(coordinate+delta)
-
-    ## myInstance=myModel.rootAssembly.instances['MySpecimen']
-    ## nodes=myInstance.nodes.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
-
-    ## assign node to "part" first.
-    selectedNodes=myPart.nodes.getByBoundingBox(xmin,ymin,zmin,xmax,ymax,zmax)
-    myPart.Set(nodes=(selectedNodes),name=name)
-
 
 ## additional procedure that requires 'meshed' information.
 myAssembly.regenerate()
@@ -271,7 +208,7 @@ myAssembly.Set(elements=myInstance.elements[:],name='ORIGIN')
 myAssembly.regenerate()
 
 myModel.HistoryOutputRequest(name='StressStrain',
-                             createStepName='Tension',variables=('S11','E11'),
+                             createStepName='Tension',variables=('S11','E11','E22','PE11','PE22'),
                              region=myAssembly.sets['ORIGIN'],sectionPoints=DEFAULT,rebar=EXCLUDE)
 myAssembly.regenerate()
 
@@ -280,12 +217,16 @@ mdb.Job(name='OneElement',model=myModel.name,description='PythonScriptedOneEleme
 mdb.saveAs(myModel.name)
 myJob = mdb.jobs['OneElement']
 ## Multicore options
-myJob.setValues(numCpus=2,numDomains=2)
-## submit the job
-#myJob.submit(consistencyChecking=OFF)
-## myJob wait until completion?
-#myJob.waitForCompletion()
+myJob.setValues(numCpus=4,numDomains=4)
 
 
-## execute pp file?
-execfile('onePP.py')
+if True:
+    ## submit the job
+    myJob.submit(consistencyChecking=OFF)
+    ## myJob wait until completion?
+    myJob.waitForCompletion()
+    ## execute pp file?
+    # execfile('onePP.py')
+
+    import onePP
+    onePP.main(session,'strstr_%.2f.txt'%Theta)

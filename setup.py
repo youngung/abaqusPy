@@ -1,7 +1,8 @@
 from distutils.core import setup
+
 setup(name='abaqusPy',
       version='0.01',
-      description='Collection of Abaqus modules',
+      description='Collection of Abaqus python scripts',
       author='Youngung Jeong',
       author_email='youngung.jeong@gmail.com',
 
