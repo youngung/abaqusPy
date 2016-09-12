@@ -7,7 +7,11 @@ Youngung Jeong
 youngung.jeong@gmail.com
 """
 
+## add the site-package of my own...
 import os
+os.sys.path.append('/home/younguj/anaconda2/lib/python2.7/site-packages/')
+
+
 
 from abaqus import *
 from abaqusConstants import *
