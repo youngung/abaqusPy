@@ -6,16 +6,10 @@ setup(name='abaqusPy',
       author='Youngung Jeong',
       author_email='youngung.jeong@gmail.com',
 
-      packages=['abaquspy.lib'],
-      package_dir={'abaquspy.lib':'lib'}
-
-      )
-
-      # packages=['MP','MP.lib','MP.mat','MP.opt','MP.cal','MP.geom'],
-      # package_dir={'MP':'src',
-      #              'MP.lib':'src/lib',
-      #              'MP.mat':'src/mat',
-      #              'MP.opt':'src/opt',
-      #              'MP.cal':'src/cal',
-      #              'MP.geom':'src/geom'}
-      # )
+      packages=['abaquspy.lib','abaquspy.examples','abaquspy.examples.E8',
+                'abaquspy.examples.one'],
+      package_dir={'abaquspy.lib':'lib',
+                   'abaquspy.examples':'examples',
+                   'abaquspy.examples.E8':'examples/E8',
+                   'abaquspy.examples.one':'examples/one'}
+)
