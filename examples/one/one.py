@@ -278,6 +278,14 @@ myAssembly.regenerate()
 ## Create Job
 mdb.Job(name='OneElement',model=myModel.name,description='PythonScriptedOneElement')
 mdb.saveAs(myModel.name)
-
+myJob = mdb.jobs['OneElement']
+## Multicore options
+myJob.setValues(numCpus=2,numDomains=2)
 ## submit the job
-mdb.jobs['OneElement'].submit(consistencyChecking=OFF)
+#myJob.submit(consistencyChecking=OFF)
+## myJob wait until completion?
+#myJob.waitForCompletion()
+
+
+## execute pp file?
+execfile('onePP.py')

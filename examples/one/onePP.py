@@ -5,9 +5,14 @@ from odbAccess import *
 from abaqusConstants import *
 from odbMaterial import *
 from odbSection import *
+import os
 
-fn='/home/younguj/abaqus/exercise/uten/one/OneElement.odb'
-odb = session.openOdb(name=fn)
+fnOdb=os.path.join(os.getcwd(),'OneElement.odb')
+print 'fnOdb:',fnOdb
+
+
+#fnOdb='/home/younguj/abaqus/exercise/uten/one/OneElement.odb'
+odb = session.openOdb(name=fnOdb)
 
 ## Analyze the model
 print 'Instances in the assembly'
@@ -57,7 +62,7 @@ nFrame=lastFrame.frameId
 
 
 ## extract E11/S11
-odb = session.odbs['/home/younguj/abaqus/exercise/uten/one/OneElement.odb']
+#odb = session.odbs['/home/younguj/abaqus/exercise/uten/one/OneElement.odb']
 e11=odb.steps['TensionContinue'].historyRegions['Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['E11'].data
 s11=odb.steps['TensionContinue'].historyRegions['Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['S11'].data
 e11=np.array(e11); s11=np.array(s11)
@@ -67,8 +72,8 @@ e11=e11[:,1]; s11=s11[:,1]
 FlowCurve=np.array([e11,s11]).T
 import numpy as np
 path=os.getcwd()
-fn=os.path.join(path,'strstr.txt')
-np.savetxt(fn,FlowCurve)
+fnFlowCurve=os.path.join(path,'strstr.txt')
+np.savetxt(fnFlowCurve,FlowCurve)
 
 
 ## may want to plot the result...
