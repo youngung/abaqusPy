@@ -7,11 +7,12 @@ setup(name='abaqusPy',
       author_email='youngung.jeong@gmail.com',
 
       packages=['abaquspy','abaquspy.lib','abaquspy.examples','abaquspy.examples.E8',
-                'abaquspy.examples.one'],
+                'abaquspy.examples.one','abaquspy.sketches'],
       package_dir={
           'abaquspy':'main',
           'abaquspy.lib':'lib',
           'abaquspy.examples':'examples',
           'abaquspy.examples.E8':'examples/E8',
-          'abaquspy.examples.one':'examples/one'}
+          'abaquspy.examples.one':'examples/one',
+          'abaquspy.sketches':'sketches'}
 )
