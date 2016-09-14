@@ -221,7 +221,7 @@ myJob.setValues(numCpus=4,numDomains=4)
 
 
 ## Flag to use a User Material subroutine
-iumat=True
+iumat=False
 umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
 if iumat:
     myJob.setValues(userSubroutine=umatFN)
