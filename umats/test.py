@@ -4,18 +4,18 @@ Compiling test for umats.
 
 
 ## Umat header that includes program
-UmatHeader="""
-program main
-write(*,*)'Hi, someone testing a umat'
-end
-"""
+# UmatHeader="""
+# program main
+# write(*,*)'Hi, someone testing a umat'
+# end
+# """
 
-UmatSubrXit="""
-subroutine xit
-write(*,*) 'Hello, Subroutine xit was called.'
-return
-end subroutine xit
-"""
+# UmatSubrXit="""
+# subroutine xit
+# write(*,*) 'Hello, Subroutine xit was called.'
+# return
+# end subroutine xit
+# """
 
 
 def string2IndentedLines(string='',nind=6):
@@ -47,31 +47,40 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
     umat='/home/younguj/repo/abaqusPy/umats/el/iso.f'
     verbose=True
     """
-
+    import subprocess
     nind=6 ## number of indentation used in the fortran fixed form...
+
+
+
     mxLineNo=20 ## max line number to comment out 'include' command
 
     ## UMAT subroutine Lines in list
     umatSubrLines = open(umat,'r').read().split('\n') ## list
-    ## - find <include 'aba_param.inc'> and comment that line out.
-
+    ## Find <include 'aba_param.inc'> and comment that line out.
     LinesUnderExamine = umatSubrLines[:mxLineNo]
-    ## detect aba_param.inc and comment that line out.
+    ## Detect aba_param.inc and comment that line out.
     for i in xrange(len(LinesUnderExamine)):
         line = LinesUnderExamine[i]
         if line[nind:nind+7].upper()=='INCLUDE':
-            LinesUnderExamine[i]='c %s'%LinesUnderExamine[i]
+            umatSubrLines[i]='C %s'%LinesUnderExamine[i]
             print 'Found INCLUDE line and commented out'
         else: pass
 
 
-    ## UMAT Head Lines in list
-    umatHeadLines=string2IndentedLines(string=UmatHeader,nind=nind)
+    ## path to fake main
+    fnFakeMain = 'fakemain.f'
+    mainLines = open(fnFakeMain, 'r').read().split('\n')
 
-    ## UMAT xit Lines in list
-    umatXitLines=string2IndentedLines(string=UmatSubrXit,nind=nind)
 
-    umatProgram = umatHeadLines+umatSubrLines+umatXitLines
+
+    # ## UMAT Head Lines in list
+    # umatHeadLines=string2IndentedLines(string=UmatHeader,nind=nind)
+    # ## UMAT xit Lines in list
+    # umatXitLines=string2IndentedLines(string=UmatSubrXit,nind=nind)
+    # umatProgram = umatHeadLines+umatSubrLines+umatXitLines
+
+    umatProgram = mainLines+umatSubrLines
+
 
     s=''
     for i in xrange(len(umatProgram)):
@@ -79,17 +88,25 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
 
     ## construct a temp file...
     import MP.lib.temp
-    # fn = MP.lib.temp.gen_tempfile(prefix='UMAT-TEST',ext='f',tmp='/tmp/younguj')
-    fn = MP.lib.temp.gen_tempfile(prefix='UMAT-TEST',ext='f',tmp='/scratch1/younguj/')
-    print 'fn:',fn
-    with open(fn,'w') as fo:
+    fnTempUmat = MP.lib.temp.gen_tempfile(prefix='UMAT-TEST',ext='f',tmp='/scratch1/younguj/')
+    print 'fn:',fnTempUmat
+    with open(fnTempUmat,'w') as fo:
         fo.write(s)
+        pass
 
-    if verbose:
-        print s
+    if verbose: print s
+
 
     ## compiling option
-    cmd = 'gfotran %s'%(fn)
+    compiler='gfortran'
+    cmd='%s %s > compile.log'%(compiler,fnTempUmat)
+    print 'cmd:'
+    print cmd
+    os.system(cmd)
+    # cmd=[compiler,fnTempUmat]
+    # subprocess.check_output(cmd)
+
+
 
 ## Command line usage will be much easier to use.
 if __name__=='__main__':
@@ -100,6 +117,9 @@ if __name__=='__main__':
     parser.add_argument(
         '-umat',type=str,help='UMAT file (full-pathed)',
         default='/home/younguj/repo/abaqusPy/umats/el/iso.f')
+    parser.add_argument(
+        '-v',action='store_true',
+        help='Verbose flag')
 
     args = parser.parse_args()
-    main(umat=args.umat)
+    main(umat=args.umat,verbose=args.v)

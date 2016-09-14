@@ -220,7 +220,13 @@ myJob = mdb.jobs['OneElement']
 myJob.setValues(numCpus=4,numDomains=4)
 
 
-if True:
+## Flag to use a User Material subroutine
+iumat=True
+umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
+if iumat:
+    myJob.setValues(userSubroutine=umatFN)
+
+if False:
     ## submit the job
     myJob.submit(consistencyChecking=OFF)
     ## myJob wait until completion?
@@ -228,5 +234,5 @@ if True:
     ## execute pp file?
     # execfile('onePP.py')
 
-    import onePP
-    onePP.main(session,'strstr_%.2f.txt'%Theta)
+    #import onePP
+    #onePP.main(session,'strstr_%.2f.txt'%Theta)
