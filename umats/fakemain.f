@@ -87,3 +87,13 @@ c-----------------------------------------------------------------------
       write(*,*) 'Hello, Subroutine xit was called.'
       return
       end subroutine xit
+
+c-----------------------------------------------------------------------
+c     Fake rotsig function
+c-----------------------------------------------------------------------
+      subroutine rotsig(s,r,sprime,lstr,ndi,nshr)
+      dimension s(ndi+nshr),r(3,3),sprime(ndi+nshr)
+      integer lstr,ndi,nshr
+
+      return
+      end subroutine rotsig
