@@ -20,12 +20,12 @@ c$$$  and, if necessary, RPL, DDSDDT, DRPLDE, DRPLDT, PNEWDT
 c$$$  End of ABAQUS UMAT Interface
 
 c$$$ Assuming real*8
-      real*8 dtime,temp,dtemp,celent
+      real*8 dtime,temp,dtemp,celent,ddsdde
 
 c     Beginning of user-specific part
       dimension eelas(6), eplas(6), flow(6)
-      parameter(one=1d0,two=2d0,three=3d0,six=6d0,enumax=0.4999d0,
-     $     newton=10,toler=1d-6)
+      parameter(zero=0.d0,one=1.d0,two=2.d0,three=3.d0,six=6.d0,
+     $     enumax=0.4999d0,newton=10,toler=1d-6)
 
       integer imsg, k1, k2
 c$$$
@@ -38,13 +38,39 @@ c$$$c     PROPS(2) - Nu  Poisson's ratio
      $three direct (normal) stress components'
          call xit               ! exit
       endif
-      emod=props(1)
-      enu = props(2)
+c$$$      emod =props(1)
+c$$$      enu = props(2)
+      emod=300d9
+      enu=0.3
+c     initialization
+      do i=1,ntens
+         do j=1,ntens
+            ddsdde(i,j) = zero
+         enddo
+      enddo
+c
+c     construct elastic tensor (6x6) with assuming that
+c     \gamma_ij = 2\varepsilon_ij is the engineering shear strain
+c
 
-      call emod_iso(emod,enu,ddsdde) !! isotropic elastic modulus
+c     Multiplier
+      x = emod/(one+enu)/(one-two*enu)
+
+c     off-diagonal terms
+      do i=1,3
+         do j=1,3
+            ddsdde(i,j) = enu * x
+         enddo
+      enddo
+
+      do i=1,3
+         ddsdde(i,i) = (one-enu)*x ! overwrite the diganogal term
+         ddsdde(i+3,i+3) = (one-two*enu)/two * x
+      enddo
+
+!     call emod_iso(emod,enu,ddsdde) ! isotropic elastic modulus
 
       if (kinc.eq.1 .and. noel.eq.1) then
-         write(imsg,*) 'Elastic modulus'
          do i=1,ntens
             write(imsg,'(6e13.2)') (ddsdde(i,j),j=1,ntens)
          enddo
@@ -62,41 +88,43 @@ c     updates stress
       return
       end subroutine umat
 
-      subroutine emod_iso(e,nu,c)
-c     intent(in): e,nu
-c     intent(out): c
-      parameter(ndi=3,ntens=6)
-      real*8 e, nu, c(ntens,ntens), x
-      integer i,j
 
-c     initialization
-      do i=1,ntens
-         do j=1,ntens
-            c(i,j) = 0.d0
-         enddo
-      enddo
-c
-c     construct elastic tensor (6x6) with assuming that
-c     \gamma_ij = 2\varepsilon_ij is the engineering shear strain
-c
-
-c     Multiplier
-      x = e/(1.+nu)/(1.-2.*nu)
-
-c     off-diagonal terms
-      do i=1,3
-         do j=1,3
-            c(i,i) = nu * x
-         enddo
-      enddo
-
-      do i=1,3
-         c(i,i) = (1.-nu)*x     !! overwrite the diganogal term
-         c(i+3,i+3) = (1.-2.*nu)/2. * x
-      enddo
-
-      return
-      end subroutine emod_iso
-
-
-c      include "/home/younguj/repo/abaqusPy/umats/lib/elast.f"
+c$$$      
+c$$$
+c$$$      subroutine emod_iso(e,nu,c)
+c$$$c     intent(in): e,nu
+c$$$c     intent(out): c
+c$$$      parameter(ndi=3,ntens=6)
+c$$$      real*8 e, nu, c(ntens,ntens), x
+c$$$      integer i,j
+c$$$
+c$$$c     initialization
+c$$$      do i=1,ntens
+c$$$         do j=1,ntens
+c$$$            c(i,j) = 0.d0
+c$$$         enddo
+c$$$      enddo
+c$$$c
+c$$$c     construct elastic tensor (6x6) with assuming that
+c$$$c     \gamma_ij = 2\varepsilon_ij is the engineering shear strain
+c$$$c
+c$$$
+c$$$c     Multiplier
+c$$$      x = e/(1.+nu)/(1.-2.*nu)
+c$$$
+c$$$c     off-diagonal terms
+c$$$      do i=1,3
+c$$$         do j=1,3
+c$$$            c(i,i) = nu * x
+c$$$         enddo
+c$$$      enddo
+c$$$
+c$$$      do i=1,3
+c$$$         c(i,i) = (1.-nu)*x     !! overwrite the diganogal term
+c$$$         c(i+3,i+3) = (1.-2.*nu)/2. * x
+c$$$      enddo
+c$$$
+c$$$      return
+c$$$      end subroutine emod_iso
+c$$$
+c$$$c      include "/home/younguj/repo/abaqusPy/umats/lib/elast.f"

@@ -16,12 +16,16 @@ ref_dat=np.array([strain,stress])
 
 fnsRst=glob.glob('OneElement_??_*.txt')
 fig=None
+rd=None
+line_style=['-','--','-.',':','|']
 for i in xrange(len(fnsRst)):
-    if i==0: rd=ref_dat
-    else: rd=None
+    # if i==0: rd=ref_dat
+    # else: rd=None
     fn = fnsRst[i]
     fig=abaquspy.plots.plotter.strstr(
-        fn=fnsRst[i],ref_dat=rd,label=fn,fig=fig)
+        fn=fnsRst[i],ref_dat=rd,fig=fig,
+        label=fn.split('OneElement_')[-1],
+        ls=line_style[i])
 
 fnFig='OneElementResult.pdf'
 fig.tight_layout()

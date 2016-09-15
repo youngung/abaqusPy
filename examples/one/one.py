@@ -51,17 +51,19 @@ length=1.e-3
 xyCoords=square(length=length)
 
 def TensileOneElement(
-    Theta=0.,isub=False,iwait=False,
-    umatFN=None):
+    Theta=0.,isub=False,iwait=False,umatFN=None,
+    myMatFunc=None):
     """
     Prep one shell element tests
 
     Arguments
     ---------
-    Theta (ccw in-plane rotation from global axis 1)
-    isub
-    iwait
-    umatFN
+    Theta     = 0 : c.c.w in-plane rotation of material
+                   from global axis 1
+    isub      = False
+    iwait     = False
+    umatFN    = None
+    myMatFunc = None
     """
     #### Model declaration
 
@@ -71,6 +73,11 @@ def TensileOneElement(
         label='%s_UMAT_None'%label
     else:
         label='%s_UMAT_%s'%(label,os.path.split(umatFN)[-1].split('.')[0])
+
+    if type(myMatFunc)==type(None):
+        label='%s_MatF_None'%label
+    else:
+        label='%s_MatF_%s'%(label,myMatFunc.__name__)
 
     myModel = mdb.Model(name='OneEL_%s'%label)
 
@@ -94,7 +101,8 @@ def TensileOneElement(
     ### Features
     # Using the Sketch generate BasedShell.
     featShell=myPart.BaseShell(sketch=mySketch)
-    myPart.features.changeKey(fromName=featShell.name,toName='myBaseShell')
+    myPart.features.changeKey(fromName=featShell.name,
+                              toName='myBaseShell')
     session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
 
     ## Edge sets pertaining to Part
@@ -124,18 +132,22 @@ def TensileOneElement(
     session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
 
     #### Create My material
-    ## Use abaquspy.mats.ifsteel module to retrieve material characteristics
-    ## of the IF steel
+    ## Use abaquspy.mats.ifsteel module to retrieve material
+    ## characteristics of the IF steel
     myMat = myModel.Material('IFsteel') ## moduls:
-    abaquspy.mats.ifsteel.iso(myMat)
+    if type(myMatFunc)==type(None):
+        abaquspy.mats.ifsteel.isoep(myMat)
+    else:
+        myMatFunc(myMat)
+        pass
 
     # ## Create Shell Section!
     thickness = 1e-3 ## 1 mm thickness
     myShellSection=myModel.HomogeneousShellSection(
-        name='SpecimenSection',
-        preIntegrate=OFF, material=myMat.name, thicknessType=UNIFORM, thickness=thickness,
-        thicknessField='', idealization=NO_IDEALIZATION, poissonDefinition=DEFAULT,
-        thicknessModulus=None, temperature=GRADIENT, useDensity=OFF,
+        name='SpecimenSection',preIntegrate=OFF, material=myMat.name,
+        thicknessType=UNIFORM, thickness=thickness,thicknessField='',
+        idealization=NO_IDEALIZATION,poissonDefinition=DEFAULT,
+        thicknessModulus=None,temperature=GRADIENT,useDensity=OFF,
         integrationRule=SIMPSON, numIntPts=5)
 
     ### Assign material orientation
@@ -155,12 +167,11 @@ def TensileOneElement(
     myInstance=myAssembly.instances['MySpecimen']
 
     # ## Create a static general step
-    myModel.StaticStep(name='Tension',previous='Initial',description='Uniaxial tension',
-                       timePeriod=1,
-                       adiabatic=OFF,maxNumInc=100,
-                       stabilization=None,timeIncrementationMethod=AUTOMATIC,
-                       initialInc=1,minInc=1e-5,maxInc=1,
-                       matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
+    myModel.StaticStep(
+        name='Tension',previous='Initial',description='Uniaxial tension',
+        timePeriod=1,adiabatic=OFF,maxNumInc=100,stabilization=None,
+        timeIncrementationMethod=AUTOMATIC,initialInc=1,minInc=1e-5,
+        maxInc=1,matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
 
     # ## Define boundary conditions...
     epsRate=1e-3 #0.001/sec
@@ -172,51 +183,58 @@ def TensileOneElement(
     vel=epsRate*L0 ## velocity
 
     # ## total (engi) strain wanted: 0.02
-    totalStrain = 0.02
+    totalStrain = 0.003
     Lf=(1.+totalStrain)*L0
     totalDisplace=Lf-L0
     deltaTime=totalDisplace/vel ## total delta Time
 
     ##
-    myModel.StaticStep(name='TensionContinue',previous='Tension',description='Uniaxial Tension',
-                       timePeriod=deltaTime,
-                       adiabatic=OFF,maxNumInc=2000,
-                       stabilization=None,timeIncrementationMethod=AUTOMATIC,
-                       initialInc=minTimeInc,minInc=minTimeInc,maxInc=minTimeInc*10.,
-                       matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
+    myModel.StaticStep(
+        name='TensionContinue',previous='Tension',
+        description='Uniaxial Tension',timePeriod=deltaTime,
+        adiabatic=OFF,maxNumInc=2000,stabilization=None,
+        timeIncrementationMethod=AUTOMATIC,initialInc=minTimeInc,
+        minInc=minTimeInc,maxInc=minTimeInc*10.,
+        matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
     ## view
-    session.viewports['Viewport: 1'].assemblyDisplay.setValues(step='Tension')
-
+    session.viewports['Viewport: 1'].assemblyDisplay.setValues(
+        step='Tension')
 
     ## Modify output request
     # Field output
-    myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('E','U','S'))
+    myModel.fieldOutputRequests['F-Output-1'].setValues(
+        variables=('E','U','S'))
     # History output
-    # myModel.historyOutputRequests['H-Output-1'].setValues(variables=('E11',),region=myAssembly.sets['MidSpan'])
+    # myModel.historyOutputRequests['H-Output-1'].setValues(
+    # variables=('E11',),region=myAssembly.sets['MidSpan'])
 
     ## Apply BC
     c0=datOri.pointOn
     vs=myInstance.vertices.findAt((c0,))
     ## Encastre
-    myModel.EncastreBC(name='EncastreOri',createStepName='Tension',region=regionToolset.Region(vertices=vs))
+    myModel.EncastreBC(name='EncastreOri',createStepName='Tension',
+                       region=regionToolset.Region(vertices=vs))
     ## Symmetric constraints
-    myModel.XsymmBC(name='FixLeftEndX', createStepName='Tension',region=myInstance.sets['leftEnd'])
-    myModel.ZsymmBC(name='FixLeftEndZ', createStepName='Tension',region=myInstance.sets['leftEnd'])
-    myModel.ZsymmBC(name='FixRightEndZ',createStepName='Tension',region=myInstance.sets['rightEnd'])
-
+    myModel.XsymmBC(name='FixLeftEndX', createStepName='Tension',
+                    region=myInstance.sets['leftEnd'])
+    myModel.ZsymmBC(name='FixLeftEndZ', createStepName='Tension',
+                    region=myInstance.sets['leftEnd'])
+    myModel.ZsymmBC(name='FixRightEndZ',createStepName='Tension',
+                    region=myInstance.sets['rightEnd'])
     ## Velocity
-    myModel.VelocityBC(name='StretchX', createStepName='Tension',region=myInstance.sets['rightEnd'])
+    myModel.VelocityBC(name='StretchX', createStepName='Tension',
+                       region=myInstance.sets['rightEnd'])
     myModel.boundaryConditions['StretchX'].setValuesInStep(
-        stepName='TensionContinue',
-        v1=vel,vr3=0.)
+        stepName='TensionContinue',v1=vel,vr3=0.)
 
     ## Generate Mesh
     elemType1 = mesh.ElemType(elemCode=S4R, elemLibrary=STANDARD)
     elemType2 = mesh.ElemType(elemCode=S3,  elemLibrary=STANDARD)
     #f = myPart.faces
-    faces=myPart.faces[:]# = f.getSequenceFromMask(mask=('[#f ]', ), )
+    faces=myPart.faces[:]
     pickedRegions =(faces, )
-    myPart.setElementType(regions=pickedRegions, elemTypes=(elemType1, elemType2))
+    myPart.setElementType(regions=pickedRegions, elemTypes=(
+            elemType1, elemType2))
     myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
     #myPart.seedPart(size=0.001, minSizeFactor=0.1) ## finer meshing
     myPart.generateMesh()
@@ -226,15 +244,17 @@ def TensileOneElement(
     myAssembly.Set(elements=myInstance.elements[:],name='ORIGIN')
     myAssembly.regenerate()
 
-    myModel.HistoryOutputRequest(name='StressStrain',
-                                 createStepName='Tension',variables=('S11','E11','E22','PE11','PE22'),
-                                 region=myAssembly.sets['ORIGIN'],sectionPoints=DEFAULT,rebar=EXCLUDE)
+    myModel.HistoryOutputRequest(
+        name='StressStrain',rebar=EXCLUDE,
+        createStepName='Tension',variables=(
+            'S11','E11','E22','PE11','PE22'),
+        region=myAssembly.sets['ORIGIN'],sectionPoints=DEFAULT)
     myAssembly.regenerate()
 
     ## Create Job
     jobName='OneElement_%s'%label
-
-    mdb.Job(name=jobName,model=myModel.name,description='PythonScriptedOneElement_%s'%jobName)
+    mdb.Job(name=jobName,model=myModel.name,
+            description='PythonScriptedOneElement_%s'%jobName)
     mdb.saveAs(myModel.name)
     myJob = mdb.jobs[jobName]
     ## Multicore options
@@ -249,31 +269,50 @@ def TensileOneElement(
         ## submit the job
         myJob.submit(consistencyChecking=OFF)
 
-
         if iwait:
             ## myJob wait until completion?
             myJob.waitForCompletion()
             ## execute pp file?
             # execfile('onePP.py')
-
             #import onePP
             #onePP.main(session,'strstr_%.2f.txt'%Theta)
 
     return myModel, myJob
 
-
 ## parametric usage of TensileOneElement
 def runSingle(**kwargs):
+    """
+    Arguments
+    ---------
+    **kwargs    key-worded arguments passed to
+                TensileOneElement
+    """
     myModel, myJob = TensileOneElement(**kwargs)
 ## below is application.
 Theta = 0. ## [in degree] cSym is ccw from global (lab) axis X
 def runTensions(nth, **kwargs):
     """
+    Arguments
+    ---------
+    nth
+    **kwargs
     """
     ths=np.linspace(0,90,nth)
     for i in xrange(nth):
         myModel, myJob = TensileOneElement(
             Theta=ths[i],**kwargs)
+
+def runVarMats(**kwargs):
+    """
+    Arguments
+    ---------
+    nth
+    **kwargs
+    """
+    myMatFuncs=[abaquspy.mats.ifsteel.isoe,
+                abaquspy.mats.ifsteel.isoep]
+    for imat in xrange(len(myMatFuncs)):
+        runSingle(myMatFunc=myMatFuncs[imat],**kwargs)
 
 ## controlling job conditions
 #umatFN=None
@@ -281,10 +320,11 @@ umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
 #umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
 
 ## Job testing methods
-## testing without umat
-# runSingle(umatFN=None,iwait=False,isub=False)
-## testing without umat
-#runSingle(umatFN=umatFN)
+## runSingle(umatFN=umatFN,iwait=False,isub=False,
+##          myMatFunc=myMatFunc)
 
 ## testing at various angles
-runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False)
+#runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False)
+
+runVarMats(umatFN=None,    isub=True)
+runVarMats(umatFN=umatFN,  isub=True)

@@ -19,6 +19,7 @@ c------------------------------------------------------------------------
      4     JSTEP(4)
 
       real*8 celent, dtime,temp,dtemp
+      integer ndi,nshr,ntens
 
 c     Giving a fake name
 c      CMNAME(1:15)='FAKE_UMAT_TEST'
@@ -35,7 +36,6 @@ c     Initial values
             ddsdde(i,j)=0.d0
          enddo
       enddo
-
 
       predef(1)=0.
       dpred(1)=0.
@@ -77,7 +77,7 @@ c     Calling umat
      3     NDI,NSHR,NTENS,NSTATV,PROPS,NPROPS,COORDS,DROT,PNEWDT,
      4     CELENT,DFGRD0,DFGRD1,NOEL,NPT,LAYER,KSPT,JSTEP,KINC)
 c     Calling xit
-      call xit()
+c     call xit()
       end program main
 
 c-----------------------------------------------------------------------

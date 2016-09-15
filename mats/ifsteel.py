@@ -48,10 +48,24 @@ def plastic_iso(myMat):
     hardDatTable = hard(iopt=0,emx=0.5,nstp=100)
     myMat.Plastic(table=hardDatTable[::])
 
-
 ## isotropic case...
-def iso(myMat):
+def isoe(myMat):
     """
+    isotropic elasticity
+
+    Argument
+    --------
+    myMat
+    """
+    elastic_iso(myMat) ## isotropic elastic
+
+def isoep(myMat):
+    """
+    isotropic elasticity + isotropic plasticity + isotropic hardening
+
+    Argument
+    --------
+    myMat
     """
     elastic_iso(myMat) ## isotropic elastic
     plastic_iso(myMat) ## isotorpic plastic

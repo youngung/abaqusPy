@@ -15,10 +15,13 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
     verbose=True
     """
     import subprocess
+
+    print '-'*40
+    print 'UMAT file name'
+    print umat
+    print '-'*40
+
     nind=6 ## number of indentation used in the fortran fixed form...
-
-
-
     mxLineNo=20 ## max line number to comment out 'include' command
 
     ## UMAT subroutine Lines in list
@@ -31,7 +34,6 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
         if line[nind:nind+7].upper()=='INCLUDE':
             umatSubrLines[i]='C %s'%LinesUnderExamine[i]
         else: pass
-
 
     ## path to fake main
     fnFakeMain = 'fakemain.f'
@@ -60,7 +62,20 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
     cmd='%s %s > compile.log'%(compiler,fnTempUmat)
     print 'cmd:'
     print cmd
-    os.system(cmd)
+    iflag=os.system(cmd)
+    if iflag!=0:
+        print 'Compile failed'
+    else:
+        cmd='./a.out'
+        iflag_run=os.system(cmd)
+        if iflag_run!=0:
+            print 'Running error'
+        else:
+            print 'Running success'
+            print 'printout fort.7 the msg file'
+            cmd='cat fort.7'
+            os.system(cmd)
+
     # cmd=[compiler,fnTempUmat]
     # subprocess.check_output(cmd)
 
@@ -70,7 +85,6 @@ if __name__=='__main__':
     ## Paths to UMAT files
     default_UMAT_FN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
     # default_UMAT_FN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
-
 
     import argparse, os
 
