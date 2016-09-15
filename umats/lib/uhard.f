@@ -20,7 +20,8 @@ c     hard(3): \partial(syield)/\partial(temperature)
 
 c     hard(1)=0 !! default
 
-c     IF steel: 403.23, 273.35, 11.95, 191.29
+
+c     IF steel: 303.23, 273.35, 11.95, 191.29
       a = 403.23d6
       b0= 273.35d6
       c = 11.95d6

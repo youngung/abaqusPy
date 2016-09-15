@@ -67,10 +67,10 @@ def TensileOneElement(
 
     label='%2.2i'%int(Theta)
 
-    if type(umatFN)!=type(None):
-        label='%s_noUMAT'%label
+    if type(umatFN)==type(None):
+        label='%s_UMAT_None'%label
     else:
-        label='%s_wtUMAT'%label
+        label='%s_UMAT_%s'%(label,os.path.split(umatFN)[-1].split('.')[0])
 
     myModel = mdb.Model(name='OneEL_%s'%label)
 
@@ -171,8 +171,8 @@ def TensileOneElement(
     L0=1.*length ## one element
     vel=epsRate*L0 ## velocity
 
-    # ## total (engi) strain wanted: 0.2
-    totalStrain = 0.1
+    # ## total (engi) strain wanted: 0.02
+    totalStrain = 0.02
     Lf=(1.+totalStrain)*L0
     totalDisplace=Lf-L0
     deltaTime=totalDisplace/vel ## total delta Time
@@ -262,7 +262,6 @@ def TensileOneElement(
     return myModel, myJob
 
 
-
 ## parametric usage of TensileOneElement
 def runSingle(**kwargs):
     myModel, myJob = TensileOneElement(**kwargs)
@@ -279,6 +278,7 @@ def runTensions(nth, **kwargs):
 ## controlling job conditions
 umatFN=None
 #umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
+umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
 
 ## Job testing methods
 ## testing without umat
