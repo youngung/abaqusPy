@@ -238,7 +238,7 @@ def TensileOneElement(
     mdb.saveAs(myModel.name)
     myJob = mdb.jobs[jobName]
     ## Multicore options
-    myJob.setValues(numCpus=4,numDomains=4)
+    # myJob.setValues(numCpus=4,numDomains=4)
 
     ## Flag to use a User Material subroutine
     if type(umatFN)!=type(None):

@@ -2,39 +2,6 @@
 Compiling test for umats.
 """
 
-
-## Umat header that includes program
-# UmatHeader="""
-# program main
-# write(*,*)'Hi, someone testing a umat'
-# end
-# """
-
-# UmatSubrXit="""
-# subroutine xit
-# write(*,*) 'Hello, Subroutine xit was called.'
-# return
-# end subroutine xit
-# """
-
-
-def string2IndentedLines(string='',nind=6):
-    """
-    Get string and split them into lines contained in a list.
-    For each line, add indents specified by nindent.
-    The new lines are returned as a list.
-
-    Arguments
-    ---------
-    string
-    nind = 6
-    """
-    lines=string.split('\n')
-    indent=' '*nind ## spacing
-    for i in xrange(len(lines)):
-        lines[i]='%s%s'%(indent,lines[i])
-    return lines
-
 def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
          verbose=True):
     """
@@ -63,7 +30,6 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
         line = LinesUnderExamine[i]
         if line[nind:nind+7].upper()=='INCLUDE':
             umatSubrLines[i]='C %s'%LinesUnderExamine[i]
-            print 'Found INCLUDE line and commented out'
         else: pass
 
 
@@ -71,16 +37,7 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
     fnFakeMain = 'fakemain.f'
     mainLines = open(fnFakeMain, 'r').read().split('\n')
 
-
-
-    # ## UMAT Head Lines in list
-    # umatHeadLines=string2IndentedLines(string=UmatHeader,nind=nind)
-    # ## UMAT xit Lines in list
-    # umatXitLines=string2IndentedLines(string=UmatSubrXit,nind=nind)
-    # umatProgram = umatHeadLines+umatSubrLines+umatXitLines
-
     umatProgram = mainLines+umatSubrLines
-
 
     s=''
     for i in xrange(len(umatProgram)):
@@ -96,9 +53,10 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
 
     if verbose: print s
 
-
     ## compiling option
-    compiler='gfortran'
+    # compiler='gfortran'  ## GNU fortran compiler
+    compiler='ifort'     ## intel fortran compiler
+
     cmd='%s %s > compile.log'%(compiler,fnTempUmat)
     print 'cmd:'
     print cmd
@@ -106,20 +64,22 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
     # cmd=[compiler,fnTempUmat]
     # subprocess.check_output(cmd)
 
-
-
 ## Command line usage will be much easier to use.
 if __name__=='__main__':
+
+    ## Paths to UMAT files
+    # default_UMAT_FN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
+    default_UMAT_FN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
+
+
     import argparse, os
 
     parser = argparse.ArgumentParser()
-
     parser.add_argument(
         '-umat',type=str,help='UMAT file (full-pathed)',
-        default='/home/younguj/repo/abaqusPy/umats/el/iso.f')
-    parser.add_argument(
-        '-v',action='store_true',
-        help='Verbose flag')
+        default=default_UMAT_FN)
+    parser.add_argument('-v',action='store_true',
+                        help='Verbose flag')
 
     args = parser.parse_args()
     main(umat=args.umat,verbose=args.v)

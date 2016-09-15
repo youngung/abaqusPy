@@ -13,8 +13,21 @@
       return
       end function vm
 
-c     calculate Von Mises deviator and flow direction
-      subroutine vm_devi_flow(stress,devi,hydro,flow,ntens)
+c     Calculate Von Mises deviator and flow direction
+      subroutine vm_devi_flow(stress,devi,shydro,flow,ntens,ndi)
+      integer ntens,ndi
       dimension stress(ntens),devi(ntens),flow(ntens)
-      real*8 hydro
+      real*8 shydro, smises
+
+      smises = vm(stress,ndi,ntens)
+      call deviat(stress,devi,shydro)
+      do i=1,ndi
+         flow(i) = (stress(i)-shydro)/smises
       enddo
+      do i=ndi+1,ntens
+         flow(i) = stress(i) / smises
+      enddo
+      return
+      end subroutine vm_devi_flow
+
+      include "/home/younguj/repo/abaqusPy/umats/lib/dev.f"

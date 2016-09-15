@@ -52,4 +52,5 @@ c     updates stress
 
       return
       end subroutine umat
-      include "../lib/elast.f"
+
+      include "/home/younguj/repo/abaqusPy/umats/lib/elast.f"
