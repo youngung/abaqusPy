@@ -1,7 +1,6 @@
 """
 """
-
-import os
+import os, glob
 path_site_packages='/home/younguj/anaconda2/lib/python2.7/site-packages/'
 os.sys.path.append(path_site_packages)
 
@@ -15,4 +14,16 @@ dat=np.array(ref_dat).T
 stress=dat[0]; strain=dat[1]
 ref_dat=np.array([strain,stress])
 
-abaquspy.plots.plotter.strstr(fn='strstr.txt',ref_dat=ref_dat)
+fnsRst=glob.glob('OneElement_??_*.txt')
+fig=None
+for i in xrange(len(fnsRst)):
+    if i==0: rd=ref_dat
+    else: rd=None
+    fn = fnsRst[i]
+    fig=abaquspy.plots.plotter.strstr(
+        fn=fnsRst[i],ref_dat=rd,label=fn,fig=fig)
+
+fnFig='OneElementResult.pdf'
+fig.tight_layout()
+fig.savefig(fnFig,bbox_to_inches='tight')
+print 'Flow stress curve saved to %s'%(fnFig)

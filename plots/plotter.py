@@ -14,27 +14,45 @@ if checkX.main()!=0:
 
 import numpy as np
 import matplotlib.pyplot as plt
+import MP.lib.mpl_lib
 
-def strstr(fn=None,ref_dat=None):
+
+def strstr(fn=None,ref_dat=None,label=None,fig=None):
     """
-    Argument
-    --------
+    Arguments
+    ---------
     fn
     ref_dat
+    label
+    fig
+
+    Returns
+    -------
+    fig
     """
     dat=np.loadtxt(fn).T
 
-    fig=plt.figure(figsize=(3.5,3))
-    ax=fig.add_subplot(111)
-    ax.plot(dat[0],dat[1]*1e-6,label='Abaqus one element')
+    if type(fig)==type(None):
+        fig = plt.figure(figsize=(3.5,3))
+        ax  = fig.add_subplot(111)
+    elif len(fig.axes)!=1:
+        raise SyntaxError, 'Expected a single axis'
+    else:
+        ax=fig.axes[0]
+
+    if type(label)==type(None):
+        label='Abaqus one element test'
+
+    ax.plot(dat[0],dat[1]*1e-6,label=label)
 
     if type(ref_dat)!=type(None):
         ax.plot(ref_dat[0],ref_dat[1]*1e-6,label='Ref Data')
 
     ax.set_xlabel(r'$E_{11}$')
     ax.set_ylabel(r'$S_{11}$ [MPa]')
-    ax.legend(fontsize=8)
-    fnFig='%s.pdf'%fn.split('.')[0]
-    fig.tight_layout()
-    fig.savefig(fnFig,bbox_to_inches='tight')
-    print 'Flow stress curve from %s saved to %s'%(fn,fnFig)
+    ax.legend(fontsize=6,loc='best')
+
+    MP.lib.mpl_lib.ticks_bins(ax,axis='x',n=4)
+    MP.lib.mpl_lib.ticks_bins(ax,axis='y',n=4)
+
+    return fig

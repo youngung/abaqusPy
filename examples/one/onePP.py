@@ -9,7 +9,7 @@ import os
 
 import numpy as np
 
-def main(session,fnout='strstr.txt'):
+def main(session=None,fnout='strstr.txt',fnOdb=None):
     """
 
     Arguments
@@ -17,7 +17,7 @@ def main(session,fnout='strstr.txt'):
     session  : abaqus session object
     fnout    : output filename
     """
-    fnOdb=os.path.join(os.getcwd(),'OneElement.odb')
+    # fnOdb=os.path.join(os.getcwd(),'OneElement.odb')
     print 'fnOdb:',fnOdb
     odb = session.openOdb(name=fnOdb)
 
@@ -71,6 +71,16 @@ def main(session,fnout='strstr.txt'):
     #odb = session.odbs['/home/younguj/abaqus/exercise/uten/one/OneElement.odb']
 
     ## total strain
+
+    if odb.rootAssembly.instances.__len__()>1:
+        print 'warning: expected single instance but found multiple'
+    if odb.sections.__len__()>1:
+        print 'warning: expected single section but found multiple'
+
+    myInstancName = odb.rootAssembly.instances.keys()[0]
+    mySectionName = odb.sections.keys()[0]
+
+
     e11=odb.steps['TensionContinue'].historyRegions[
         'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['E11'].data
     pe11=odb.steps['TensionContinue'].historyRegions[
@@ -86,8 +96,21 @@ def main(session,fnout='strstr.txt'):
     s11=s11[:,1]
     e11=e11[:,1];
     pe11=pe11[:,1];
-    pe22=pe22[:,1]; 
+    pe22=pe22[:,1];
 
     FlowCurve=np.array([e11,s11,pe11,pe22,time]).T
     fnFlowCurve=os.path.join(fnout)
     np.savetxt(fnFlowCurve,FlowCurve)
+
+    print 'fnFlowCurve file %s has been saved using onePP.py'%fnFlowCurve
+
+    return odb
+
+print '\n\n\n'
+
+import glob
+fns=glob.glob('*.odb')
+#(session=None,fnout='strstr.txt',fnOdb=None
+for i in xrange(len(fns)):
+    print 'Concerned file name:',fns[i]
+    main(session=session,fnout=fns[i].split('.odb')[0]+'.txt',fnOdb=fns[i])
