@@ -20,13 +20,12 @@ c     hard(3): \partial(syield)/\partial(temperature)
 
 c     hard(1)=0 !! default
 
-
 c     IF steel: 303.23, 273.35, 11.95, 191.29
-      a = 403.23d6
-      b0= 273.35d6
-      c = 11.95d6
-      b1=191.29d6
-      call voce(eqplas,a,b0,c,b1, syield, hard(1))
+      a  = 403.23d6
+      b0 = 273.35d6
+      c  =  11.95d6
+      b1 = 191.29d6
+      call voce(eqplas,a,b0,c,b1,syield,hard(1))
       RETURN
       END SUBROUTINE UHARD
 

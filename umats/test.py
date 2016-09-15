@@ -68,8 +68,8 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
 if __name__=='__main__':
 
     ## Paths to UMAT files
-    # default_UMAT_FN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
-    default_UMAT_FN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
+    default_UMAT_FN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
+    # default_UMAT_FN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
 
 
     import argparse, os

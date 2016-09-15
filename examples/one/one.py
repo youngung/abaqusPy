@@ -276,9 +276,9 @@ def runTensions(nth, **kwargs):
             Theta=ths[i],**kwargs)
 
 ## controlling job conditions
-umatFN=None
-#umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
-umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
+#umatFN=None
+umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
+#umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
 
 ## Job testing methods
 ## testing without umat
@@ -287,4 +287,4 @@ umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
 #runSingle(umatFN=umatFN)
 
 ## testing at various angles
-runTensions(nth=3,umatFN=umatFN,isub=True,iwait=False)
+runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False)
