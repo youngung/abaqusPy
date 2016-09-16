@@ -176,11 +176,11 @@ def TensileOneElement(
     myInstance=myAssembly.instances['MySpecimen']
 
     ### Create a static general step
-    myModel.StaticStep(
-        name='Tension',previous='Initial',description='Uniaxial tension',
-        timePeriod=1,adiabatic=OFF,maxNumInc=100,stabilization=None,
-        timeIncrementationMethod=AUTOMATIC,initialInc=1,minInc=1e-5,
-        maxInc=1,matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
+    #myModel.StaticStep(
+    #    name='Tension',previous='Initial',description='Uniaxial tension',
+    #    timePeriod=1,adiabatic=OFF,maxNumInc=100,stabilization=None,
+    #    timeIncrementationMethod=AUTOMATIC,initialInc=1,minInc=1e-5,
+    #    maxInc=1,matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
 
     ### Define boundary conditions...
     epsRate=1e-3 #0.001/sec
@@ -198,7 +198,7 @@ def TensileOneElement(
 
     ##
     myModel.StaticStep(
-        name='TensionContinue',previous='Tension',
+        name='TensionContinue',previous='Initial',
         description='Uniaxial Tension',timePeriod=deltaTime,
         adiabatic=OFF,maxNumInc=2000,stabilization=None,
         timeIncrementationMethod=AUTOMATIC,initialInc=minTimeInc,
@@ -206,7 +206,7 @@ def TensileOneElement(
         matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
     ## view
     session.viewports['Viewport: 1'].assemblyDisplay.setValues(
-        step='Tension')
+        step='TensionContinue')
 
     ## Modify output request
     # Field output
@@ -220,17 +220,17 @@ def TensileOneElement(
     c0=datOri.pointOn
     vs=myInstance.vertices.findAt((c0,))
     ## Encastre
-    myModel.EncastreBC(name='EncastreOri',createStepName='Tension',
+    myModel.EncastreBC(name='EncastreOri',createStepName='Initial',
                        region=regionToolset.Region(vertices=vs))
     ## Symmetric constraints
-    myModel.XsymmBC(name='FixLeftEndX', createStepName='Tension',
+    myModel.XsymmBC(name='FixLeftEndX', createStepName='Initial',
                     region=myInstance.sets['leftEnd'])
-    myModel.ZsymmBC(name='FixLeftEndZ', createStepName='Tension',
+    myModel.ZsymmBC(name='FixLeftEndZ', createStepName='Initial',
                     region=myInstance.sets['leftEnd'])
-    myModel.ZsymmBC(name='FixRightEndZ',createStepName='Tension',
+    myModel.ZsymmBC(name='FixRightEndZ',createStepName='Initial',
                     region=myInstance.sets['rightEnd'])
     ## Velocity
-    myModel.VelocityBC(name='StretchX', createStepName='Tension',
+    myModel.VelocityBC(name='StretchX', createStepName='Initial',
                        region=myInstance.sets['rightEnd'])
     myModel.boundaryConditions['StretchX'].setValuesInStep(
         stepName='TensionContinue',v1=vel,vr3=0.)
@@ -252,7 +252,7 @@ def TensileOneElement(
 
     myModel.HistoryOutputRequest(
         name='StressStrain',rebar=EXCLUDE,
-        createStepName='Tension',variables=(
+        createStepName='TensionContinue',variables=(
             'S11','E11','E22','PE11','PE22'),
         region=myAssembly.sets['ORIGIN'],sectionPoints=DEFAULT)
     myAssembly.regenerate()
@@ -326,7 +326,7 @@ def runVarMats(**kwargs):
 umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
 
 ## Job testing methods
-runSingle(umatFN=umatFN,iwait=False,isub=False)
+runSingle(umatFN=umatFN,iwait=True,isub=True)
 
 ## testing at various angles
 #runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False)
