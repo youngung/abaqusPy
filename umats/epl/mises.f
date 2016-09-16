@@ -21,7 +21,6 @@ c$$$  End of ABAQUS UMAT Interface
       parameter(one=1d0,two=2d0,three=3d0,six=6d0,enumax=0.4999d0,
      $     newton=10,toler=1d-6)
 
-
 c$$$  local arrays
 c               eps^el        eps^pl        flow directions
       dimension eelas(ntens), eplas(ntens), flow(ntens),
@@ -29,15 +28,22 @@ c               eps^el        eps^pl        flow directions
 
 c$$$  Assuming real*8
       real*8 dtime,temp,dtemp,celent,smises,shydro,eg3,deqpl,f,fp,
-     $     hard
+     $     hard,mpa,gpa
       integer imsg,k,i,j,kewton
+      mpa=1.e6
+      gpa=1.e9
 
       imsg=7
+      call w_empty_lines(imsg,3)
       write(imsg,'(a)') "Beginning of the UMAT"
-
-      if (ndi.eq.2 .and.nshr.eq.1) then
-         write(imsg,'(a)') 'S11,S22,S12 are available: plane-stress'
-      endif
+      write(imsg,'(a,i5)') 'NOEL:',NOEL
+      write(imsg,'(a,i5)') 'NPT:',NPT
+      write(imsg,'(3a13)')'time1','time2', 'dtime'
+      write(imsg,'(3e13.3)') (time(i),i=1,2), dtime
+      write(imsg,*)
+      write(imsg,'(a10,i5)')"kinc :",kinc
+      write(imsg,'(a10,4i5)')"jstep:",jstep
+      write(imsg,'(a10,i5)')"kspt :",kstp
 
 c$$$  Elastic properties
 c$$$      props(1) = 200.d9
@@ -49,12 +55,15 @@ c$$$      props(2) = 0.3
       eg3 = emod/(one+enu)/two*three
 
       write(imsg,'(a)') "After emod_iso"
-
       write(imsg,'(a,i)') 'ntens:', ntens
       write(imsg,'(a,i)') 'nshr:', nshr
+      write(imsg,'(a4)') 'DROT'
+      call w33f(imsg,drot)
+      write(imsg,'(a)') '-----------------'
 
 c     printout elastic modulus
       if (kinc.eq.1 .and. noel.eq.1) then
+         write(imsg,'(a)')'DDSDDE'
          do i=1,ntens
             write(imsg,'(6e13.2)') (ddsdde(i,j),j=1,ntens)
          enddo
@@ -70,8 +79,15 @@ c$$$
       call rotsig(statev(ntens+1),drot,eplas,2,ndi,nshr)
 
       write(imsg,'(a)') "After rotsig"
+      write(imsg,'(a)') 'eelas'
+      call w_dim(imsg,eelas,ntens)
+      write(imsg,'(a)') 'eplas'
+      call w_dim(imsg,eplas,ntens)
+      write(imsg,'(a)') 'dstrans'
+      call w_dim(imsg,dstrans,ntens)
 
       eqplas=statev(1+2*ntens)  ! equivalent plastic strain
+      write(imsg,'(a,e13.3)') 'Eqv pl strain:',eqplas
 c$$$
 c$$$  Caclulate predictor stress and elastic strain
 c$$$
@@ -82,21 +98,24 @@ c           !multiply by total strain increment
          enddo
          eelas(i) = eelas(i) + dstran(i)
       enddo
+      write(imsg,'(a)') 'stress'
+      !call w_dim(imsg,stress,ntens)
 c$$$
 c$$$  Calculate equivalent Von Mises stress
 c$$$
       smises = vm(stress,ndi,ntens)
+      !write(imsg,'(a,e13.3)') 'vm:', smises
 
       nvalue=nprops/2-1
       call UHARD(SYIEL0,HARD,EQPLAS,EQPLASRT,TIME,DTIME,TEMP,
      1     DTEMP,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,CMNAME,NSTATV,
      2     STATEV,NUMFIELDV,PREDEF,DPRED,NUMPROPS,PROPS)
       write(imsg,'(a)') "After uhard"
+      write(imsg,'(a,f13.3)')'syiel0 [MPa]:',syiel0/mpa
 
 c$$$
 c$$$  Determine if actively yielding
 c$$$
-
 
       if (smises.gt.(one+toler)*syiel0) then
 c        obtain plastic flow direction
@@ -123,17 +142,15 @@ c
             f     = smises-eg3*deqpl-syield
             fp    = -eg3-hard(1)
             deqpl = deqpl - f / fp
-
+            write(imsg,'(a)')'NR Step:',kewton
+            write(imsg,'(a,e13.3)')'deqpl:',deqpl
             if (abs(f).lt.toler*syield0) goto 10
-
             call uhard(syield,hard,eqplas+deqpl,eqplasrt,time,dtime,temp,
      1           dtemp,noel,npt,layer,kspt,kstep,kinc,cmname,nstatv,
      2           statev,numfieldv,predef,dpred,numprops,props)
-
-            write(imsg,'(a)') "After uhard"
+            write(imsg,'(a,e13.3)')'syield',syield
 
          enddo                  ! End of NR iteration
-
 
          write(imsg,'(a)') "*** Warning - Plasticity NR
      $did not converge"
@@ -166,15 +183,20 @@ c$$$
 c$$$  Formulate the jacobian (material tangent)
 c$$$  First calculate effective moduli
 c$$$
+      else
+         write(imsg,'(a)') '*********************'
+         write(imsg,'(a)') '** Remains ELASTIC **'
+         write(imsg,'(a)') '*********************'
       endif                     ! end of plasticity case
 
       return
       end subroutine umat
 
-!     iso elastic
+c     iso elastic
       include "/home/younguj/repo/abaqusPy/umats/lib/elast.f"
-!     UHARD using Voce
+c     UHARD using Voce
       include "/home/younguj/repo/abaqusPy/umats/lib/uhard.f"
 c     Von Mises
       include "/home/younguj/repo/abaqusPy/umats/lib/vm.f"
-
+c     lib.f
+      include "/home/younguj/repo/abaqusPy/umats/lib/lib.f"
