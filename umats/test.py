@@ -2,6 +2,22 @@
 Compiling test for umats.
 """
 
+def loadModules():
+    """
+    Load modules necessary in Palmetto
+    """
+    import os
+    modules=['abaqus/6.14','intel/16.0']
+
+    cmd='module load'
+    for module in modules:
+        cmd ='%s %s'%(cmd,module)
+
+    print 'cmd:'
+    print cmd
+    os.system(cmd)
+
+
 def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
          verbose=True):
     """
@@ -15,6 +31,8 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
     verbose=True
     """
     import subprocess
+
+    loadModules()
 
     print '-'*40
     print 'UMAT file name'
@@ -76,11 +94,32 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
             cmd='cat fort.7'
             os.system(cmd)
 
+            ## add umat
+            path_home = os.getcwd()
+            path_run = os.path.split(umat)[0]
+            os.chdir(path_run)
+            cmd ='abaqus make library=%s'%(umat)
+            os.system(cmd)
+            os.chdir(path_home)
+
+
     # cmd=[compiler,fnTempUmat]
     # subprocess.check_output(cmd)
 
 ## Command line usage will be much easier to use.
 if __name__=='__main__':
+
+
+    ## add more libraries as progress
+    libraries=['/home/younguj/repo/abaqusPy/umats/el/iso.f',
+               '/home/younguj/repo/abaqusPy/umats/epl/mises.f']
+    print '-'*72
+    print 'Available libraries'
+    for lib in libraries:
+        print lib
+    print '-'*72
+
+
 
     ## Paths to UMAT files
     default_UMAT_FN='/home/younguj/repo/abaqusPy/umats/el/iso.f'

@@ -9,17 +9,16 @@ import os
 
 import numpy as np
 
-def main(session=None,fnout='strstr.txt',fnOdb=None):
+def main(fnout='strstr.txt',fnOdb=None):
     """
 
     Arguments
     ---------
-    session  : abaqus session object
     fnout    : output filename
     """
     # fnOdb=os.path.join(os.getcwd(),'OneElement.odb')
     print 'fnOdb:',fnOdb
-    odb = session.openOdb(name=fnOdb)
+    odb = openOdb(fnOdb)
 
     ## Analyze the model
     print 'Instances in the assembly'
@@ -52,9 +51,6 @@ def main(session=None,fnout='strstr.txt',fnOdb=None):
                 nu=dataline[1]
                 print '%9.1f %6s %9.1f'%(y*1e-9,'[GPa]',nu)
 
-    session.viewports['Viewport: 1'].setValues(displayedObject=odb)
-    odbName=session.viewports['Viewport: 1'].odbDisplay.name
-
     print '%5s %20s %20s'%('Id','Step Name','Description')
     stepContainer = odb.steps.keys()
     for key in odb.steps.keys():
@@ -68,10 +64,7 @@ def main(session=None,fnout='strstr.txt',fnOdb=None):
     nFrame=lastFrame.frameId
 
     ## extract E11/S11
-    #odb = session.odbs['/home/younguj/abaqus/exercise/uten/one/OneElement.odb']
-
     ## total strain
-
     if odb.rootAssembly.instances.__len__()>1:
         print 'warning: expected single instance but found multiple'
     if odb.sections.__len__()>1:
@@ -110,7 +103,7 @@ print '\n\n\n'
 
 import glob
 fns=glob.glob('*.odb')
-#(session=None,fnout='strstr.txt',fnOdb=None
+#(fnout='strstr.txt',fnOdb=None
 for i in xrange(len(fns)):
     print 'Concerned file name:',fns[i]
-    main(session=session,fnout=fns[i].split('.odb')[0]+'.txt',fnOdb=fns[i])
+    main(fnout=fns[i].split('.odb')[0]+'.txt',fnOdb=fns[i])

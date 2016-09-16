@@ -38,10 +38,10 @@ c$$$c     PROPS(2) - Nu  Poisson's ratio
      $three direct (normal) stress components'
          call xit               ! exit
       endif
-c$$$      emod =props(1)
-c$$$      enu = props(2)
-      emod=300d9
-      enu=0.3
+      emod =props(1)
+      enu = props(2)
+c$$$      emod=300d9
+c$$$      enu=0.3
 c     initialization
       do i=1,ntens
          do j=1,ntens
@@ -64,12 +64,13 @@ c     off-diagonal terms
       enddo
 
       do i=1,3
-         ddsdde(i,i) = (one-enu)*x ! overwrite the diganogal term
+c        overwrite the diganogal term
+         ddsdde(i,i) = (one-enu)*x
+c        digonal terms
          ddsdde(i+3,i+3) = (one-two*enu)/two * x
       enddo
 
 !     call emod_iso(emod,enu,ddsdde) ! isotropic elastic modulus
-
       if (kinc.eq.1 .and. noel.eq.1) then
          do i=1,ntens
             write(imsg,'(6e13.2)') (ddsdde(i,j),j=1,ntens)
@@ -87,8 +88,6 @@ c     updates stress
 
       return
       end subroutine umat
-
-
 c$$$      
 c$$$
 c$$$      subroutine emod_iso(e,nu,c)

@@ -32,30 +32,45 @@ c$$$  Assuming real*8
      $     hard
       integer imsg,k,i,j,kewton
 
-      
       imsg=7
+      write(imsg,'(a)') "Beginning of the UMAT"
 
-      if (ndi.ne.3) then
-         write(imsg,*)'This UMAT may only be used for elements with
-     $three direct (normal) stress components'
-         call xit               ! exit
+      if (ndi.eq.2 .and.nshr.eq.1) then
+         write(imsg,'(a)') 'S11,S22,S12 are available: plane-stress'
       endif
-c$$$
-c$$$  Elastic properties
-c$$$
-      props(1) = 200.d9
-      props(2) = 0.3
 
+c$$$  Elastic properties
+c$$$      props(1) = 200.d9
+c$$$      props(2) = 0.3
       emod = props(1)
       enu  = props(2)
-      call emod_iso(emod,enu,ddsdde) ! isotropic elastic modulus
+      ! call emod_iso(emod,enu,ddsdde) ! isotropic elastic modulus
+      call emod_iso_shell(emod,enu,ddsdde)
       eg3 = emod/(one+enu)/two*three
+
+      write(imsg,'(a)') "After emod_iso"
+
+      write(imsg,'(a,i)') 'ntens:', ntens
+      write(imsg,'(a,i)') 'nshr:', nshr
+
+c     printout elastic modulus
+      if (kinc.eq.1 .and. noel.eq.1) then
+         do i=1,ntens
+            write(imsg,'(6e13.2)') (ddsdde(i,j),j=1,ntens)
+         enddo
+         write(msg,'(a)')'----------------------------------------------------
+     $--------------------'
+      endif
 
 c$$$
 c$$$  Recover elastic and plastic strains and rotate forward
 c$$$
+      write(*,*) statev
       call rotsig(statev(      1),drot,eelas,2,ndi,nshr)
       call rotsig(statev(ntens+1),drot,eplas,2,ndi,nshr)
+
+      write(imsg,'(a)') "After rotsig"
+
       eqplas=statev(1+2*ntens)  ! equivalent plastic strain
 c$$$
 c$$$  Caclulate predictor stress and elastic strain
@@ -76,12 +91,19 @@ c$$$
       call UHARD(SYIEL0,HARD,EQPLAS,EQPLASRT,TIME,DTIME,TEMP,
      1     DTEMP,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,CMNAME,NSTATV,
      2     STATEV,NUMFIELDV,PREDEF,DPRED,NUMPROPS,PROPS)
+      write(imsg,'(a)') "After uhard"
+
 c$$$
 c$$$  Determine if actively yielding
 c$$$
+
+
       if (smises.gt.(one+toler)*syiel0) then
 c        obtain plastic flow direction
          call vm_devi_flow(stress,sdeviator,shydro,flow,ntens,ndi)
+
+
+         write(imsg,'(a)') "After vm_devi_flow"
 
 c        solve for equivalent von mises stress
 c        and equivalent plastic strain increment using newton iteration
@@ -108,12 +130,15 @@ c
      1           dtemp,noel,npt,layer,kspt,kstep,kinc,cmname,nstatv,
      2           statev,numfieldv,predef,dpred,numprops,props)
 
+            write(imsg,'(a)') "After uhard"
+
          enddo                  ! End of NR iteration
 
 
          write(imsg,'(a)') "*** Warning - Plasticity NR
      $did not converge"
  10      continue
+         write(imsg,'(a,i)') " NR converged at kinc", kinc
 
 c$$$
 c$$$  Update stress, elastic and plastic strains and
