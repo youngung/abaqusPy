@@ -5,13 +5,16 @@ c     combined hardening models
      1     DTEMP,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,CMNAME,NSTATV,
      2     STATEV,NUMFIELDV,PREDEF,DPRED,NUMPROPS,PROPS)
 C
+c      implicit none
       INCLUDE 'ABA_PARAM.INC'
 C
       CHARACTER*80 CMNAME
       DIMENSION HARD(3),STATEV(NSTATV),TIME(*),
      $     PREDEF(NUMFIELDV),DPRED(*),PROPS(*)
-      real*8 a,b0,c,b1,mpa,syield,hard,eqplas,eqplasrt,dsig
-      integer imsg
+      real*8 a,b0,c,b1,mpa,syield,hard,eqplas,eqplasrt,dsig,
+     $     time,dtime,temp,dtemp,statev,predef,dpred,props
+      integer imsg,nodel,npt,layer,kstp,kstep,kinc,nstatv
+      integer numfieldv,numprops
       imsg = 7
       mpa  = 1.e6
 
