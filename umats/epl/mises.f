@@ -142,9 +142,13 @@ c
             f     = smises-eg3*deqpl-syield
             fp    = -eg3-hard(1)
             deqpl = deqpl - f / fp
-            write(imsg,'(a)')'NR Step:',kewton
+
+            write(imsg,'(a,i3)')'NR Step:',kewton
             write(imsg,'(a,e13.3)')'deqpl:',deqpl
-            if (abs(f).lt.toler*syield0) goto 10
+            write(imsg,'(a,e13.3)') 'f :',f
+            write(imsg,'(a,e13.3)') 'fp:',fp
+            write(imsg,'(a,e13.3)')'eqplas+deqpl:',eqplas+deqpl
+            if (abs(f).lt.toler*syiel0) goto 10
             call uhard(syield,hard,eqplas+deqpl,eqplasrt,time,dtime,temp,
      1           dtemp,noel,npt,layer,kspt,kstep,kinc,cmname,nstatv,
      2           statev,numfieldv,predef,dpred,numprops,props)
