@@ -191,7 +191,7 @@ def TensileOneElement(
     vel=epsRate*L0 ## velocity
 
     ### total (engi) strain wanted: 0.02
-    totalStrain = 0.003
+    totalStrain = 0.20
     Lf=(1.+totalStrain)*L0
     totalDisplace=Lf-L0
     deltaTime=totalDisplace/vel ## total delta Time

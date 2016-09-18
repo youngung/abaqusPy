@@ -50,7 +50,7 @@ c     ibr: flag to insert line-breaker
       implicit none
       character*80 fmt
       integer ndi,nshr,imsg,i,j
-      real*8 array(ndi),fact, mxval,get_mx,mxv
+      real*8 array(ndi),fact,mxval,get_mx,mxv
       logical ibr
       mxv = get_mx(array,ndi)
       if (mxv.le.1.) then

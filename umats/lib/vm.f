@@ -58,12 +58,12 @@ c     Calculate Von Mises deviator and flow direction
          flow(i) = stress(i) / smises
       enddo
 
-      write(*,'(a)',advance='no')'----'
-      write(*,'(e13.3)', advance='no') smises
-      write(*,'(3e13.3)',advance='no') (stress(i),i=1,ntens)
-      write(*,'(3e13.3)',advance='no') (flow(i),i=1,ntens)
-      write(*,'(a)',advance='no')'----'
-      write(*,*)
+c$$$      write(*,'(a)',advance='no')'----'
+c$$$      write(*,'(e13.3)', advance='no') smises
+c$$$      write(*,'(3e13.3)',advance='no') (stress(i),i=1,ntens)
+c$$$      write(*,'(3e13.3)',advance='no') (flow(i),i=1,ntens)
+c$$$      write(*,'(a)',advance='no')'----'
+c$$$      write(*,*)
 
       return
       end subroutine vm_devi_flow

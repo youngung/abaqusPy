@@ -5,8 +5,8 @@ c$$$  ABAQUS UMAT Interface.
      3     NDI,NSHR,NTENS,NSTATV,PROPS,NPROPS,COORDS,DROT,PNEWDT,
      4     CELENT,DFGRD0,DFGRD1,NOEL,NPT,LAYER,KSPT,JSTEP,KINC)
 C
-      INCLUDE 'ABA_PARAM.INC'
-c      implicit none  !! to test the namespace in UMAT
+c      INCLUDE 'ABA_PARAM.INC'
+      implicit none  !! to test the namespace in UMAT
 C
       CHARACTER*80 CMNAME
       DIMENSION STRESS(NTENS),STATEV(NSTATV),
@@ -26,16 +26,17 @@ c-----------------------------------------------------------------------
      $     KINC,kstep
       real*8 STRESS,STATEV,DDSDDE,SSE,SPD,SCD,RPL,DDSDDT,DRPLDE,DRPLDT,
      $     STRAN,DSTRAN,TIME,DTIME,TEMP,DTEMP,PREDEF,DPRED,PROPS,COORDS,
-     $     DROT,PNEWDT,CELENT,DFGRD0,DFGRD1
+     $     DROT,PNEWDT,CELENT,DFGRD0,DFGRD1,syield
 
 c$$$  local arrays
       dimension eelas(ntens),eplas(ntens),flow(ntens),sdeviator(ntens),
      $     hard(3)
       real*8 zero,one,two,three,six,enumax,toler
       real*8 eqplas,syiel0,hard,sdeviator,mpa,gpa,emod,enu,f,fp,eg3,
-     $     deqpl,smises,shydro,flow,G,kappa,mus,lams,hs,labs
+     $     deqpl,smises,shydro,flow,G,ekappa,emus,hs,elabs,eelas,
+     $     eplas,eqplasrt
       integer imsg,idia,k,i,j,NUMFIELDV,numprops,kewton,newton
-      logical isnan,idiaw
+      logical isnan,idiaw,isnan_in_marr
       parameter(zero=0.d0,one=1d0,two=2d0,three=3d0,six=6d0,
      $     enumax=0.4999d0,newton=10,toler=1d-6)
       mpa=1.e6
@@ -75,9 +76,9 @@ c$$$      props(2) = 0.3
       emod = props(1)
       enu  = props(2)
       ! call emod_iso(emod,enu,ddsdde) ! isotropic elastic modulus
-      call emod_iso_shell(emod,enu,G,kappa,ddsdde)
+      call emod_iso_shell(emod,enu,G,ekappa,ddsdde)
       write(imsg,'(a,f7.1)')'G     [GPa]:',G/gpa
-      write(imsg,'(a,f7.1)')'kappa [GPa]:',kappa/gpa
+      write(imsg,'(a,f7.1)')'kappa [GPa]:',ekappa/gpa
       eg3 = emod/(one+enu)/two*three
 
       write(imsg,'(a)') "After emod_iso"
@@ -99,18 +100,18 @@ c     printout elastic modulus
 c$$$
 c$$$  Recover elastic and plastic strains and rotate forward
 c$$$
-      write(imsg,'(a)') 'dstrans'
-      call w_dim(imsg,dstrans,ntens,1.,.true.)
+      write(imsg,'(a)') 'dstran'
+      call w_dim(imsg,dstran,ntens,1.d0,.true.)
       write(imsg,'(a)') "before rotsig"
       write(imsg,'(a)') 'eelas'
-      call w_dim(imsg,eelas,ntens,1.,.true.)
+      call w_dim(imsg,eelas,ntens,1.d0,.true.)
       write(imsg,'(a)') 'eplas'
-      call w_dim(imsg,eplas,ntens,1.,.true.)
+      call w_dim(imsg,eplas,ntens,1.d0,.true.)
       if (idiaw) then
-         write(idia,'(i3)',advance='no')kinc
-         call w_dim(idia,statev(1:ntens),ntens,1.,.false.)
+         write(idia,'(i5,2x)',advance='no')kinc
+         call w_dim(idia,statev(1:ntens),ntens,1.d0,.false.)
          write(idia,'(x,a1,x)',advance='no') '|'
-         call w_dim(idia,statev(ntens+1:2*ntens),ntens,1.,.false.)
+         call w_dim(idia,statev(ntens+1:2*ntens),ntens,1.d0,.false.)
          write(idia,'(f10.3)', advance='no') statev(1+ntens*2)
          write(idia,'(x,a1,x)',advance='no') '|'
       endif
@@ -120,15 +121,15 @@ c$$$
       eqplas=statev(1+2*ntens)  ! equivalent plastic strain
       write(imsg,'(a)') "After rotsig"
       write(imsg,'(a)') 'eelas'
-      call w_dim(imsg,eelas,ntens,1.,.true.)
+      call w_dim(imsg,eelas,ntens,1.d0,.true.)
       write(imsg,'(a)') 'eplas'
-      call w_dim(imsg,eplas,ntens,1.,.true.)
+      call w_dim(imsg,eplas,ntens,1.d0,.true.)
 
       if (idiaw) then
          !write(idia,'(i3)',advance='no')kinc
-         call w_dim(idia,eelas,ntens,1.,.false.)
+         call w_dim(idia,eelas,ntens,1.d0,.false.)
          write(idia,'(x,a1,x)',advance='no') '|'
-         call w_dim(idia,eplas,ntens,1.,.false.)
+         call w_dim(idia,eplas,ntens,1.d0,.false.)
          write(idia,'(e10.3)',advance='no') eqplas
          write(idia,'(x,a1,x)',advance='no') '|'
       endif
@@ -144,7 +145,7 @@ c     !multiply by total strain increment
          eelas(i) = eelas(i) + dstran(i)
  10   continue
       write(imsg,'(a)') 'stress [MPa]'
-      call w_dim(imsg,stress,ntens,1./mpa,.true.)
+      call w_dim(imsg,stress,ntens,1.d0/mpa,.true.)
 c$$$
 c$$$  Calculate equivalent Von Mises stress
 c$$$
@@ -191,7 +192,7 @@ c
             write(imsg,*)'Step:',kewton
             write(imsg,*)'deqpl:',deqpl
             write(imsg,*)'f  [MPa]:',f/mpa
-            write(imsg,*)'fp [MPa]:',fp/mpg
+            write(imsg,*)'fp [MPa]:',fp/mpa
             write(imsg,*)'eqplas+deqpl:',eqplas+deqpl
             if (abs(f).lt.toler*syiel0) goto 100
             call uhard(syield,hard,eqplas+deqpl,eqplasrt,time,dtime,
@@ -236,27 +237,27 @@ c$$$
 c$$$  Formulate the jacobian (material tangent) in epl domain
 c$$$  First calculate effective moduli
 c$$$
-         mus = G * syield / smises
+         emus = G * syield / smises
          write(imsg,'(a,f7.1)') 'syield    [MPa]',syield/mpa
          write(imsg,'(a,f7.1)') 'predictor [MPa]',smises/mpa
-         write(imsg,*)          'mus        ',mus
-         labs = kappa - 2. / 3. * mus
+         write(imsg,*)          'mus        ',emus
+         elabs = ekappa - 2. / 3. * emus
          ddsdde(:,:) = 0.d0
          do 120 i=1,ndi
          do 120 j=1,ndi
-            ddsdde(i,j) = labs
+            ddsdde(i,j) = elabs
  120     continue
 
          do 140 i=1,ndi
             do 130 j=1,ndi
-               ddsdde(i,j) = labs
+               ddsdde(i,j) = elabs
  130        continue
-            ddsdde(i,i) = labs + 2*mus
+            ddsdde(i,i) = elabs + 2*emus
  140     continue
          do i=ndi+1,ntens
-            ddsdde(i,i) = mus
+            ddsdde(i,i) = emus
          enddo
-         hs = hard(1)/ (1.+hard(1)/3./G - 3. * mus)
+         hs = hard(1)/ (1.+hard(1)/3./G - 3. * emus)
          write(imsg,*) 'hs:',hs
          do 160 i=1,ntens
          do 160 j=1,ntens
@@ -289,15 +290,14 @@ c$$$
 
       if (idiaw) then
          write(idia,'(2e13.4,3f11.4)',advance='no')
-     $        eqplas, deqplas,
+     $        eqplas, deqpl,
      $        stress(1)/mpa,
      $        stress(2)/mpa, stress(3)/mpa
          write(idia,'(x,a1,x)',advance='no') '|'
          write(idia,'(x,a5,x)',advance='no')'Flow:'
-         call w_dim(idia,flow,ntens,1.,.true.)
+         call w_dim(idia,flow,ntens,1.d0,.true.)
          close(idia)
       endif
-
 
       return
       end subroutine umat
