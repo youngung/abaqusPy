@@ -32,7 +32,7 @@ c$$$  local arrays
       dimension eelas(ntens),eplas(ntens),flow(ntens),sdeviator(ntens),
      $     hard(3)
       real*8 zero,one,two,three,six,enumax,toler
-      real*8 eqplas,syiel0,hard,sdeviator,mpa,gpa,emod,enu,vm,f,fp,eg3,
+      real*8 eqplas,syiel0,hard,sdeviator,mpa,gpa,emod,enu,f,fp,eg3,
      $     deqpl,smises,shydro,flow,G,kappa,mus,lams,hs,labs
       integer imsg,k,i,j,NUMFIELDV,numprops,kewton,newton
       logical isnan
@@ -123,7 +123,7 @@ c$$$
 c$$$  Calculate equivalent Von Mises stress
 c$$$
       call vm(stress,smises)
-
+      
       call UHARD(SYIEL0,HARD,EQPLAS,EQPLASRT,TIME,DTIME,TEMP,
      1     DTEMP,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,CMNAME,NSTATV,
      2     STATEV,NUMFIELDV,PREDEF,DPRED,NUMPROPS,PROPS)
@@ -258,6 +258,7 @@ c$$$
       statev(1+2*ntens) = eqplas
       return
       end subroutine umat
+
 
 c     iso elastic
       include "/home/younguj/repo/abaqusPy/umats/lib/elast.f"
