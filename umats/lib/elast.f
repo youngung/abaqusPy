@@ -4,9 +4,10 @@ c     Young's modulus (e) and poisson ratio (nu)
 c----------------------------------------------------------------------c
 
 c$$$  3D shell with S11,S22 and S12
-      subroutine emod_iso_shell(e,nu,c)
+      subroutine emod_iso_shell(e,nu,G,kappa,c)
+      implicit none
       real*8 c(3,3)
-      real*8 nu, e
+      real*8 nu, e, x, G, kappa
       integer i,j
       c(:,:)=0.d0
 c     Multiplier
@@ -18,6 +19,8 @@ c     Multiplier
          c(i,i) = x*(1.-nu)
       enddo
       c(3,3) = x* (1.-2.*nu)/2.
+      kappa = e /3. / (1.-2*nu)
+      G=E/2./(1.+nu)
       return
       end subroutine
 
