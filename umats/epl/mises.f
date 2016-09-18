@@ -190,7 +190,7 @@ c$$$
  105     continue
 
          do 110 i=ndi+1,ntens
-            stress(i) = flow(i) + syield
+            stress(i) = flow(i) * syield
             eplas(i)  = eplas(i) + three * flow(i) * deqpl
             eelas(i)  = eelas(i) - three * flow(i) * deqpl
  110     continue
