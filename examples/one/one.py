@@ -2,7 +2,6 @@
 A simple example to generate one element model using
 Abaqus Python script feature
 
-
 Youngung Jeong
 youngung.jeong@gmail.com
 """
@@ -27,7 +26,6 @@ from caeModules import *
 import sketch, part, regionToolset
 backwardCompatibility.setValues(includeDeprecated=True,
                                 reportDeprecated=False)
-
 
 ###### ----------Generating specimen dimensions.
 # [SI unit system]
