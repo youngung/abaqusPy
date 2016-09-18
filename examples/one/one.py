@@ -320,6 +320,10 @@ def runVarMats(**kwargs):
         runSingle(myMatFunc=myMatFuncs[imat],**kwargs)
 
 
+
+if __name__=='main':
+    print
+        
 ## controlling job conditions
 #umatFN=None
 #umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
@@ -335,4 +339,5 @@ runSingle(umatFN=umatFN,iwait=True,isub=True)
 #runVarMats(umatFN=umatFN,  isub=True)
 
 os.sys.path=orig_path[::]
+
 
