@@ -7,7 +7,6 @@ Cf2py intent(out) phi,dphi,d2phi
       h        = 5d-1*((s(1)-s(2))**2+s(1)**2+s(2)**2+6*s(3)**2)
       phi      = h**5d-1        ! yield surface
 
-
 c$$$      s(:)     = s(:)/phi       ! stress on the yield locus
 c$$$c     analytic solutions of first and second derivatives of the yield surface (plastic potential)
 c$$$      dff = 1./(2*(h**0.5))
@@ -37,18 +36,35 @@ c$$$      dphi(3) = dphi(3)/2
 
 c     Calculate Von Mises deviator and flow direction
       subroutine vm_devi_flow(stress,devi,shydro,flow,ntens,ndi)
+      implicit none
       integer ntens,ndi
       dimension stress(ntens),devi(ntens),flow(ntens)
-      real*8 shydro, smises
+      real*8 shydro,smises,flow,stress,devi
+      integer i
       call vm(stress,smises)
-      call deviat(stress,devi,shydro)
+      if (ntens.eq.6 .and. ndi.eq.3) then
+         call deviat6(stress,devi,shydro)
+      elseif (ntens.eq.3.and.ndi.eq.2) then
+         call deviat3(stress,devi,shydro)
+      else
+         write(*,*) 'Unexpected case in VM'
+         stop -1
+      endif
+
       do i=1,ndi
          flow(i) = (stress(i)-shydro)/smises
       enddo
       do i=ndi+1,ntens
          flow(i) = stress(i) / smises
       enddo
+
+      write(*,'(a)',advance='no')'----'
+      write(*,'(e13.3)', advance='no') smises
+      write(*,'(3e13.3)',advance='no') (stress(i),i=1,ntens)
+      write(*,'(3e13.3)',advance='no') (flow(i),i=1,ntens)
+      write(*,'(a)',advance='no')'----'
+      write(*,*)
+
       return
       end subroutine vm_devi_flow
-
       include "/home/younguj/repo/abaqusPy/umats/lib/dev.f"

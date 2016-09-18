@@ -41,23 +41,31 @@ c-----------------------------------------------------------------------
       return
       end subroutine w_mdim
 c-----------------------------------------------------------------------
-      subroutine w_dim(imsg,array,ndi,fact)
+      subroutine w_dim(imsg,array,ndi,fact,ibr)
+c     imsg: file ID
+c     array: 1-Dimensional array
+c     ndi: size of the array
+c     fact:multiplicative factor to scale the elements in the array
+c     ibr: flag to insert line-breaker
       implicit none
       character*80 fmt
       integer ndi,nshr,imsg,i,j
       real*8 array(ndi),fact, mxval,get_mx,mxv
+      logical ibr
       mxv = get_mx(array,ndi)
-      if (mxv.lt.1e5) then
-         fmt="(f9.2)"
-      elseif (mxv.ge.1e5) then
-         fmt="(e13.2)"
+      if (mxv.le.1.) then
+         fmt="(e9.2,x)"
+      elseif ((mxv.gt.1.).and.(mxv.lt.1e5)) then
+         fmt="(f5.2)"
+      elseif ((mxv.ge.1e5)) then
+         fmt="(e9.2,x)"
       else
          stop
       endif
       do i=1,ndi
          write(imsg,fmt,advance='no') array(i) * fact
       enddo
-      write(imsg,*)
+      if (ibr) write(imsg,*)
       return
       end subroutine w_dim
 c-----------------------------------------------------------------------

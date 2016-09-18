@@ -34,10 +34,10 @@ c$$$  local arrays
       real*8 zero,one,two,three,six,enumax,toler
       real*8 eqplas,syiel0,hard,sdeviator,mpa,gpa,emod,enu,f,fp,eg3,
      $     deqpl,smises,shydro,flow,G,kappa,mus,lams,hs,labs
-      integer imsg,k,i,j,NUMFIELDV,numprops,kewton,newton
-      logical isnan
-      parameter(zero=0.d0,one=1d0,two=2d0,three=3d0,six=6d0,enumax=0.4999d0,
-     $     newton=10,toler=1d-6)
+      integer imsg,idia,k,i,j,NUMFIELDV,numprops,kewton,newton
+      logical isnan,idiaw
+      parameter(zero=0.d0,one=1d0,two=2d0,three=3d0,six=6d0,
+     $     enumax=0.4999d0,newton=10,toler=1d-6)
       mpa=1.e6
       gpa=1.e9
       if (dtime.eq.0) then
@@ -46,6 +46,18 @@ c$$$  local arrays
       endif
 
       imsg=7
+      idia=315
+      idiaw=.false.
+      !! specify when to write the diagnose report
+      if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1) then
+         idiaw=.true.
+      endif
+
+      if (idiaw)
+     $     open(idia,position='append',
+!     $     file='/home/younguj/repo/abaqusPy/umats/epl/diagnose.txt')
+     $     file='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt')
+
       call w_empty_lines(imsg,3)
       write(imsg,'(a)') "Beginning of the UMAT"
       write(imsg,'(a,i5)') 'NOEL:',NOEL
@@ -84,29 +96,43 @@ c     printout elastic modulus
          write(imsg,'(a)')'----------------------------------------------------
      $--------------------'
       endif
-
 c$$$
 c$$$  Recover elastic and plastic strains and rotate forward
 c$$$
-
       write(imsg,'(a)') 'dstrans'
-      call w_dim(imsg,dstrans,ntens,1.)
+      call w_dim(imsg,dstrans,ntens,1.,.true.)
       write(imsg,'(a)') "before rotsig"
       write(imsg,'(a)') 'eelas'
-      call w_dim(imsg,eelas,ntens,1.)
+      call w_dim(imsg,eelas,ntens,1.,.true.)
       write(imsg,'(a)') 'eplas'
-      call w_dim(imsg,eplas,ntens,1.)
+      call w_dim(imsg,eplas,ntens,1.,.true.)
+      if (idiaw) then
+         write(idia,'(i3)',advance='no')kinc
+         call w_dim(idia,statev(1:ntens),ntens,1.,.false.)
+         write(idia,'(x,a1,x)',advance='no') '|'
+         call w_dim(idia,statev(ntens+1:2*ntens),ntens,1.,.false.)
+         write(idia,'(f10.3)', advance='no') statev(1+ntens*2)
+         write(idia,'(x,a1,x)',advance='no') '|'
+      endif
+
       call rotsig(statev(      1),drot,eelas,2,ndi,nshr)
       call rotsig(statev(ntens+1),drot,eplas,2,ndi,nshr)
       eqplas=statev(1+2*ntens)  ! equivalent plastic strain
       write(imsg,'(a)') "After rotsig"
       write(imsg,'(a)') 'eelas'
-      call w_dim(imsg,eelas,ntens,1.)
+      call w_dim(imsg,eelas,ntens,1.,.true.)
       write(imsg,'(a)') 'eplas'
-      call w_dim(imsg,eplas,ntens,1.)
+      call w_dim(imsg,eplas,ntens,1.,.true.)
 
+      if (idiaw) then
+         !write(idia,'(i3)',advance='no')kinc
+         call w_dim(idia,eelas,ntens,1.,.false.)
+         write(idia,'(x,a1,x)',advance='no') '|'
+         call w_dim(idia,eplas,ntens,1.,.false.)
+         write(idia,'(e10.3)',advance='no') eqplas
+         write(idia,'(x,a1,x)',advance='no') '|'
+      endif
 
-      write(imsg,'(a,e13.3)') 'Eqv pl strain:',eqplas
 c$$$
 c$$$  Caclulate predictor stress and elastic strain
 c$$$
@@ -118,12 +144,12 @@ c     !multiply by total strain increment
          eelas(i) = eelas(i) + dstran(i)
  10   continue
       write(imsg,'(a)') 'stress [MPa]'
-      call w_dim(imsg,stress,ntens,1./mpa)
+      call w_dim(imsg,stress,ntens,1./mpa,.true.)
 c$$$
 c$$$  Calculate equivalent Von Mises stress
 c$$$
       call vm(stress,smises)
-      
+
       call UHARD(SYIEL0,HARD,EQPLAS,EQPLASRT,TIME,DTIME,TEMP,
      1     DTEMP,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,CMNAME,NSTATV,
      2     STATEV,NUMFIELDV,PREDEF,DPRED,NUMPROPS,PROPS)
@@ -138,6 +164,7 @@ c$$$
          write(imsg,'(a)') '*********************'
          write(imsg,'(a)') '**     PLASTIC     **'
          write(imsg,'(a)') '*********************'
+         if (idiaw) write(idia,'(x,a1,x)',advance='no') 'P'
 c        obtain plastic flow direction
          call vm_devi_flow(stress,sdeviator,shydro,flow,ntens,ndi)
          write(imsg,'(a)') "After vm_devi_flow"
@@ -167,16 +194,18 @@ c
             write(imsg,*)'fp [MPa]:',fp/mpg
             write(imsg,*)'eqplas+deqpl:',eqplas+deqpl
             if (abs(f).lt.toler*syiel0) goto 100
-            call uhard(syield,hard,eqplas+deqpl,eqplasrt,time,dtime,temp,
-     1           dtemp,noel,npt,layer,kspt,kstep,kinc,cmname,nstatv,
-     2           statev,numfieldv,predef,dpred,numprops,props)
+            call uhard(syield,hard,eqplas+deqpl,eqplasrt,time,dtime,
+     $           temp,dtemp,noel,npt,layer,kspt,kstep,kinc,cmname,
+     $           nstatv,statev,numfieldv,predef,dpred,numprops,props)
             write(imsg,'(a,f7.1)')'syield [MPa]',syield/mpa
 
  50      continue               ! End of NR iteration
 
          write(imsg,'(a)') "*** Warning - Plasticity NR
      $did not converge"
+         stop -1
  100     continue
+
          write(imsg,'(a,i3)') " NR converged at kinc", kinc
 
 c$$$
@@ -184,7 +213,7 @@ c$$$  Update stress, elastic and plastic strains and
 c$$$  equivalent plastic strain
 c$$$
          do 105 i=1,ndi
-            stress(i) = flow(i) * syield+shydro
+            stress(i) = flow(i)  * syield+shydro
             eplas(i)  = eplas(i) + three/two * flow(i) * deqpl
             eelas(i)  = eelas(i) - three/two * flow(i) * deqpl
  105     continue
@@ -235,7 +264,7 @@ c$$$
  160     continue
          if (isnan_in_marr(ddsdde,ntens,ntens)) then
             write(imsg,'(a)') 'NAN found in DDSDDE'
-c           stop -1
+            stop -1
          endif
          write(imsg,'(a)')'-----------'
          write(imsg,'(a)')'DDSDDE'
@@ -246,6 +275,7 @@ c           stop -1
          write(imsg,'(a)') '*********************'
          write(imsg,'(a)') '** Remains ELASTIC **'
          write(imsg,'(a)') '*********************'
+         if (idiaw) write(idia,'(x,a1,x)',advance='no') 'E'
       endif                     ! end of plasticity case
 c$$$
 c$$$  store elastic and (equivalent) plastic strains
@@ -256,6 +286,19 @@ c$$$
          statev(i+ntens) = eplas(i)
  180  continue
       statev(1+2*ntens) = eqplas
+
+      if (idiaw) then
+         write(idia,'(2e13.4,3f11.4)',advance='no')
+     $        eqplas, deqplas,
+     $        stress(1)/mpa,
+     $        stress(2)/mpa, stress(3)/mpa
+         write(idia,'(x,a1,x)',advance='no') '|'
+         write(idia,'(x,a5,x)',advance='no')'Flow:'
+         call w_dim(idia,flow,ntens,1.,.true.)
+         close(idia)
+      endif
+
+
       return
       end subroutine umat
 
