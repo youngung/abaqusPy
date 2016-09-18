@@ -208,8 +208,8 @@ c$$$  Formulate the jacobian (material tangent) in epl domain
 c$$$  First calculate effective moduli
 c$$$
          mus = G * syield / smises
-         write(imsg,'(a,f7.1)') 'syield [MPa]',syield/mpa
-         write(imsg,'(a,f7.1)') 'smises [MPa]',smises/mpa
+         write(imsg,'(a,f7.1)') 'syield    [MPa]',syield/mpa
+         write(imsg,'(a,f7.1)') 'predictor [MPa]',smises/mpa
          write(imsg,*)          'mus        ',mus
          labs = kappa - 2. / 3. * mus
          ddsdde(:,:) = 0.d0
