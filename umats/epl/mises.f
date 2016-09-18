@@ -6,6 +6,7 @@ c$$$  ABAQUS UMAT Interface.
      4     CELENT,DFGRD0,DFGRD1,NOEL,NPT,LAYER,KSPT,JSTEP,KINC)
 C
       INCLUDE 'ABA_PARAM.INC'
+c      implicit none  !! to test the namespace in UMAT
 C
       CHARACTER*80 CMNAME
       DIMENSION STRESS(NTENS),STATEV(NSTATV),
@@ -18,20 +19,31 @@ c$$$  user coding to define DDSDDE, STRESS, STATEV, SSE, SPD, SCD
 c$$$  and, if necessary, RPL, DDSDDT, DRPLDE, DRPLDT, PNEWDT
 c$$$  End of ABAQUS UMAT Interface
 
-      parameter(one=1d0,two=2d0,three=3d0,six=6d0,enumax=0.4999d0,
-     $     newton=10,toler=1d-6)
+
+c$$$  implicit none - variables passed through umat
+c-----------------------------------------------------------------------
+      integer NDI,NSHR,NTENS,NSTATV,NPROPS,NOEL,NPT,LAYER,KSPT,JSTEP,
+     $     KINC,kstep
+      real*8 STRESS,STATEV,DDSDDE,SSE,SPD,SCD,RPL,DDSDDT,DRPLDE,DRPLDT,
+     $     STRAN,DSTRAN,TIME,DTIME,TEMP,DTEMP,PREDEF,DPRED,PROPS,COORDS,
+     $     DROT,PNEWDT,CELENT,DFGRD0,DFGRD1
 
 c$$$  local arrays
-c               eps^el        eps^pl        flow directions
-      dimension eelas(ntens), eplas(ntens), flow(ntens),
-     $     sdeviator(ntens), hard(3)
-
-c$$$  Assuming real*8
-      real*8 dtime,temp,dtemp,celent,smises,shydro,eg3,deqpl,f,fp,
-     $     hard,mpa,gpa
-      integer imsg,k,i,j,kewton
+      dimension eelas(ntens),eplas(ntens),flow(ntens),sdeviator(ntens),
+     $     hard(3)
+      real*8 zero,one,two,three,six,enumax,toler
+      real*8 eqplas,syiel0,hard,sdeviator,mpa,gpa,emod,enu,vm,f,fp,eg3,
+     $     deqpl,smises,shydro,flow,G,kappa,mus,lams,hs,labs
+      integer imsg,k,i,j,NUMFIELDV,numprops,kewton,newton
+      logical isnan
+      parameter(zero=0.d0,one=1d0,two=2d0,three=3d0,six=6d0,enumax=0.4999d0,
+     $     newton=10,toler=1d-6)
       mpa=1.e6
       gpa=1.e9
+      if (dtime.eq.0) then
+         write(imsg,'(a)') 'DTIME .eq. 0'
+         return
+      endif
 
       imsg=7
       call w_empty_lines(imsg,3)
@@ -43,7 +55,7 @@ c$$$  Assuming real*8
       write(imsg,*)
       write(imsg,'(a10,i5)')"kinc :",kinc
       write(imsg,'(a10,4i5)')"jstep:",jstep
-      write(imsg,'(a10,i5)')"kspt :",kstp
+      write(imsg,'(a10,i5)')"kspt :",kspt
 
 c$$$  Elastic properties
 c$$$      props(1) = 200.d9
@@ -51,7 +63,9 @@ c$$$      props(2) = 0.3
       emod = props(1)
       enu  = props(2)
       ! call emod_iso(emod,enu,ddsdde) ! isotropic elastic modulus
-      call emod_iso_shell(emod,enu,ddsdde)
+      call emod_iso_shell(emod,enu,G,kappa,ddsdde)
+      write(imsg,'(a,f7.1)')'G     [GPa]:',G/gpa
+      write(imsg,'(a,f7.1)')'kappa [GPa]:',kappa/gpa
       eg3 = emod/(one+enu)/two*three
 
       write(imsg,'(a)') "After emod_iso"
@@ -67,46 +81,49 @@ c     printout elastic modulus
          do i=1,ntens
             write(imsg,'(6e13.2)') (ddsdde(i,j),j=1,ntens)
          enddo
-         write(msg,'(a)')'----------------------------------------------------
+         write(imsg,'(a)')'----------------------------------------------------
      $--------------------'
       endif
 
 c$$$
 c$$$  Recover elastic and plastic strains and rotate forward
 c$$$
-      write(*,*) statev
+
+      write(imsg,'(a)') 'dstrans'
+      call w_dim(imsg,dstrans,ntens,1.)
+      write(imsg,'(a)') "before rotsig"
+      write(imsg,'(a)') 'eelas'
+      call w_dim(imsg,eelas,ntens,1.)
+      write(imsg,'(a)') 'eplas'
+      call w_dim(imsg,eplas,ntens,1.)
       call rotsig(statev(      1),drot,eelas,2,ndi,nshr)
       call rotsig(statev(ntens+1),drot,eplas,2,ndi,nshr)
-
+      eqplas=statev(1+2*ntens)  ! equivalent plastic strain
       write(imsg,'(a)') "After rotsig"
       write(imsg,'(a)') 'eelas'
-      call w_dim(imsg,eelas,ntens)
+      call w_dim(imsg,eelas,ntens,1.)
       write(imsg,'(a)') 'eplas'
-      call w_dim(imsg,eplas,ntens)
-      write(imsg,'(a)') 'dstrans'
-      call w_dim(imsg,dstrans,ntens)
+      call w_dim(imsg,eplas,ntens,1.)
 
-      eqplas=statev(1+2*ntens)  ! equivalent plastic strain
+
       write(imsg,'(a,e13.3)') 'Eqv pl strain:',eqplas
 c$$$
 c$$$  Caclulate predictor stress and elastic strain
 c$$$
-      do i=1,ntens
-         do j=1,ntens
-c           !multiply by total strain increment
+      do 10 i=1,ntens
+         do 5 j=1,ntens
+c     !multiply by total strain increment
             stress(j)=stress(j) + ddsdde(j,i)*dstran(i)
-         enddo
+ 5       continue
          eelas(i) = eelas(i) + dstran(i)
-      enddo
-      write(imsg,'(a)') 'stress'
-      !call w_dim(imsg,stress,ntens)
+ 10   continue
+      write(imsg,'(a)') 'stress [MPa]'
+      call w_dim(imsg,stress,ntens,1./mpa)
 c$$$
 c$$$  Calculate equivalent Von Mises stress
 c$$$
-      smises = vm(stress,ndi,ntens)
-      !write(imsg,'(a,e13.3)') 'vm:', smises
+      call vm(stress,smises)
 
-      nvalue=nprops/2-1
       call UHARD(SYIEL0,HARD,EQPLAS,EQPLASRT,TIME,DTIME,TEMP,
      1     DTEMP,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,CMNAME,NSTATV,
      2     STATEV,NUMFIELDV,PREDEF,DPRED,NUMPROPS,PROPS)
@@ -118,10 +135,11 @@ c$$$  Determine if actively yielding
 c$$$
 
       if (smises.gt.(one+toler)*syiel0) then
+         write(imsg,'(a)') '*********************'
+         write(imsg,'(a)') '**     PLASTIC     **'
+         write(imsg,'(a)') '*********************'
 c        obtain plastic flow direction
          call vm_devi_flow(stress,sdeviator,shydro,flow,ntens,ndi)
-
-
          write(imsg,'(a)') "After vm_devi_flow"
 
 c        solve for equivalent von mises stress
@@ -131,7 +149,7 @@ c        syiel0: the yield stress size using the predictor stress
          syield=syiel0
          deqpl=zero
 
-         do kewton=1, newton     ! NR iteration
+         do 50 kewton=1, newton ! NR iteration
 c$$$
 c$$$  Newton Raphson Method to find deqpl
 c$$$
@@ -143,56 +161,101 @@ c
             fp    = -eg3-hard(1)
             deqpl = deqpl - f / fp
 
-            write(imsg,'(a,i3)')'NR Step:',kewton
-            write(imsg,'(a,e13.3)')'deqpl:',deqpl
-            write(imsg,'(a,e13.3)') 'f :',f
-            write(imsg,'(a,e13.3)') 'fp:',fp
-            write(imsg,'(a,e13.3)')'eqplas+deqpl:',eqplas+deqpl
-            if (abs(f).lt.toler*syiel0) goto 10
+            write(imsg,*)'Step:',kewton
+            write(imsg,*)'deqpl:',deqpl
+            write(imsg,*)'f  [MPa]:',f/mpa
+            write(imsg,*)'fp [MPa]:',fp/mpg
+            write(imsg,*)'eqplas+deqpl:',eqplas+deqpl
+            if (abs(f).lt.toler*syiel0) goto 100
             call uhard(syield,hard,eqplas+deqpl,eqplasrt,time,dtime,temp,
      1           dtemp,noel,npt,layer,kspt,kstep,kinc,cmname,nstatv,
      2           statev,numfieldv,predef,dpred,numprops,props)
-            write(imsg,'(a,e13.3)')'syield',syield
+            write(imsg,'(a,f7.1)')'syield [MPa]',syield/mpa
 
-         enddo                  ! End of NR iteration
+ 50      continue               ! End of NR iteration
 
          write(imsg,'(a)') "*** Warning - Plasticity NR
      $did not converge"
- 10      continue
-         write(imsg,'(a,i)') " NR converged at kinc", kinc
+ 100     continue
+         write(imsg,'(a,i3)') " NR converged at kinc", kinc
 
 c$$$
 c$$$  Update stress, elastic and plastic strains and
 c$$$  equivalent plastic strain
 c$$$
-         do i=1,ndi
+         do 105 i=1,ndi
             stress(i) = flow(i) * syield+shydro
             eplas(i)  = eplas(i) + three/two * flow(i) * deqpl
             eelas(i)  = eelas(i) - three/two * flow(i) * deqpl
-         enddo
+ 105     continue
 
-         do i=ndi+1,ntens
+         do 110 i=ndi+1,ntens
             stress(i) = flow(i) + syield
             eplas(i)  = eplas(i) + three * flow(i) * deqpl
             eelas(i)  = eelas(i) - three * flow(i) * deqpl
-         enddo
+ 110     continue
          eqplas=eqplas+deqpl
-
 c$$$
 c$$$  calculate plastic dissipation
 c$$$
          spd = deqpl*(syiel0+syield)/two
 
 c$$$
-c$$$  Formulate the jacobian (material tangent)
+c$$$  In case elasto-plasticity, the jacobian
+c$$$  is different from that in elasticity
+c$$$
+c$$$  Formulate the jacobian (material tangent) in epl domain
 c$$$  First calculate effective moduli
 c$$$
+         mus = G * syield / smises
+         write(imsg,'(a,f7.1)') 'syield [MPa]',syield/mpa
+         write(imsg,'(a,f7.1)') 'smises [MPa]',smises/mpa
+         write(imsg,*)          'mus        ',mus
+         labs = kappa - 2. / 3. * mus
+         ddsdde(:,:) = 0.d0
+         do 120 i=1,ndi
+         do 120 j=1,ndi
+            ddsdde(i,j) = labs
+ 120     continue
+
+         do 140 i=1,ndi
+            do 130 j=1,ndi
+               ddsdde(i,j) = labs
+ 130        continue
+            ddsdde(i,i) = labs + 2*mus
+ 140     continue
+         do i=ndi+1,ntens
+            ddsdde(i,i) = mus
+         enddo
+         hs = hard(1)/ (1.+hard(1)/3./G - 3. * mus)
+         write(imsg,*) 'hs:',hs
+         do 160 i=1,ntens
+         do 160 j=1,ntens
+            ddsdde(i,j) = ddsdde(i,j) + flow(i) * flow(j) * hs
+ 160     continue
+         if (isnan_in_marr(ddsdde,ntens,ntens)) then
+            write(imsg,'(a)') 'NAN found in DDSDDE'
+c           stop -1
+         endif
+         write(imsg,'(a)')'-----------'
+         write(imsg,'(a)')'DDSDDE'
+
+         call w_mdim(imsg,ddsdde,ntens)
+         call w_empty_lines(imsg,5)
       else
          write(imsg,'(a)') '*********************'
          write(imsg,'(a)') '** Remains ELASTIC **'
          write(imsg,'(a)') '*********************'
       endif                     ! end of plasticity case
-
+c$$$
+c$$$  store elastic and (equivalent) plastic strains
+c$$$  in state variable array
+c$$$
+      do 180 i=1, ntens
+         statev(i) = eelas(i)
+         statev(i+ntens) = eplas(i)
+ 180  continue
+      statev(1+2*ntens) = eqplas
       return
       end subroutine umat
 
@@ -204,3 +267,5 @@ c     Von Mises
       include "/home/younguj/repo/abaqusPy/umats/lib/vm.f"
 c     lib.f
       include "/home/younguj/repo/abaqusPy/umats/lib/lib.f"
+c     diag.f
+      include "/home/younguj/repo/abaqusPy/umats/lib/diag.f"
