@@ -81,3 +81,12 @@ c-----------------------------------------------------------------------
       enddo
       return
       end function
+c-----------------------------------------------------------------------
+      subroutine pjoin(pardir,fn,fullfn)
+      implicit none
+      character(len=255) :: path,fn,fullfn,pardir
+      character(len=1) :: sep
+      call get_environment_variable('PATH',path)
+      sep=path(1:1)
+      fullfn = trim(pardir) // sep // trim(fn)
+      end subroutine

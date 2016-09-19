@@ -89,7 +89,6 @@ def TensileOneElement(
     for i in xrange(len(xyCoords)-1):
         p1=tuple(xyCoords[i])
         p2=tuple(xyCoords[i+1])
-        print p1,p2
         mySketch.Line(point1=p1,point2=p2)
 
     ### Part module
@@ -154,7 +153,7 @@ def TensileOneElement(
         thicknessModulus=None,temperature=GRADIENT,useDensity=OFF,
         integrationRule=SIMPSON, numIntPts=5)
     myShellSection.TransverseShearShell(
-        k11=200e9,k22=200e9,k12=120e9)
+        k11=200.*gpa,k22=200.*gpa,k12=120.*gpa)
 
 
     ### Assign material orientation
@@ -275,14 +274,11 @@ def TensileOneElement(
         if iwait:
             ## myJob wait until completion?
             myJob.waitForCompletion()
-            ## execute pp file?
-            # execfile('onePP.py')
-            #import onePP
-            #onePP.main(session,'strstr_%.2f.txt'%Theta)
 
     return myModel, myJob
 
 ## parametric usage of TensileOneElement
+## below is application.
 def runSingle(**kwargs):
     """
     Arguments
@@ -291,8 +287,7 @@ def runSingle(**kwargs):
                 TensileOneElement
     """
     myModel, myJob = TensileOneElement(**kwargs)
-## below is application.
-Theta = 0. ## [in degree] cSym is ccw from global (lab) axis X
+
 def runTensions(nth, **kwargs):
     """
     Arguments
@@ -309,7 +304,6 @@ def runVarMats(**kwargs):
     """
     Arguments
     ---------
-    nth
     **kwargs
     """
     myMatFuncs=[abaquspy.mats.ifsteel.isoe,
@@ -317,11 +311,10 @@ def runVarMats(**kwargs):
     for imat in xrange(len(myMatFuncs)):
         runSingle(myMatFunc=myMatFuncs[imat],**kwargs)
 
-
-
 if __name__=='main':
     print
-        
+
+
 ## controlling job conditions
 #umatFN=None
 #umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
@@ -337,5 +330,3 @@ runSingle(umatFN=umatFN,iwait=True,isub=True)
 #runVarMats(umatFN=umatFN,  isub=True)
 
 os.sys.path=orig_path[::]
-
-

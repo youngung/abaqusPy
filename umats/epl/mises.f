@@ -31,10 +31,11 @@ c-----------------------------------------------------------------------
 c$$$  local arrays
       dimension eelas(ntens),eplas(ntens),flow(ntens),sdeviator(ntens),
      $     hard(3)
+      character*255 fndia,cwd
       real*8 zero,one,two,three,six,enumax,toler
       real*8 eqplas,syiel0,hard,sdeviator,mpa,gpa,emod,enu,f,fp,eg3,
      $     deqpl,smises,shydro,flow,G,ekappa,emus,hs,elabs,eelas,
-     $     eplas,eqplasrt
+     $     eplas,eqplasrt,dphi(ntens)
       integer imsg,idia,k,i,j,NUMFIELDV,numprops,kewton,newton
       logical isnan,idiaw,isnan_in_marr
       parameter(zero=0.d0,one=1d0,two=2d0,three=3d0,six=6d0,
@@ -54,10 +55,13 @@ c$$$  local arrays
          idiaw=.true.
       endif
 
-      if (idiaw)
-     $     open(idia,position='append',
-!     $     file='/home/younguj/repo/abaqusPy/umats/epl/diagnose.txt')
-     $     file='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt')
+      if (idiaw) then
+c$$$         call getcwd(cwd)
+c$$$         write(*,*)'cwd:',cwd
+c$$$         call pjoin(cwd,'diagnose.txt',fndia)
+         fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
+         open(idia,position='append',file=fndia)
+      endif
 
       call w_empty_lines(imsg,3)
       write(imsg,'(a)') "Beginning of the UMAT"
@@ -149,7 +153,7 @@ c     !multiply by total strain increment
 c$$$
 c$$$  Calculate equivalent Von Mises stress
 c$$$
-      call vm(stress,smises)
+      call vm(stress,smises,dphi)
 
       call UHARD(SYIEL0,HARD,EQPLAS,EQPLASRT,TIME,DTIME,TEMP,
      1     DTEMP,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,CMNAME,NSTATV,
@@ -214,7 +218,7 @@ c$$$  Update stress, elastic and plastic strains and
 c$$$  equivalent plastic strain
 c$$$
          do 105 i=1,ndi
-            stress(i) = flow(i)  * syield+shydro
+            stress(i) = flow(i)  * syield + shydro
             eplas(i)  = eplas(i) + three/two * flow(i) * deqpl
             eelas(i)  = eelas(i) - three/two * flow(i) * deqpl
  105     continue
