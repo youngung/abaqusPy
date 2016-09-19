@@ -10,7 +10,7 @@ c     calculate transformation matrix
       r(1,2) = -s
       r(2,1) =  s
       r(2,2) =  c
-      r(2,2) =  1.
+      r(3,3) =  1.
       return
       end subroutine inplane_rot_matrix
 c-----------------------------------------------------------------------
