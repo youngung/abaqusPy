@@ -123,13 +123,16 @@ c        Assuming plane-stress of (s11,s22,s12)
          write(*,*) 'Unexpected case in VM'
          stop -1
       endif
+      do i=1,ntens
+         flow(i) = dphi(i)
+      enddo
 
-      do i=1,ndi
-         flow(i) = (stress(i)-shydro)/smises
-      enddo
-      do i=ndi+1,ntens
-         flow(i) = stress(i) / smises
-      enddo
+c$$$      do i=1,ndi
+c$$$         flow(i) = (stress(i)-shydro)/smises
+c$$$      enddo
+c$$$      do i=ndi+1,ntens
+c$$$         flow(i) = stress(i) / smises
+c$$$      enddo
 
 c$$$      write(*,'(a)',advance='no')'----'
 c$$$      write(*,'(e13.3)', advance='no') smises
@@ -143,11 +146,11 @@ c$$$      write(*,*)
 c-----------------------------------------------------------------------
 
 c$$$c     - On PAL
-c$$$      include "/home/younguj/repo/abaqusPy/umats/lib/dev.f"
-c$$$      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
-c$$$      include "/home/younguj/repo/abaqusPy/umats/lib/algb.f"
+      include "/home/younguj/repo/abaqusPy/umats/lib/dev.f"
+      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
+      include "/home/younguj/repo/abaqusPy/umats/lib/algb.f"
 
 c     - on Mac
-      include "/Users/yj/repo/abaqusPy/umats/lib/dev.f"
-      include "/Users/yj/repo/abaqusPy/umats/lib/cnv.f"
-      include "/Users/yj/repo/abaqusPy/umats/lib/algb.f"
+c$$$      include "/Users/yj/repo/abaqusPy/umats/lib/dev.f"
+c$$$      include "/Users/yj/repo/abaqusPy/umats/lib/cnv.f"
+c$$$      include "/Users/yj/repo/abaqusPy/umats/lib/algb.f"
