@@ -65,6 +65,6 @@ c$$$
       end program
 c-----------------------------------------------------------------------
 c$$$!     pal
-c$$$      include "/home/younguj/repo/abaqusPy/umats/lib/vm.f"
+      include "/home/younguj/repo/abaqusPy/umats/lib/vm.f"
 !     mac
-      include "/Users/yj/repo/abaqusPy/umats/lib/vm.f"
+c      include "/Users/yj/repo/abaqusPy/umats/lib/vm.f"
