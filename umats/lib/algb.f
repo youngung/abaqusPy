@@ -7,10 +7,10 @@ c     calculate transformation matrix
       s=dsin(psi)
       r(:,:) = 0.d0
       r(1,1) =  c
-      r(1,2) = -s
+      r(1,2) =  s*(-1.d0)
       r(2,1) =  s
       r(2,2) =  c
-      r(3,3) =  1.
+      r(3,3) =  1.d0
       return
       end subroutine inplane_rot_matrix
 c-----------------------------------------------------------------------

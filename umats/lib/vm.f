@@ -89,8 +89,10 @@ c     dphi_i/round(s_j) = rr(phi)/{round(H)*round(s_j)} x round(H)/round(s_i) +
 c                         round(round(phi)/ round (H) x
       do 10 i=1,6
       do 10 j=1,6
-         d2phi(i,j) = d2phi(i,j) + 1.d0/4.d0 * phi**(-3.d0)*
-     $        dh(j) * dh(i) + dff * d2h(i,j)
+         d2phi(i,j) = 1.d0/8.d0 * phi**(-5.d0/2.d0)*dh(j)*dh(i) +
+     $                1.d0/2.d0 * phi**(-1.d0/2.d0)*d2h(i,j)
+c$$$         d2phi(i,j) = d2phi(i,j) + 1.d0/4.d0 * phi**(-3.d0)*
+c$$$     $        dh(j) * dh(i) + dff * d2h(i,j)
  10   continue
       return
       end subroutine vm_gen

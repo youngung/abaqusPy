@@ -21,3 +21,16 @@ c     Given stress s3; plane stress condition with s(3) = 0.
       sd(3) = s(3)              !! shear component s12
       return
       end subroutine deviat3
+c     Given array a33, find deviatoric part and its trace
+      subroutine deviat33(a,ad,amean)
+      implicit none
+      real*8 a(3,3),ad6(6),ad(3,3),amean,a6(6)
+      call voigt1(a,a6)
+      call deviat6(a6,ad6,amean)
+      call voigt2(ad6,ad)
+      return
+      end subroutine
+c     on Pal
+c$$$  include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
+c     on Mac
+c      include "/Users/yj/repo/abaqusPy/umats/lib/cnv.f"
