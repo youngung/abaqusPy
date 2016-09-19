@@ -27,7 +27,7 @@ c$$$  local arrays
       real*8 e,enu,G,eK,Cel(ntens,ntens)
 
 c     predictor stress
-      real*8 s_pr(ntens)
+      real*8 spr(ntens)
       real*8 voce_params(4)
 
       real*8 eeq_n,yld_h,dh
@@ -46,33 +46,34 @@ c     predictor stress
       voce_params(4) = 70.87
 
       eeq_n = statev(1) ! previous equivalent plastic strain (at step n)
-
+      stran_el(:) = statev(2:2+ntens)
 
 c     Moduluar pseudo code for stress integration
 
 c     i.   Check the current (given) variables
       call emod_iso_shell(e,enu,G,eK,Cel)
 c     ii.  Trial stress calculation
-      call mult_array(e,stress,ntens,nshr,s_pr)
+      call mult_array(e,stress,ntens,nshr,spr)
 c     iii. See if the pr stress calculation is in the plastic or elastic regime
       call voce(eeq_n, voce_params(1),voce_params(2),voce_params(3),
      $     voce_params(1),yld_h,dh)
       call vm_shell(stress,phi_n,dphi_n,d2phi_n)
-
 
 c     if elastic,
       if (phi_n<yld_h) then
 c              1. Save jacobian as elastic moduli
          ddsdde(:,:) = Cel(:,:)
 c              2. Update strain.
-         call add_array(strans,dstrans,ntens)
+         call add_array(stran,dstran,ntens)
 c              3. Update stress,
          call multi_array(ddsdde,strans)
 c              4. Update other state varaiables (if necessary)
          return
 c     elif plastic, go to iv
       else
-         call return_mapping()
+         call return_mapping(spr,phi_n,eeq_n,dphi_n,voce_params,
+     $        dstran,stran,stran_el)
+
       endif
 
 c     v. Exit from iv. means

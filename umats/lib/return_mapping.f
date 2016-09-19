@@ -1,19 +1,25 @@
+c-----------------------------------------------------------------------
+c     Return mapping subroutine to find stress at n-1 step
+c     and integrate all state variables during the given incremental
+c     step defined by dstran (rate-independent ... yet?)
       subroutine return_mapping(spr,phi_n,eeq_n,dphi_n,voce_params,
      $     dstran,stran,stran_el)
+c     Arguments
+c-----------------------------------------------------------------------
 c     spr    : predictor stress at k=0
 c     eeq_n  : accumulative plastic equivalent strain at step n
 c     dphi_n : dphi at step n
 c     voce_params (quite self-explanatory)
 c     dstran : total incremental strain given between steps n and n+1
 c     stran  : total cumulative strain at step n
-
+c     stran_el: total elastic strain at step n
       implicit none
       integer ntens
       dimension spr(ntens), dphi_n(ntens),sn1(ntens),s_k(ntens),
      $     spr_k(0:mxnr,ntens),dstran(ntens),stran(ntens),
      $     stran_el(ntens),dstran_el(ntens),dstran_el_k(ntens),
      $     aux_n(ntens),em_k(ntens)
-      real*8 spr,dphi_n,dstran,stran,strain_el,dstran_el,dstran_el_k
+      real*8 spr,dphi_n,dstran,stran,stran_el,dstran_el,dstran_el_k
       real*8 sn1                ! stress at step (n+1) - to be determined
       real*8 s_k,seq_k,spr_k    ! eq stress at nr-step k, stress predic at nr-step k
       real*8 enorm_k(mxnr,ntens) ! m_(n+alpha)
@@ -36,7 +42,6 @@ c     iv. return mapping (loop over k)
          em_k(:) = enorm_k(k,:) !! yield normal at current k
          eeq_k = eeq_n + delta_eeq !! assumed plastic strain at current k
          phi_k = phi_ks(k)
-
          call voce(eeq,voce_params(1),voce_params(2),voce_params(3),
      $        voce_params(1),h_flow,dh)
 c             f   = yield - hardening             (objective function)
@@ -53,8 +58,8 @@ c                Update dE^(el)^(k+1) and update the predictor stress.
 c             s_(n+1)^(k+1) = C^e dE^(el)
          call mult_array(cel,stran_el_k,aux_n)
          spr_k(k+1,:) = aux_n(:)
-c$$$c         3. Find normal of current predictor stress (s_(n+1)^k)
-c$$$c             save the normal to m_(n+alpha)
+c        3. Find normal of current predictor stress (s_(n+1)^k)
+c             save the normal to m_(n+alpha)
          call vm_shell(spr_k(k+1,:),enorm_k(k+1,:),dphi_k,d2phi_k)
          k=k+1
          if (k.ge.mxnr) then
@@ -62,7 +67,7 @@ c$$$c             save the normal to m_(n+alpha)
             stop
          endif
       enddo
-
+      return
       end subroutine
 
 
