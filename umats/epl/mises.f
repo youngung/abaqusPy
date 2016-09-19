@@ -24,8 +24,9 @@ c$$$  End of ABAQUS UMAT Interface
 
 
 c$$$  local arrays
-      real*8 e,enu,G,eK,Cel(ntens,ntens)
-
+      dimension Cel(ntens,ntens),dphi_n(ntens),d2phi_n(ntens,ntens),
+     $     stran_el(ntens),stran_pl(ntens)
+      real*8 e,enu,G,eK,Cel
 c     predictor stress
       real*8 spr(ntens)
       real*8 voce_params(4)
@@ -35,9 +36,9 @@ c     predictor stress
 !     yld_h: flow stress at hardening curve
 !     dh: dH/dE^eq
 
-      real*8 phi_n,dphi_n(ntens),d2phi_n(ntens,ntens)
+      real*8 phi_n,dphi_n,d2phi_n
 
-      real*8 toler_yield
+      real*8 toler_yield,stran_el,stran_pl
       parameter(toler_yield=1e-6)
 
       voce_params(1) = 479.0
@@ -46,7 +47,10 @@ c     predictor stress
       voce_params(4) = 70.87
 
       eeq_n = statev(1) ! previous equivalent plastic strain (at step n)
-      stran_el(:) = statev(2:2+ntens)
+      do i=1,ntens
+         stran_el(i) = statev(i+1)
+         stran_pl(i) = statev(i+1+ntens)
+      enddo
 
 c     Moduluar pseudo code for stress integration
 
@@ -71,8 +75,8 @@ c              4. Update other state varaiables (if necessary)
          return
 c     elif plastic, go to iv
       else
-         call return_mapping(spr,phi_n,eeq_n,dphi_n,voce_params,
-     $        dstran,stran,stran_el)
+         call return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,voce_params,
+     $        dstran,stran,stran_el,ntens)
 
       endif
 

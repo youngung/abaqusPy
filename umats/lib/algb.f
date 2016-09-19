@@ -39,7 +39,7 @@ c-----------------------------------------------------------------------
       do 10 j=1,ntens
          ci(i) = ci(i) + aij(i,j) * bj(j)
  10   continue
-      end subroutine multi_array
+      end subroutine mult_array
 c-----------------------------------------------------------------------
       subroutine add_array(ai,d_ai,ntens)
       implicit none
