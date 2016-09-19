@@ -143,15 +143,28 @@ c-----------------------------------------------------------------------
       implicit none
       integer nth,i,j
       parameter(nth=100)
-      real*8 th(nth)
+      real*8 th,s33(3,3),e33(3,3),s6(3,3),s6(6),pi,s6lab(6),
+     $     s6mat(6),s33lab(3,3),s33mat(3,3),phim,dphim(6),d2phim(6,6),
+     $     phil,dphil(6),d2phil(6,6),dphi33m(3,3)
+      pi=4.d0*datan(1.d0)
 
+      s6lab(:)=0.
+      s6lab(1)=1. !! uniaxial tension
+      call voigt2(s6lab,s33lab)
 
-
+      do 10 i=1,nth
+         th = pi*2.d0/(nth-1) * (i-1)
+         call inplane_rot(th,s33lab,s33mat)
+         call voigt1(s33mat,s6mat)
+c        yield stress is written in material axes
+         call vm_gen(s6mat,phim,dphim,d2phim)
+         call voight2(dphim,dphi33m)
+         write(*,*) th*180.d0/pi,dphi33m(2,2)/dphi33m(3,3)
+ 10   continue
       return
       end program
 c-----------------------------------------------------------------------
 
-
-
-
       include "/home/younguj/repo/abaqusPy/umats/lib/dev.f"
+      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
+      include "/home/younguj/repo/abaqusPy/umats/lib/algb.f"
