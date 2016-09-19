@@ -28,3 +28,26 @@ c-----------------------------------------------------------------------
  10   continue
       return
       end subroutine
+c-----------------------------------------------------------------------
+      subroutine mult_array(aij,bj,ntens,ci)
+      implicit none
+      integer i,j,ntens
+      real*8 aij(ntens,ntens),bj(ntens),ci(ntens)
+
+      ci(:) = 0.d0
+      do 10 i=1,ntens
+      do 10 j=1,ntens
+         ci(i) = ci(i) + aij(i,j) * bj(j)
+ 10   continue
+      end subroutine multi_array
+c-----------------------------------------------------------------------
+      subroutine add_array(ai,d_ai,ntens)
+      implicit none
+      integer ntens, i
+      real*8 ai(ntens),d_ai(ntens)
+
+      do i=1,ntens
+         ai(i) = ai(i) + d_ai(i)
+      enddo
+
+      end subroutine add_array

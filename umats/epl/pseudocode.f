@@ -32,14 +32,15 @@ c     i.   Check the current (given) variables
 c     ii.  Trial stress calculation
 
 c     iii. See if the trial stress calculation is in the plastic or elastic regime
-c          if plastic go to iv
-c          else elastic,
+
+c     if elastic,
 c              1. Save jacobian as elastic moduli
 c              2. Update stress,
 c              3. Update strain.
 c              4. Update other state varaiables (if necessary)
+c     elif plastic, go to iv
 
-c     iv. return mapping (look over k)
+c     iv. return mapping (loop over k)
 c         1. Find normal of current predictor stress (s_(n+1)^k)
 c             save the normal to m_(n+alpha)
 c         2. Configure NR condition

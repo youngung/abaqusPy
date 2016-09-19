@@ -21,34 +21,59 @@ c-----------------------------------------------------------------------
 c$$$  User coding to define DDSDDE, STRESS, STATEV, SSE, SPD, SCD
 c$$$  and, if necessary, RPL, DDSDDT, DRPLDE, DRPLDT, PNEWDT
 c$$$  End of ABAQUS UMAT Interface
-c$$$  implicit none - variables passed through umat
 
 
 c$$$  local arrays
+      real*8 e,enu,G,eK,Cel(ntens,ntens)
+
+c     predictor stress
+      real*8 s_pr(ntens)
+      real*8 voce_params(4)
+
+      real*8 eeq_n,yld_h,dh
+!     eeq_n: eq plastic strain at step n
+!     yld_h: flow stress at hardening curve
+!     dh: dH/dE^eq
+
+      real*8 phi_n,dphi_n(ntens),d2phi_n(ntens,ntens)
+
+      real*8 toler_yield
+      parameter(toler_yield=1e-6)
+
+      voce_params(1) = 479.0
+      voce_params(2) = 339.7
+      voce_params(3) = 7.784
+      voce_params(4) = 70.87
+
+      eeq_n = statev(1) ! previous equivalent plastic strain (at step n)
+
+
 c     Moduluar pseudo code for stress integration
 
 c     i.   Check the current (given) variables
-
+      call emod_iso_shell(e,enu,G,eK,Cel)
 c     ii.  Trial stress calculation
+      call mult_array(e,stress,ntens,nshr,s_pr)
+c     iii. See if the pr stress calculation is in the plastic or elastic regime
+      call voce(eeq_n, voce_params(1),voce_params(2),voce_params(3),
+     $     voce_params(1),yld_h,dh)
+      call vm_shell(stress,phi_n,dphi_n,d2phi_n)
 
-c     iii. See if the trial stress calculation is in the plastic or elastic regime
-c          if plastic go to iv
-c          else elastic,
+
+c     if elastic,
+      if (phi_n<yld_h) then
 c              1. Save jacobian as elastic moduli
-c              2. Update stress,
-c              3. Update strain.
+         ddsdde(:,:) = Cel(:,:)
+c              2. Update strain.
+         call add_array(strans,dstrans,ntens)
+c              3. Update stress,
+         call multi_array(ddsdde,strans)
 c              4. Update other state varaiables (if necessary)
-
-c     iv. return mapping (look over k)
-c         1. Find normal of current predictor stress (s_(n+1)^k)
-c             save the normal to m_(n+alpha)
-c         2. Configure NR condition
-c             f   = yield - hardening             (objective function)
-c             fp  = r(s^eq_(n+1)^k)/r(s_(n+1)^k) (-C^el : r(s^eq_(n+1)^k / r(s_(n+1)^k))
-c         3.  Update the multiplier^(k+1)  (dlamb)
-c             dlamb^(k+1) = dlamb^k - f/fp
-c             find the new predictor stress (using  dE = dE^(el)^(k+1) + dlamb^(k+1))
-c             s_(n+1)^(k+1) = C^e dE^(el)
+         return
+c     elif plastic, go to iv
+      else
+         call return_mapping()
+      endif
 
 c     v. Exit from iv. means
 c       s_(n+1) is obtained.
@@ -73,3 +98,5 @@ c     lib.f
       include "/home/younguj/repo/abaqusPy/umats/lib/lib.f"
 c     diag.f
       include "/home/younguj/repo/abaqusPy/umats/lib/diag.f"
+c     return_mapping.f
+      include "/home/younguj/repo/abaqusPy/umats/lib/return_mapping.f"
