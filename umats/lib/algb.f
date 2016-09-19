@@ -24,7 +24,7 @@ c-----------------------------------------------------------------------
       do 10 j=1,3
       do 10 k=1,3
       do 10 l=1,3
-         b(i,j) = b(i,j) + rot(i,k) * a(k,l) * r(j,l)
+         b33(i,j) = b33(i,j) + rot(i,k) * a33(k,l) * rot(j,l)
  10   continue
       return
       end subroutine

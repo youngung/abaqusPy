@@ -3,7 +3,7 @@ c-----------------------------------------------------------------------
       implicit none
       real*8 cauchy(3), phi,dphi(3),d2phi(3,3),
      $     dphi6(6),d2phi66(6,6),cauchy6(6)
-      integer i,j
+      integer i,j,ii,jj
 
       cauchy6(:) = 0.d0
       cauchy6(1) = cauchy(1)
@@ -105,9 +105,9 @@ c     ntens
 c     ndi
       implicit none
       integer ntens,ndi
-      dimension stress(ntens),devi(ntens),flow(ntens),s6,
+      dimension stress(ntens),devi(ntens),flow(ntens),
      $     dphi(ntens),d2phi(ntens,ntens)
-      real*8 shydro,smises,flow,stress,devi
+      real*8 shydro,smises,flow,stress,devi,phi,d2phi,dphi
       integer i
 
       if (ntens.eq.6 .and. ndi.eq.3) then
@@ -139,32 +139,13 @@ c$$$      write(*,*)
       return
       end subroutine vm_devi_flow
 c-----------------------------------------------------------------------
-      program test_vm
-      implicit none
-      integer nth,i,j
-      parameter(nth=100)
-      real*8 th,s33(3,3),e33(3,3),s6(3,3),s6(6),pi,s6lab(6),
-     $     s6mat(6),s33lab(3,3),s33mat(3,3),phim,dphim(6),d2phim(6,6),
-     $     phil,dphil(6),d2phil(6,6),dphi33m(3,3)
-      pi=4.d0*datan(1.d0)
 
-      s6lab(:)=0.
-      s6lab(1)=1. !! uniaxial tension
-      call voigt2(s6lab,s33lab)
+c$$$c     - On PAL
+c$$$      include "/home/younguj/repo/abaqusPy/umats/lib/dev.f"
+c$$$      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
+c$$$      include "/home/younguj/repo/abaqusPy/umats/lib/algb.f"
 
-      do 10 i=1,nth
-         th = pi*2.d0/(nth-1) * (i-1)
-         call inplane_rot(th,s33lab,s33mat)
-         call voigt1(s33mat,s6mat)
-c        yield stress is written in material axes
-         call vm_gen(s6mat,phim,dphim,d2phim)
-         call voight2(dphim,dphi33m)
-         write(*,*) th*180.d0/pi,dphi33m(2,2)/dphi33m(3,3)
- 10   continue
-      return
-      end program
-c-----------------------------------------------------------------------
-
-      include "/home/younguj/repo/abaqusPy/umats/lib/dev.f"
-      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
-      include "/home/younguj/repo/abaqusPy/umats/lib/algb.f"
+c     - on Mac
+      include "/Users/yj/repo/abaqusPy/umats/lib/dev.f"
+      include "/Users/yj/repo/abaqusPy/umats/lib/cnv.f"
+      include "/Users/yj/repo/abaqusPy/umats/lib/algb.f"
