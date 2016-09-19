@@ -65,6 +65,7 @@ def TensileOneElement(
     myMatFunc = None
     """
     ### Model declaration
+    gpa=1.e9
     label='%2.2i'%int(Theta)
 
     if type(umatFN)==type(None):
@@ -142,7 +143,7 @@ def TensileOneElement(
     else:
         myMat = myModel.Material('myUMAT')
         myMat.UserMaterial(mechanicalConstants=(200e9,0.3))
-        myMat.Depvar(n=7) ## Number of state variables
+        myMat.Depvar(n=10) ## Number of state variables
 
     ### Create Shell Section!
     thickness = 1e-3 ## 1 mm thickness
