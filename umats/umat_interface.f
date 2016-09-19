@@ -1,28 +1,31 @@
 c$$$  ABAQUS UMAT Interface.
-      SUBROUTINE UMAT(STRESS,STATEV,DDSDDE,SSE,SPD,SCD,
-     1     RPL,DDSDDT,DRPLDE,DRPLDT,
-     2     STRAN,DSTRAN,TIME,DTIME,TEMP,DTEMP,PREDEF,DPRED,CMNAME,
-     3     NDI,NSHR,NTENS,NSTATV,PROPS,NPROPS,COORDS,DROT,PNEWDT,
-     4     CELENT,DFGRD0,DFGRD1,NOEL,NPT,LAYER,KSPT,JSTEP,KINC)
+      SUBROUTINE UMAT(STRESS,STATEV,DDSDDE,SSE,SPD,SCD,RPL,DDSDDT,DRPLDE
+     $     ,DRPLDT,STRAN,DSTRAN,TIME,DTIME,TEMP,DTEMP,PREDEF,DPRED,
+     $     CMNAME,NDI,NSHR,NTENS,NSTATV,PROPS,NPROPS,COORDS,DROT,PNEWDT,
+     $     CELENT,DFGRD0,DFGRD1,NOEL,NPT,LAYER,KSPT,JSTEP,KINC)
 C
       INCLUDE 'ABA_PARAM.INC'
+c      implicit none  !! to test the namespace in UMAT
 C
       CHARACTER*80 CMNAME
-      DIMENSION STRESS(NTENS),STATEV(NSTATV),
-     1     DDSDDE(NTENS,NTENS),DDSDDT(NTENS),DRPLDE(NTENS),
-     2     STRAN(NTENS),DSTRAN(NTENS),TIME(2),PREDEF(1),DPRED(1),
-     3     PROPS(NPROPS),COORDS(3),DROT(3,3),DFGRD0(3,3),DFGRD1(3,3),
-     4     JSTEP(4)
-
-
-c$$$  user coding to define DDSDDE, STRESS, STATEV, SSE, SPD, SCD
+      DIMENSION STRESS(NTENS),STATEV(NSTATV),DDSDDE(NTENS,NTENS),
+     $     DDSDDT(NTENS),DRPLDE(NTENS),STRAN(NTENS),DSTRAN(NTENS),
+     $     TIME(2),PREDEF(1),DPRED(1),PROPS(NPROPS),COORDS(3),DROT(3,3),
+     $     DFGRD0(3,3),DFGRD1(3,3),JSTEP(4)
+      integer NDI,NSHR,NTENS,NSTATV,NPROPS,NOEL,NPT,LAYER,KSPT,JSTEP,
+     $     KINC,kstep
+      real*8 STRESS,STATEV,DDSDDE,SSE,SPD,SCD,RPL,DDSDDT,DRPLDE,DRPLDT,
+     $     STRAN,DSTRAN,TIME,DTIME,TEMP,DTEMP,PREDEF,DPRED,PROPS,COORDS,
+     $     DROT,PNEWDT,CELENT,DFGRD0,DFGRD1,syield
+c-----------------------------------------------------------------------
+c$$$  User coding to define DDSDDE, STRESS, STATEV, SSE, SPD, SCD
 c$$$  and, if necessary, RPL, DDSDDT, DRPLDE, DRPLDT, PNEWDT
-      
 c$$$  End of ABAQUS UMAT Interface
-      
+
+
+
       RETURN
       END
-
 c$$$  CMNAME: User material name - useful in case there are multiple types of user materials discussed
 c$$   in the umat subroutine
 
@@ -42,7 +45,7 @@ c$$$  PROPS(NPROPS): Array of material constants
 
 c$$$  DDSDDE: Jacobian matrix of the constitutive model: round incr(sigma) / round incr(epsilon)
 c$$$  DDSDDE(ntens,ntens)
-      DDSDDE(i,j) defines the change in ith stress component at the end of the time increment caused by an infinitesimal
+c$$$  DDSDDE(i,j) defines the change in ith stress component at the end of the time increment caused by an infinitesimal
 
 c$$$  STATEV(NSTATV) an array containing the solution-dependent state variables.
 
