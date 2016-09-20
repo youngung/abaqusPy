@@ -19,21 +19,27 @@ c     stran_pl: total plastic strain at step n
       character*20 chr
       integer ntens,mxnr
       parameter(mxnr=10)
+c-----------------------------------------------------------------------
       dimension spr(ntens),dphi_n(ntens),sn1(ntens),s_k(ntens),
      $     spr_ks(mxnr,ntens),dstran(ntens),stran(ntens),
-     $     stran_el(ntens),stran_pl(ntens),
-     $     dstran_el(ntens),dstran_el_k(ntens),
+     $     stran_el(ntens),
+     $     dstran_el(ntens),dstran_el_k(ntens),stran_el_ks(mxnr,ntens),
+     $     stran_pl(ntens),
+     $     dstran_pl(ntens),dstran_pl_k(ntens),stran_pl_ks(mxnr,ntens),
      $     aux_n(ntens),em_k(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
      $     enorm_k(mxnr,ntens),fo_ks(mxnr),fp_ks(mxnr),dlamb_ks(mxnr),
      $     dphi_ks(mxnr,ntens),d2phi_ks(mxnr,ntens,ntens),phi_ks(mxnr),
      $     voce_params(4),dh_ks(mxnr)
+c-----------------------------------------------------------------------
 
-      real*8 Cel,spr,dphi_n,dstran,stran,stran_el,dstran_el,dstran_el_k,
-     $     stran_el_k,stran_pl
+      real*8 Cel,spr,dphi_n,
+     $     dstran,stran,
+     $     stran_el,dstran_el,dstran_el_k,stran_el_k,stran_el_ks,
+     $     stran_pl,dstran_pl,dstran_pl_k,stran_pl_k,stran_pl_ks
       real*8 sn1                ! stress at step (n+1) - to be determined
       real*8 s_k,seq_k,spr_ks   ! eq stress at nr-step k, stress predic at nr-step k
       real*8 enorm_k            ! m_(n+alpha)
-      real*8 fo_ks,fp_ks              ! Fobjective, Jacobian for NR
+      real*8 fo_ks,fp_ks        ! Fobjective, Jacobian for NR
       real*8 dlamb_k,dlamb_ks,phi_n
       real*8 dphi_ks,d2phi_ks
       real*8 delta_eeq,eeq_n,aux_n,eeq_k,eeq_ks,empa,gpa
