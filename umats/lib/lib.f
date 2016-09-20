@@ -35,6 +35,26 @@ c     imsg: file unit - if imsg =0 use std (*)
       return
       end subroutine w_empty_lines
 c-----------------------------------------------------------------------
+      subroutine fill_line(imsg,chr,n)
+c     imsg: file unit - if imsg =0 use std (*)
+      implicit none
+      character*1 chr
+      integer imsg, n, i
+      if (imsg.eq.0) then
+         do i=1,n
+            write(*,   '(a1)',advance='no') chr
+         enddo
+         write(*,*)
+      else
+         do i=1,n
+            write(imsg,'(a1)',advance='no') chr
+         enddo
+         write(imsg,*)
+      endif
+
+      return
+      end subroutine fill_line
+c-----------------------------------------------------------------------
       character*80 function get_fmt(val)
       implicit none
       real*8 val,aval
