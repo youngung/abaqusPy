@@ -155,9 +155,11 @@ c     fp = dphi_i C_ij dphi_j + H
       subroutine calc_fp(dphi,Cel,dh,ntens,fp)
 c     intent(in) dphi,Cel,dh,ntens
 c     intent(out) fp
+      implicit none
       integer ntens
       dimension s(ntens),Cel(ntens,ntens),dphi(ntens)
-      real*8 s,seq,Cel,dphi
+      real*8 s,seq,Cel,dphi,fp,dh
+      integer i,j
       fp=0.d0
       do 10 i=1,ntens
       do 10 j=1,ntens
