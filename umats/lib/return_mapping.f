@@ -22,7 +22,7 @@ c     stran_el: total elastic strain at step n
      $     spr_ks(mxnr,ntens),dstran(ntens),stran(ntens),
      $     stran_el(ntens),dstran_el(ntens),dstran_el_k(ntens),
      $     aux_n(ntens),em_k(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
-     $     enorm_k(mxnr,ntens),fo(mxnr),fp(mxnr),dlamb_ks(mxnr),
+     $     enorm_k(mxnr,ntens),fo_ks(mxnr),fp_ks(mxnr),dlamb_ks(mxnr),
      $     dphi_k(ntens),d2phi_k(ntens,ntens),phi_ks(mxnr),
      $     voce_params(4)
 
@@ -31,7 +31,7 @@ c     stran_el: total elastic strain at step n
       real*8 sn1                ! stress at step (n+1) - to be determined
       real*8 s_k,seq_k,spr_ks   ! eq stress at nr-step k, stress predic at nr-step k
       real*8 enorm_k            ! m_(n+alpha)
-      real*8 fo,fp              ! Fobjective, Jacobian for NR
+      real*8 fo_ks,fp_ks              ! Fobjective, Jacobian for NR
       real*8 dlamb_k,dlamb_ks,phi_n
       real*8 dphi_k,d2phi_k
       real*8 delta_eeq,eeq_n,aux_n,eeq_k,eeq_ks,empa,gpa
@@ -50,7 +50,8 @@ c     stran_el: total elastic strain at step n
       empa=1d6
       gpa =1d9
 
-      delta_eeq = 0d0
+      delta_eeq = 0d0 ! initial guess on equivalent strain rate contribution to dstran
+      dlamb_ks(1) = delta_eeq
       spr_ks(1,:) = spr(:)       !! stress predictor
       enorm_k(1,:) = dphi_n(:)
       phi_ks(1) = phi_n
@@ -97,25 +98,27 @@ c        unit correction
          h_flow = h_flow * empa
          dh     = dh     * empa
 c        f   = yield - hardening             (objective function)
-         fo(k) = phi_ks(k) - h_flow
-         if (fo(k).le.tolerance)then
+         fo_ks(k) = phi_ks(k) - h_flow
+         if (fo_ks(k).le.tolerance)then
             ibreak=.true.
          else
-            call calc_fp(dphi_k,Cel,dh,ntens,fp(k))
+            call calc_fp(dphi_k,Cel,dh,ntens,fp_ks(k))
          endif
 
          if (idiaw) then
             call w_val(0,'h_flow [MPa]:',h_flow/empa)
             call w_val(0,'dh     [MPa]:',dh/empa)
-            call w_val(0,'fo(k)  [MPa]:',fo(k)/empa)
-            call w_val(0,'fp(k)  [GPa]:',fp(k)/gpa)
+            call w_val(0,'fo_ks(k)[MPa]:',fo_ks(k)/empa)
+            call w_val(0,'fp_ks(k)[GPa]:',fp_ks(k)/gpa)
          endif
+
 
 c------------------------------------------------------------------------
 c         2.  Update the multiplier^(k+1)  (dlamb)
-c             dlamb^(k+1) = dlamb^k - f/fp
-         dlamb_k = dlamb_k - fo(k)/fp(k)
-         dlamb_ks(k) = dlamb_k
+c             dlamb^(k+1) = dlamb^k - fo_ks(k)/fp_ks(k)
+         dlamb_ks(k+1) = dlamb_ks(k) - fo_ks(k)/fp_ks(k)
+         write(*,*) 'dlamb_ks(k+1):',dlamb_ks(k+1)
+         stop
 c             find the new predictor stress for next NR step
 c                Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
 c                Update dE^(el)^(k+1) and update the predictor stress.
