@@ -1,6 +1,8 @@
 c-----------------------------------------------------------------------
-c     calculate transformation matrix
+c     calculate in-plane rotation matrix
       subroutine inplane_rot_matrix(psi,r)
+c     intent(in) psi
+c     intent(out) r
       implicit none
       real*8 r(3,3), psi, c, s
       c=dcos(psi)
@@ -14,7 +16,13 @@ c     calculate transformation matrix
       return
       end subroutine inplane_rot_matrix
 c-----------------------------------------------------------------------
+c     Apply in-plane rotation on array b33
       subroutine inplane_rot(psi,a33,b33)
+c     intent(in)  psi, a33
+c     intent(out) b33
+c     psi
+c     a33
+c     b33
       implicit none
       real*8 psi,a33(3,3),b33(3,3),rot(3,3)
       integer i,j,k,l
@@ -29,25 +37,35 @@ c-----------------------------------------------------------------------
       return
       end subroutine
 c-----------------------------------------------------------------------
+c     Apply tensor inner dot
+c     ci = aij x bj
       subroutine mult_array(aij,bj,ntens,ci)
+c     intent(int) aij,bj,ntens
+c     intent(out) ci
       implicit none
       integer i,j,ntens
       real*8 aij(ntens,ntens),bj(ntens),ci(ntens)
-
       ci(:) = 0.d0
       do 10 i=1,ntens
       do 10 j=1,ntens
          ci(i) = ci(i) + aij(i,j) * bj(j)
  10   continue
+      return
       end subroutine mult_array
 c-----------------------------------------------------------------------
+c     Apply incremental update on array
+c     ai = ai + d_ai
       subroutine add_array(ai,d_ai,ntens)
+c     intent(in) ai, d_ai, ntens
+c     intent(out) ai
+c     ai   : old array
+c     d_ai : increments
+c     ntens: len
       implicit none
       integer ntens, i
       real*8 ai(ntens),d_ai(ntens)
-
       do i=1,ntens
          ai(i) = ai(i) + d_ai(i)
       enddo
-
+      return
       end subroutine add_array

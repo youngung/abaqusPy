@@ -3,7 +3,7 @@ c     Return mapping subroutine to find stress at n-1 step
 c     and integrate all state variables during the given incremental
 c     step defined by dstran (rate-independent ... yet?)
       subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,voce_params,
-     $     dstran,stran,stran_el,ntens)
+     $     dstran,stran,stran_el,ntens,idiaw)
 c     Arguments
 c-----------------------------------------------------------------------
 c     spr    : predictor stress at k=0
@@ -14,6 +14,7 @@ c     dstran : total incremental strain given between steps n and n+1
 c     stran  : total cumulative strain at step n
 c     stran_el: total elastic strain at step n
       implicit none
+      character*255 fndia
       integer ntens,mxnr
       parameter(mxnr=10)
       dimension spr(ntens), dphi_n(ntens),sn1(ntens),s_k(ntens),
@@ -32,10 +33,13 @@ c     stran_el: total elastic strain at step n
       real*8 fo,fp              ! Fobjective, Jacobian for NR
       real*8 dlamb_k,phi_n
       real*8 dphi_k,d2phi_k
-      real*8 delta_eeq,eeq_n,aux_n,eeq_k
+      real*8 delta_eeq,eeq_n,aux_n,eeq_k,empa
       real*8 voce_params,h_flow,dh,phi_k,phi_ks,em_k,tolerance
-      integer k
+      integer k,idia
       parameter(tolerance=1d-10)
+      logical idiaw
+
+      empa=1d6
 
       delta_eeq = 0.
       spr_k(1,:) = spr(:)       !! stress predictor
@@ -44,14 +48,26 @@ c     stran_el: total elastic strain at step n
 
 c     iv. return mapping (loop over k)
       k=1
+
+      idia=315
+
+      if (idiaw) then
+c$$$         fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
+c$$$         open(idia,position='append',file=fndia)
+ 3       call w_empty_lines(idia,3)
+         write(idia,*)'Enter NR--'
+      endif
+
       do while (fo(k)<tolerance)
+
+
          s_k(:) = spr_k(k,:)    !! predictor stress at current k
          em_k(:) = enorm_k(k,:) !! yield normal at current k
          eeq_k = eeq_n + delta_eeq !! assumed plastic strain at current k
          phi_k = phi_ks(k)
          call voce(eeq_k,voce_params(1),voce_params(2),voce_params(3),
      $        voce_params(1),h_flow,dh)
-c             f   = yield - hardening             (objective function)
+c        f   = yield - hardening             (objective function)
          fo(k) = phi_ks(k) - h_flow
          call calc_fp(dphi_k,Cel,dh,fp(k))
 c         2.  Update the multiplier^(k+1)  (dlamb)
@@ -65,6 +81,16 @@ c                Update dE^(el)^(k+1) and update the predictor stress.
 c             s_(n+1)^(k+1) = C^e dE^(el)
          call mult_array(cel,stran_el_k,aux_n)
          spr_k(k+1,:) = aux_n(:)
+
+
+
+         if (idiaw) then
+            call w_dim(idia,dstran,ntens,1d0,.false.)
+            call w_dim(idia,s_k,ntens,1d0/empa,.false.)
+            write(idia,'(x,a1,x)',advance='no') '|'
+         endif
+
+
 c        3. Find normal of current predictor stress (s_(n+1)^k)
 c             save the normal to m_(n+alpha)
          call vm_shell(spr_k(k+1,:),enorm_k(k+1,:),dphi_k,d2phi_k)
@@ -74,6 +100,10 @@ c             save the normal to m_(n+alpha)
             stop
          endif
       enddo
+
+
+
+c      if (idiaw) close(idia)
       return
       end subroutine
 
