@@ -23,8 +23,8 @@ c     stran_el: total elastic strain at step n
      $     stran_el(ntens),dstran_el(ntens),dstran_el_k(ntens),
      $     aux_n(ntens),em_k(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
      $     enorm_k(mxnr,ntens),fo_ks(mxnr),fp_ks(mxnr),dlamb_ks(mxnr),
-     $     dphi_k(ntens),d2phi_k(ntens,ntens),phi_ks(mxnr),
-     $     voce_params(4)
+     $     dphi_ks(mxnr,ntens),d2phi_ks(mxnr,ntens,ntens),phi_ks(mxnr),
+     $     voce_params(4),dh_ks(mxnr)
 
       real*8 Cel,spr,dphi_n,dstran,stran,stran_el,dstran_el,dstran_el_k,
      $     stran_el_k
@@ -33,9 +33,9 @@ c     stran_el: total elastic strain at step n
       real*8 enorm_k            ! m_(n+alpha)
       real*8 fo_ks,fp_ks              ! Fobjective, Jacobian for NR
       real*8 dlamb_k,dlamb_ks,phi_n
-      real*8 dphi_k,d2phi_k
+      real*8 dphi_ks,d2phi_ks
       real*8 delta_eeq,eeq_n,aux_n,eeq_k,eeq_ks,empa,gpa
-      real*8 voce_params,h_flow,dh,phi_k,phi_ks,em_k,tolerance
+      real*8 voce_params,h_flow,dh_ks,phi_k,phi_ks,em_k,tolerance
       integer k,idia,imsg
       parameter(tolerance=1d-10)
       logical idiaw,ibreak
@@ -92,22 +92,31 @@ c$$$         open(idia,position='append',file=fndia)
             call w_val(0,'phi_n [MPa] :',phi_k/empa)
          endif
 c-----------------------------------------------------------------------
-         call voce(eeq_ks(k),voce_params(1),voce_params(2),
-     $        voce_params(3),voce_params(1),h_flow,dh)
-c        unit correction
-         h_flow = h_flow * empa
-         dh     = dh     * empa
+
+
+
 c        f   = yield - hardening             (objective function)
          fo_ks(k) = phi_ks(k) - h_flow
+
+
          if (fo_ks(k).le.tolerance)then
             ibreak=.true.
          else
-            call calc_fp(dphi_k,Cel,dh,ntens,fp_ks(k))
+c           Find Fp
+c           ** Use values pertaining to n+1 step (assuming that current eeq_ks(k) is correct)
+            call voce(eeq_ks(k),voce_params(1),voce_params(2),
+     $           voce_params(3),voce_params(1),h_flow,dh_ks(k))
+c           unit correction
+            h_flow    = h_flow   * empa
+            dh_ks(k)  = dh_ks(k) * empa
+            call vm_shell(spr_ks(k,:),phi_ks(k),dphi_ks(k,:),
+     $           d2phi_ks(k,:,:))
+            call calc_fp(dphi_ks(k,:),Cel,dh_ks(k),ntens,fp_ks(k))
          endif
 
          if (idiaw) then
             call w_val(0,'h_flow [MPa]:',h_flow/empa)
-            call w_val(0,'dh     [MPa]:',dh/empa)
+            call w_val(0,'dh(k+1)[MPa]:',dh_ks(k+1)/empa)
             call w_val(0,'fo_ks(k)[MPa]:',fo_ks(k)/empa)
             call w_val(0,'fp_ks(k)[GPa]:',fp_ks(k)/gpa)
          endif
@@ -117,7 +126,7 @@ c------------------------------------------------------------------------
 c         2.  Update the multiplier^(k+1)  (dlamb)
 c             dlamb^(k+1) = dlamb^k - fo_ks(k)/fp_ks(k)
          dlamb_ks(k+1) = dlamb_ks(k) - fo_ks(k)/fp_ks(k)
-         write(*,*) 'dlamb_ks(k+1):',dlamb_ks(k+1)
+         call w_val(0,'dlamb_ks(k+1',dlamb_ks(k+1))
          stop
 c             find the new predictor stress for next NR step
 c                Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
@@ -137,7 +146,8 @@ c             s_(n+1)^(k+1) = C^e dE^(el)
 c------------------------------------------------------------------------
 c        3. Find normal of current predictor stress (s_(n+1)^k)
 c             save the normal to m_(n+alpha)
-         call vm_shell(spr_ks(k+1,:),enorm_k(k+1,:),dphi_k,d2phi_k)
+         call vm_shell(spr_ks(k+1,:),enorm_k(k+1,:),dphi_ks(k+1,:),
+     $        d2phi_ks(k+1,:,:))
          k=k+1
          if (k.ge.mxnr) then
             write(*,*) 'Could not converge in NR scheme'
