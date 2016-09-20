@@ -52,8 +52,8 @@ c     predictor stress
       enu=0.3d0
 
       imsg=7
-      idia=131
-      istr=125
+      idia=315
+      istr=425
       if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1) then
          idiaw=.true.
          fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
@@ -157,10 +157,10 @@ c$$$         call print_foot(imsg)
 
          call print_foot(0)
          call print_foot(imsg)
-         stop -1
 c     vi. Return mapping
          call return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,voce_params,
      $        dstran,stran,stran_el,ntens,idiaw)
+         stop -1
          write(imsg,*)'return-mapping'
 c     v. Exit from iv. means
 c       s_(n+1) is obtained.

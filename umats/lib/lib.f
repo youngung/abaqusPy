@@ -40,15 +40,15 @@ c-----------------------------------------------------------------------
       real*8 val,aval
       aval = dabs(val)
       if (                       (aval.lt.1e-3)) then
-         get_fmt="e13.3,x"
+         get_fmt="e10.2,x"
       elseif ((aval.ge.1e-3).and.(aval.lt.1e0 )) then
-         get_fmt="f7.3,x"
+         get_fmt="f9.5,x"
       elseif ((aval.ge.1e0 ).and.(aval.lt.1e3 )) then
-         get_fmt="f7.2,x"
+         get_fmt="f9.3,x"
       elseif ((aval.ge.1e3 ).and.(aval.lt.1e6 )) then
-         get_fmt="f7.1,x"
+         get_fmt="f9.0,x"
       elseif ((aval.ge.1e6 ))                   then
-         get_fmt="e13.3,x"
+         get_fmt="e10.2,x"
       else
          write(*,*) 'Err: Unexpected case of max value'
          stop
@@ -61,6 +61,27 @@ c$$$      write(*,*) get_fmt
 
       return
       end function
+c-----------------------------------------------------------------------
+      subroutine w_val(iunit,str,v)
+c     iunit: file ID
+c     chr : chracter
+      implicit none
+      integer iunit,nc
+      character*80 fmt,get_fmt,ncc
+      character(len=*) str
+      real*8 v
+      fmt = get_fmt(v)
+      nc = len(str)
+      write(ncc,'(i)') nc
+      ncc=adjustl(ncc)
+      fmt = trim('(a')//trim(ncc)//',x,'//trim(fmt)//')'
+      if (iunit.eq.0) then
+         write(*,    trim(fmt)) trim(str),v
+      else
+         write(iunit,trim(fmt)) trim(str),v
+      endif
+      return
+      end subroutine w_val
 c-----------------------------------------------------------------------
       subroutine w_mdim(iunit,array,ndi,fact)
 c     iunit: file ID
