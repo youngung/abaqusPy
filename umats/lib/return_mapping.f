@@ -72,6 +72,11 @@ c      delta_eeq = (dstran(1)**2+dstran(2)**2+dstran(2)**2)/3.d0 !! initial gues
       enorm_k(1,:) = dphi_n(:)
       phi_ks(1) = phi_n
 
+
+      dstran_el_ks(1,:) = dstran(:)
+      dstran_pl_ks(1,:) = 0d0   !! or using delta_eeq ...
+
+
 c------------------------------------------------------------------------
 c     iv. return mapping (loop over k)
       k=1
@@ -95,6 +100,9 @@ c$$$         open(idia,position='append',file=fndia)
          eeq_ks(k) = eeq_n + delta_eeq ! assumed plastic strain at current k
          eeq_k = eeq_ks(k)
          phi_k = phi_ks(k)
+
+         stran_el_ks(k,:) = dstran_el_ks(k,:) + stran_el(:)
+         stran_pl_ks(k,:) = dstran_pl_ks(k,:) + stran_pl(:)
 
          if (idiaw) then
             write(*,*) 'i-NR: ', k
@@ -146,19 +154,38 @@ c             dlamb^(k+1) = dlamb^k - fo_ks(k)/fp_ks(k)
 c             find the new predictor stress for next NR step
 c                Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
 
+         call w_empty_lines(0,2)
+         write(*,*)'dstran'
+         call w_dim(0,dstran(:),ntens,1d0,.false.)
 
+         call w_empty_lines(0,2)
 c        new plastic strain increment
          dstran_pl_ks(k+1,:) = -dlamb_ks(k+1) * dphi_ks(k,:) ! backward
+         write(*,*)'dstran_pl_k'
+         call w_dim(0,dstran_pl_ks(k,:),ntens,1d0,.false.)
          write(*,*)'dstran_pl_k+1'
          call w_dim(0,dstran_pl_ks(k+1,:),ntens,1d0,.false.)
+
+
+         call w_empty_lines(0,2)
 c        new elastic strain increment?
          dstran_el_ks(k+1,:) = dstran(:)  - dstran_pl_ks(k+1,:)
+         write(*,*)'dstran_el_k'
+         call w_dim(0,dstran_el_ks(k,:),ntens,1d0,.false.)
          write(*,*)'dstran_el_k+1'
          call w_dim(0,dstran_el_ks(k+1,:),ntens,1d0,.false.)
+
+
+         call w_empty_lines(0,2)
 c        new plastic acc strain
          stran_pl_ks(k+1,:) = stran_pl(:) + dstran_pl_ks(k+1,:)
+         write(*,*)' stran_pl_k'
+         call w_dim(0, stran_pl_ks(k,:),ntens,1d0,.false.)
          write(*,*)' stran_pl_k+1'
          call w_dim(0, stran_pl_ks(k+1,:),ntens,1d0,.false.)
+
+
+         call w_empty_lines(0,2)
 c        new elastic acc strain
          stran_el_ks(k+1,:) = stran_el(:) + dstran_el_ks(k+1,:)
          write(*,*)' stran_el_k'
@@ -166,11 +193,16 @@ c        new elastic acc strain
          write(*,*)' stran_el_k+1'
          call w_dim(0, stran_el_ks(k+1,:),ntens,1d0,.false.)
 
-         stop
 
 c         Update dE^(el)^(k+1) and update the predictor stress.
 
          call mult_array(cel,stran_el_ks(k+1,:),spr_ks(k+1,:))
+         write(*,*)' old predictor stress'
+         call w_dim(0, spr_ks(k,:),ntens,1d0,.false.)
+         write(*,*)' new predictor stress'
+         call w_dim(0, spr_ks(k+1,:),ntens,1d0,.false.)
+
+         stop
 
          if (idiaw) then
             call w_dim(idia,dstran,ntens,1d0,.false.)
