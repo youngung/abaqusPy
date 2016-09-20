@@ -18,7 +18,7 @@ c     stran_el: total elastic strain at step n
       character*20 chr
       integer ntens,mxnr
       parameter(mxnr=10)
-      dimension spr(ntens), dphi_n(ntens),sn1(ntens),s_k(ntens),
+      dimension spr(ntens),dphi_n(ntens),sn1(ntens),s_k(ntens),
      $     spr_k(0:mxnr,ntens),dstran(ntens),stran(ntens),
      $     stran_el(ntens),dstran_el(ntens),dstran_el_k(ntens),
      $     aux_n(ntens),em_k(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
@@ -40,6 +40,13 @@ c     stran_el: total elastic strain at step n
       parameter(tolerance=1d-10)
       logical idiaw,ibreak
 
+
+      write(*,*)'ntens:',ntens
+      if (ntens.ne.3) then
+         write(*,*)'Err: unexpected dimension of tensor given',ntens
+         stop
+      endif
+
       empa=1d6
       gpa =1d9
 
@@ -48,6 +55,7 @@ c     stran_el: total elastic strain at step n
       enorm_k(1,:) = dphi_n(:)
       phi_ks(1) = phi_n
 
+c------------------------------------------------------------------------
 c     iv. return mapping (loop over k)
       k=1
 
@@ -82,9 +90,9 @@ c$$$         open(idia,position='append',file=fndia)
             call w_val(0,'eeq_k       :',eeq_k)
             call w_val(0,'phi_n [MPa] :',phi_k/empa)
          endif
-
-         call voce(eeq_ks(k),voce_params(1),voce_params(2),voce_params(3),
-     $        voce_params(1),h_flow,dh)
+c-----------------------------------------------------------------------
+         call voce(eeq_ks(k),voce_params(1),voce_params(2),
+     $        voce_params(3),voce_params(1),h_flow,dh)
 c        unit correction
          h_flow = h_flow * empa
          dh     = dh     * empa
@@ -93,7 +101,7 @@ c        f   = yield - hardening             (objective function)
          if (fo(k).le.tolerance)then
             ibreak=.true.
          else
-            call calc_fp(dphi_k,Cel,dh,fp(k))
+            call calc_fp(dphi_k,Cel,dh,ntens,fp(k))
          endif
 
          if (idiaw) then
@@ -103,6 +111,7 @@ c        f   = yield - hardening             (objective function)
             call w_val(0,'fp(k)  [MPa]:',fp(k)/empa)
          endif
 
+c------------------------------------------------------------------------
 c         2.  Update the multiplier^(k+1)  (dlamb)
 c             dlamb^(k+1) = dlamb^k - f/fp
          dlamb_k = dlamb_k - fo(k)/fp(k)
@@ -122,7 +131,7 @@ c             s_(n+1)^(k+1) = C^e dE^(el)
             write(idia,'(x,a1,x)',advance='no') '|'
          endif
 
-
+c------------------------------------------------------------------------
 c        3. Find normal of current predictor stress (s_(n+1)^k)
 c             save the normal to m_(n+alpha)
          call vm_shell(spr_k(k+1,:),enorm_k(k+1,:),dphi_k,d2phi_k)
