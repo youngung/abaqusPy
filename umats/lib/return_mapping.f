@@ -19,7 +19,7 @@ c     stran_el: total elastic strain at step n
       integer ntens,mxnr
       parameter(mxnr=10)
       dimension spr(ntens),dphi_n(ntens),sn1(ntens),s_k(ntens),
-     $     spr_k(0:mxnr,ntens),dstran(ntens),stran(ntens),
+     $     spr_ks(mxnr,ntens),dstran(ntens),stran(ntens),
      $     stran_el(ntens),dstran_el(ntens),dstran_el_k(ntens),
      $     aux_n(ntens),em_k(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
      $     enorm_k(mxnr,ntens),fo(mxnr),fp(mxnr),dlamb_ks(mxnr),
@@ -29,7 +29,7 @@ c     stran_el: total elastic strain at step n
       real*8 Cel,spr,dphi_n,dstran,stran,stran_el,dstran_el,dstran_el_k,
      $     stran_el_k
       real*8 sn1                ! stress at step (n+1) - to be determined
-      real*8 s_k,seq_k,spr_k    ! eq stress at nr-step k, stress predic at nr-step k
+      real*8 s_k,seq_k,spr_ks   ! eq stress at nr-step k, stress predic at nr-step k
       real*8 enorm_k            ! m_(n+alpha)
       real*8 fo,fp              ! Fobjective, Jacobian for NR
       real*8 dlamb_k,dlamb_ks,phi_n
@@ -51,7 +51,7 @@ c     stran_el: total elastic strain at step n
       gpa =1d9
 
       delta_eeq = 0d0
-      spr_k(1,:) = spr(:)       !! stress predictor
+      spr_ks(1,:) = spr(:)       !! stress predictor
       enorm_k(1,:) = dphi_n(:)
       phi_ks(1) = phi_n
 
@@ -73,7 +73,7 @@ c$$$         open(idia,position='append',file=fndia)
       ibreak=.false.
       do while (.not.(ibreak))
 
-         s_k(:) = spr_k(k,:)    ! predictor stress at current k
+         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
          em_k(:) = enorm_k(k,:) ! yield normal at current k
          eeq_ks(k) = eeq_n + delta_eeq ! assumed plastic strain at current k
          eeq_k = eeq_ks(k)
@@ -108,7 +108,7 @@ c        f   = yield - hardening             (objective function)
             call w_val(0,'h_flow [MPa]:',h_flow/empa)
             call w_val(0,'dh     [MPa]:',dh/empa)
             call w_val(0,'fo(k)  [MPa]:',fo(k)/empa)
-            call w_val(0,'fp(k)  [MPa]:',fp(k)/empa)
+            call w_val(0,'fp(k)  [GPa]:',fp(k)/gpa)
          endif
 
 c------------------------------------------------------------------------
@@ -123,7 +123,7 @@ c                Update dE^(el)^(k+1) and update the predictor stress.
          call add_array(stran_el_k,dstran_el,ntens)
 c             s_(n+1)^(k+1) = C^e dE^(el)
          call mult_array(cel,stran_el_k,aux_n)
-         spr_k(k+1,:) = aux_n(:)
+         spr_ks(k+1,:) = aux_n(:)
 
          if (idiaw) then
             call w_dim(idia,dstran,ntens,1d0,.false.)
@@ -134,7 +134,7 @@ c             s_(n+1)^(k+1) = C^e dE^(el)
 c------------------------------------------------------------------------
 c        3. Find normal of current predictor stress (s_(n+1)^k)
 c             save the normal to m_(n+alpha)
-         call vm_shell(spr_k(k+1,:),enorm_k(k+1,:),dphi_k,d2phi_k)
+         call vm_shell(spr_ks(k+1,:),enorm_k(k+1,:),dphi_k,d2phi_k)
          k=k+1
          if (k.ge.mxnr) then
             write(*,*) 'Could not converge in NR scheme'
