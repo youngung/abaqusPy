@@ -21,7 +21,7 @@ c     stran_el: total elastic strain at step n
       dimension spr(ntens), dphi_n(ntens),sn1(ntens),s_k(ntens),
      $     spr_k(0:mxnr,ntens),dstran(ntens),stran(ntens),
      $     stran_el(ntens),dstran_el(ntens),dstran_el_k(ntens),
-     $     aux_n(ntens),em_k(ntens),Cel(ntens),eeq_ks(mxnr),
+     $     aux_n(ntens),em_k(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
      $     enorm_k(mxnr,ntens),fo(mxnr),fp(mxnr),dlamb_ks(mxnr),
      $     dphi_k(ntens),d2phi_k(ntens,ntens),phi_ks(mxnr),
      $     voce_params(4)
