@@ -21,11 +21,18 @@ c     stran_pl: total plastic strain at step n
       parameter(mxnr=10)
 c-----------------------------------------------------------------------
       dimension spr(ntens),dphi_n(ntens),sn1(ntens),s_k(ntens),
-     $     spr_ks(mxnr,ntens),dstran(ntens),stran(ntens),
+     $     spr_ks(mxnr,ntens),
+     $     dstran(ntens),stran(ntens),
+
+
      $     stran_el(ntens),
-     $     dstran_el(ntens),dstran_el_k(ntens),stran_el_ks(mxnr,ntens),
+     $     dstran_el(ntens),dstran_el_ks(mxnr,ntens),
+     $     stran_el_ks(mxnr,ntens),
      $     stran_pl(ntens),
-     $     dstran_pl(ntens),dstran_pl_k(ntens),stran_pl_ks(mxnr,ntens),
+     $     dstran_pl(ntens),dstran_pl_ks(mxnr,ntens),
+     $     stran_pl_ks(mxnr,ntens),
+
+
      $     aux_n(ntens),em_k(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
      $     enorm_k(mxnr,ntens),fo_ks(mxnr),fp_ks(mxnr),dlamb_ks(mxnr),
      $     dphi_ks(mxnr,ntens),d2phi_ks(mxnr,ntens,ntens),phi_ks(mxnr),
@@ -34,8 +41,8 @@ c-----------------------------------------------------------------------
 
       real*8 Cel,spr,dphi_n,
      $     dstran,stran,
-     $     stran_el,dstran_el,dstran_el_k,stran_el_k,stran_el_ks,
-     $     stran_pl,dstran_pl,dstran_pl_k,stran_pl_k,stran_pl_ks
+     $     stran_el,dstran_el,dstran_el_ks,stran_el_k,stran_el_ks,
+     $     stran_pl,dstran_pl,dstran_pl_ks,stran_pl_k,stran_pl_ks
       real*8 sn1                ! stress at step (n+1) - to be determined
       real*8 s_k,seq_k,spr_ks   ! eq stress at nr-step k, stress predic at nr-step k
       real*8 enorm_k            ! m_(n+alpha)
@@ -48,7 +55,6 @@ c-----------------------------------------------------------------------
       parameter(tolerance=1d-10)
       logical idiaw,ibreak
 
-
       write(*,*)'ntens:',ntens
       if (ntens.ne.3) then
          write(*,*)'Err: unexpected dimension of tensor given',ntens
@@ -58,7 +64,9 @@ c-----------------------------------------------------------------------
       empa=1d6
       gpa =1d9
 
-      delta_eeq = 0d0 ! initial guess on equivalent strain rate contribution to dstran
+c      delta_eeq = (dstran(1)**2+dstran(2)**2+dstran(2)**2)/3.d0 !! initial guess
+
+      delta_eeq = 0d0           ! initial guess on equivalent strain rate contribution to dstran
       dlamb_ks(1) = delta_eeq
       spr_ks(1,:) = spr(:)       !! stress predictor
       enorm_k(1,:) = dphi_n(:)
@@ -134,15 +142,35 @@ c         2.  Update the multiplier^(k+1)  (dlamb)
 c             dlamb^(k+1) = dlamb^k - fo_ks(k)/fp_ks(k)
          dlamb_ks(k+1) = dlamb_ks(k) - fo_ks(k)/fp_ks(k)
          call w_val(0,'dlamb_ks(k+1)',dlamb_ks(k+1))
-         stop
+
 c             find the new predictor stress for next NR step
 c                Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
-c                Update dE^(el)^(k+1) and update the predictor stress.
-         dstran_el(:) = dstran(:) - dlamb_k
-         call add_array(stran_el_k,dstran_el,ntens)
-c             s_(n+1)^(k+1) = C^e dE^(el)
-         call mult_array(cel,stran_el_k,aux_n)
-         spr_ks(k+1,:) = aux_n(:)
+
+
+c        new plastic strain increment
+         dstran_pl_ks(k+1,:) = -dlamb_ks(k+1) * dphi_ks(k,:) ! backward
+         write(*,*)'dstran_pl_k+1'
+         call w_dim(0,dstran_pl_ks(k+1,:),ntens,1d0,.false.)
+c        new elastic strain increment?
+         dstran_el_ks(k+1,:) = dstran(:)  - dstran_pl_ks(k+1,:)
+         write(*,*)'dstran_el_k+1'
+         call w_dim(0,dstran_el_ks(k+1,:),ntens,1d0,.false.)
+c        new plastic acc strain
+         stran_pl_ks(k+1,:) = stran_pl(:) + dstran_pl_ks(k+1,:)
+         write(*,*)' stran_pl_k+1'
+         call w_dim(0, stran_pl_ks(k+1,:),ntens,1d0,.false.)
+c        new elastic acc strain
+         stran_el_ks(k+1,:) = stran_el(:) + dstran_el_ks(k+1,:)
+         write(*,*)' stran_el_k'
+         call w_dim(0, stran_el_ks(k,:),ntens,1d0,.false.)
+         write(*,*)' stran_el_k+1'
+         call w_dim(0, stran_el_ks(k+1,:),ntens,1d0,.false.)
+
+         stop
+
+c         Update dE^(el)^(k+1) and update the predictor stress.
+
+         call mult_array(cel,stran_el_ks(k+1,:),spr_ks(k+1,:))
 
          if (idiaw) then
             call w_dim(idia,dstran,ntens,1d0,.false.)
