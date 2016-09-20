@@ -1,11 +1,11 @@
-c$$$  ABAQUS 
+c$$$  ABAQUS
       program main
 c      INCLUDE 'ABA_PARAM.INC'
       implicit none  !! to test the namespace in UMAT
 C
       CHARACTER*80 CMNAME
       integer NDI,NSHR,NTENS,NSTATV,NPROPS,NOEL,NPT,LAYER,KSPT,JSTEP,
-     $     KINC,kstep      
+     $     KINC,kstep
       parameter(ntens=6,ndi=3,nshr=3,nstatv=1,nprops=1,noel=1,npt=1,
      $     layer=1,kspt=1,kinc=1,kstep=1)
 
@@ -45,8 +45,8 @@ c$$$  local arrays
          write(*,'(2(f7.3,2x))') eqplas, syield/empa
          eqplas = eqplas + de
       enddo
-         
+
       end program main
 
 c     UHARD using Voce
-      include "/home/younguj/repo/abaqusPy/umats/lib/uhard.f"      
+      include "/home/younguj/repo/abaqusPy/umats/lib/uhard.f"

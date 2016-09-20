@@ -33,13 +33,14 @@ c     stran_el: total elastic strain at step n
       real*8 fo,fp              ! Fobjective, Jacobian for NR
       real*8 dlamb_k,phi_n
       real*8 dphi_k,d2phi_k
-      real*8 delta_eeq,eeq_n,aux_n,eeq_k,empa
+      real*8 delta_eeq,eeq_n,aux_n,eeq_k,empa,gpa
       real*8 voce_params,h_flow,dh,phi_k,phi_ks,em_k,tolerance
       integer k,idia
       parameter(tolerance=1d-10)
       logical idiaw
 
       empa=1d6
+      gpa =1d9
 
       delta_eeq = 0.
       spr_k(1,:) = spr(:)       !! stress predictor
@@ -67,6 +68,10 @@ c$$$         open(idia,position='append',file=fndia)
          phi_k = phi_ks(k)
          call voce(eeq_k,voce_params(1),voce_params(2),voce_params(3),
      $        voce_params(1),h_flow,dh)
+c        unit correction
+         h_flow = h_flow * empa
+         dh     = dh     * empa
+
 c        f   = yield - hardening             (objective function)
          fo(k) = phi_ks(k) - h_flow
          call calc_fp(dphi_k,Cel,dh,fp(k))

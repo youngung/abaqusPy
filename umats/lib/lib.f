@@ -35,59 +35,91 @@ c     imsg: file unit - if imsg =0 use std (*)
       return
       end subroutine w_empty_lines
 c-----------------------------------------------------------------------
-      subroutine w_mdim(imsg,array,ndi)
+      character*80 function get_fmt(val)
       implicit none
-      integer ndi, nshr, imsg, i, j
-      real*8 array(ndi,ndi)
-      do i=1,ndi
-         do j=1,ndi
-            write(imsg, '(e13.3)',advance='no') array(i,j)
-         enddo
-         write(imsg,*)
-      enddo
-      return
-      end subroutine w_mdim
-c-----------------------------------------------------------------------
-      subroutine w_dim(imsg,array,ntens,fact,ibr)
-c     imsg: file ID
-c     array: 1-Dimensional array
-c     ntens: size of the array
-c     fact:multiplicative factor to scale the elements in the array
-c     ibr: flag to insert line-breaker
-      implicit none
-      character*80 fmt,clen
-      dimension array(ntens),brray(ntens)
-      integer ntens,nshr,imsg,i,j
-      real*8 array,fact,mxval,get_mx,mxv,brray
-      logical ibr
-      mxv = get_mx(array,ntens)
-      if (mxv.le.1.) then
-         fmt="e9.2,x"
-      elseif ((mxv.gt.1.).and.(mxv.lt.1e5)) then
-         fmt="f5.2"
-      elseif ((mxv.ge.1e5)) then
-         fmt="e9.2,x"
+      real*8 val,aval
+      aval = dabs(val)
+      if (                       (aval.lt.1e-3)) then
+         get_fmt="e13.3,x"
+      elseif ((aval.ge.1e-3).and.(aval.lt.1e0 )) then
+         get_fmt="f7.3,x"
+      elseif ((aval.ge.1e0 ).and.(aval.lt.1e3 )) then
+         get_fmt="f7.2,x"
+      elseif ((aval.ge.1e3 ).and.(aval.lt.1e6 )) then
+         get_fmt="f7.1,x"
+      elseif ((aval.ge.1e6 ))                   then
+         get_fmt="e13.3,x"
       else
          write(*,*) 'Err: Unexpected case of max value'
          stop
       endif
 
-      do i=1,ntens
-         brray(i) = array(i) * fact
-      enddo
+c     TEST
+c$$$      write(*,*)'val:',aval
+c$$$      write(*,*)'fmt:'
+c$$$      write(*,*) get_fmt
 
-      if (imsg.ne.0) then
-         fmt = '('//trim(fmt)//')'
-         write(*,*)'check fmt for imsg.ne.0'
-         write(*,*)'fmt:',fmt
-         write(imsg,fmt,advance='no') (brray(i),i=1,ntens)
-         if (ibr) write(imsg,*)
+      return
+      end function
+c-----------------------------------------------------------------------
+      subroutine w_mdim(iunit,array,ndi,fact)
+c     iunit: file ID
+c     array: 1-Dimensional array
+c     ndi: size of the (ndi x ndi) array
+c     fact:multiplicative factor to scale the elements in the array
+c     ibr: flag to insert line-breaker
+      implicit none
+      character*80 fmt,clen,get_fmt
+      integer ndi,iunit, i, j
+      real*8 array(ndi,ndi),brray(ndi,ndi),get_mmx,mxv,fact
+      do 10 i=1,ndi
+      do 10 j=1, ndi
+         brray(i,j) = array(i,j) * fact
+ 10   continue
+      mxv = get_mmx(brray,ndi,ndi)
+      fmt = get_fmt(mxv) ! common filter
+
+      write(clen,"(i2)") ndi
+      fmt = '('//trim(clen)//trim(fmt)//')'
+
+      if (iunit.ne.0) then
+         do i=1,ndi
+            write(iunit,fmt) (brray(i,j),j=1,ndi)
+         enddo
       else
-         write(*,*)'check fmt for imsg.eq.0'
-         write(clen,"(i2)") ntens
+         do i=1,ndi
+            write(*   ,fmt) (brray(i,j),j=1,ndi)
+         enddo
+      endif
+      return
+      end subroutine w_mdim
+c-----------------------------------------------------------------------
+      subroutine w_dim(iunit,array,ndi,fact,ibr)
+c     iunit: file ID
+c     array: 1-Dimensional array
+c     ndi: size of the array
+c     fact:multiplicative factor to scale the elements in the array
+c     ibr: flag to insert line-breaker
+      implicit none
+      character*80 fmt,clen,get_fmt
+      dimension array(ndi),brray(ndi)
+      integer ndi,iunit,i,j
+      real*8 array,fact,mxval,get_mx,mxv,brray
+      logical ibr
+      do 10 i=1,ndi
+         brray(i) = array(i) * fact
+ 10   continue
+      mxv = get_mx(brray,ndi)
+      fmt = get_fmt(mxv)
+
+      if (iunit.ne.0) then
+         fmt = '('//trim(fmt)//')'
+         write(iunit,fmt,advance='no') (brray(i),i=1,ndi)
+         if (ibr) write(iunit,*)
+      else
+         write(clen,"(i2)") ndi
          fmt = '('//trim(clen)//trim(fmt)//')'
-         write(*,*)'fmt:',fmt
-         write(*   ,fmt) (brray(i),i=1,ntens)
+         write(*   ,fmt) (brray(i),i=1,ndi)
       endif
       return
       end subroutine w_dim
@@ -103,7 +135,22 @@ c-----------------------------------------------------------------------
          endif
       enddo
       return
-      end function
+      end function get_mx
+c-----------------------------------------------------------------------
+      real*8 function get_mmx(array,ncol,nrow)
+      implicit none
+      integer i,j,ncol,nrow
+      real*8 array(ncol,nrow)
+      get_mmx=array(1,1)
+      do i=1,ncol
+         do j=1,nrow
+            if (array(i,j).gt.get_mmx) then
+               get_mmx=array(i,j)
+            endif
+         enddo
+      enddo
+      return
+      end function get_mmx
 c-----------------------------------------------------------------------
       subroutine pjoin(pardir,fn,fullfn)
       implicit none

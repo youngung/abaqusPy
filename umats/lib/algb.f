@@ -69,3 +69,21 @@ c     ntens: len
       enddo
       return
       end subroutine add_array
+c-----------------------------------------------------------------------
+c     Apply incremental update on array
+c     ci = ai + d_ai
+      subroutine add_array2(ai,d_ai,ci,ntens)
+c     intent(in) ai, d_ai, ntens
+c     intent(out) ci
+c     ai   : old array
+c     d_ai : increments
+c     ci   : new array
+c     ntens: len
+      implicit none
+      integer ntens, i
+      real*8 ai(ntens),d_ai(ntens),ci(ntens)
+      do i=1,ntens
+         ci(i) = ai(i) + d_ai(i)
+      enddo
+      return
+      end subroutine add_array2

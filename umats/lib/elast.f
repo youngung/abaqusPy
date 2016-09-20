@@ -2,32 +2,32 @@ c----------------------------------------------------------------------c
 c     Calculate complete 6x6 ISOTROPIC elastic modulus (c) using
 c     Young's modulus (e) and poisson ratio (nu)
 c----------------------------------------------------------------------c
-
 c$$$  3D shell with S11,S22 and S12
-      subroutine emod_iso_shell(e,nu,G,kappa,c)
+      subroutine emod_iso_shell(e,enu,G,ekappa,cel)
 c     intent(in) e, nu
-c     intent(out) G,kappa,c
-c     e    : Young's modulus
-c     nu   : Poisson ratio
-c     G    : Shear modulus
-c     kappa: bulk modulus
-c     c    : elastic constants
+c     intent(out) G,ekappa,c
+c      e    : Young's modulus
+c      enu  : Poisson ratio
+c      G    : Shear modulus
+c     ekappa: bulk modulus
+c      cel  : elastic constants
       implicit none
-      real*8 c(3,3)
-      real*8 nu, e, x, G, kappa
+      real*8 cel(3,3)
+      real*8 enu, e, x, G, ekappa
       integer i,j
-      c(:,:)=0.d0
+      cel(:,:)=0d0
 c     Multiplier
-      x = e/(1.+nu)/(1.-2.*nu)
-      do i=1,2
-         do j=1,2
-            c(i,j) = x*nu
-         enddo
-         c(i,i) = x*(1.-nu)
-      enddo
-      c(3,3) = x* (1.-2.*nu)/2.
-      kappa = e /3. / (1.-2*nu)
-      G=E/2./(1.+nu)
+      x = e/(1d0+enu)/(1d0-2d0*enu)
+      do 10 i=1,2
+         do 5 j=1,2
+            cel(i,j) = x*enu
+ 5       continue
+         cel(i,i) = x*(1d0-enu)
+ 10   continue
+      cel(3,3) = x* (1d0-2d0*enu)/2d0
+      ekappa = e /3d0 / (1d0-2d0*enu)
+      G=E/2d0/(1d0+enu)
+c      call w_mdim(0,cel,3,1d0)
       return
       end subroutine
 c     -------------------------------------

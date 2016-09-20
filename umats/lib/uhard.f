@@ -56,7 +56,7 @@ c$$$      write(imsg,*) 'hard(1):',hard(1)
 
       RETURN
       END SUBROUTINE UHARD
-
+c-----------------------------------------------------------------------
 c     Voce - rate independent
       subroutine voce(e,a,b0,c,b1,sig,dsig)
       implicit none
@@ -64,12 +64,6 @@ c     Voce - rate independent
 !     Voce
       sig  = a - b0 * exp(-c*e) + b1*e
       dsig = c*b0*exp(-c*e) + b1
-c$$$      write(7,*)'strain:',e
-c$$$      write(7,*)'in voce'
-c$$$      write(7,*)'c,b0,c,b1'
-c$$$      write(7,*)c,b0,c,b1
-c$$$      write(7,*)'dsig:'
-c$$$      write(7,*) c*b0*exp(-c*e) + b1
-c$$$      write(7,'(a)') '---===---'
       return
       end subroutine voce
+c-----------------------------------------------------------------------
