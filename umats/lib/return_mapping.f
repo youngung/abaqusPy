@@ -3,7 +3,7 @@ c     Return mapping subroutine to find stress at n-1 step
 c     and integrate all state variables during the given incremental
 c     step defined by dstran (rate-independent ... yet?)
       subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,voce_params,
-     $     dstran,stran,stran_el,ntens,idiaw)
+     $     dstran,stran,stran_el,stran_pl,ntens,idiaw)
 c     Arguments
 c-----------------------------------------------------------------------
 c     spr    : predictor stress at k=0
@@ -13,6 +13,7 @@ c     voce_params (quite self-explanatory)
 c     dstran : total incremental strain given between steps n and n+1
 c     stran  : total cumulative strain at step n
 c     stran_el: total elastic strain at step n
+c     stran_pl: total plastic strain at step n
       implicit none
       character*255 fndia
       character*20 chr
@@ -20,14 +21,15 @@ c     stran_el: total elastic strain at step n
       parameter(mxnr=10)
       dimension spr(ntens),dphi_n(ntens),sn1(ntens),s_k(ntens),
      $     spr_ks(mxnr,ntens),dstran(ntens),stran(ntens),
-     $     stran_el(ntens),dstran_el(ntens),dstran_el_k(ntens),
+     $     stran_el(ntens),stran_pl(ntens),
+     $     dstran_el(ntens),dstran_el_k(ntens),
      $     aux_n(ntens),em_k(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
      $     enorm_k(mxnr,ntens),fo_ks(mxnr),fp_ks(mxnr),dlamb_ks(mxnr),
      $     dphi_ks(mxnr,ntens),d2phi_ks(mxnr,ntens,ntens),phi_ks(mxnr),
      $     voce_params(4),dh_ks(mxnr)
 
       real*8 Cel,spr,dphi_n,dstran,stran,stran_el,dstran_el,dstran_el_k,
-     $     stran_el_k
+     $     stran_el_k,stran_pl
       real*8 sn1                ! stress at step (n+1) - to be determined
       real*8 s_k,seq_k,spr_ks   ! eq stress at nr-step k, stress predic at nr-step k
       real*8 enorm_k            ! m_(n+alpha)
@@ -121,12 +123,11 @@ c           unit correction
             call w_val(0,'fp_ks(k)[GPa]:',fp_ks(k)/gpa)
          endif
 
-
 c------------------------------------------------------------------------
 c         2.  Update the multiplier^(k+1)  (dlamb)
 c             dlamb^(k+1) = dlamb^k - fo_ks(k)/fp_ks(k)
          dlamb_ks(k+1) = dlamb_ks(k) - fo_ks(k)/fp_ks(k)
-         call w_val(0,'dlamb_ks(k+1',dlamb_ks(k+1))
+         call w_val(0,'dlamb_ks(k+1)',dlamb_ks(k+1))
          stop
 c             find the new predictor stress for next NR step
 c                Using  dE = dE^(el)^(k+1) + dlamb^(k+1),

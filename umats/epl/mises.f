@@ -159,7 +159,7 @@ c$$$         call print_foot(imsg)
          call print_foot(imsg)
 c     vi. Return mapping
          call return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,voce_params,
-     $        dstran,stran,stran_el,ntens,idiaw)
+     $        dstran,stran,stran_el,stran_pl,ntens,idiaw)
          stop -1
          write(imsg,*)'return-mapping'
 c     v. Exit from iv. means
