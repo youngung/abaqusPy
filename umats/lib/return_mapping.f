@@ -97,7 +97,7 @@ c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
          call voce(eeq_ks(k),hard_params(1),hard_params(2),
      $        hard_params(3),hard_params(1),h_flow_ks(k),dh_ks(k))
          h_flow_ks(k) = h_flow_ks(k)   * empa
-         dh_ks(k)     = dh_ks(k) * empa
+         dh_ks(k)     = dh_ks(k)       * empa
 
          stran_el_ks(k,:) = dstran_el_ks(k,:) + stran_el(:)
          stran_pl_ks(k,:) = dstran_pl_ks(k,:) + stran_pl(:)
@@ -146,28 +146,26 @@ c------------------------------------------------------------------------
 c         2.  Update the multiplier^(k+1)  (dlamb)
 c             dlamb^(k+1) = dlamb^k - fo_ks(k)/fp_ks(k)
          dlamb_ks(k+1) = dlamb_ks(k) + fo_ks(k)/fp_ks(k)
+
+c     new plastic strain increment
+         dstran_pl_ks(k+1,:) = dlamb_ks(k+1) * dphi_ks(k,:) ! backward
+c     new elastic strain increment?
+         dstran_el_ks(k+1,:) = dstran(:)  - dstran_pl_ks(k+1,:)
+c     new plastic acc strain
+         stran_pl_ks(k+1,:) = stran_pl(:) + dstran_pl_ks(k+1,:)
+c        new elastic acc strain
+c     Update dE^(el)^(k+1) and update the predictor stress.
+         stran_el_ks(k+1,:) = stran_el(:) + dstran_el_ks(k+1,:)
+
+c     find the new predictor stress for next NR step
+c     Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
+         call mult_array(cel,stran_el_ks(k+1,:),ntens,spr_ks(k+1,:))
          if (idiaw) then
             call w_val(idia,'dlamb_ks(k+1)',dlamb_ks(k+1))
-c             find the new predictor stress for next NR step
-c                Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
-
             call w_empty_lines(idia,2)
             write(idiaw,*)'dstran'
             call w_dim(idia,dstran(:),ntens,1d0,.false.)
             call w_empty_lines(idia,2)
-         endif
-c        new plastic strain increment
-         dstran_pl_ks(k+1,:) = dlamb_ks(k+1) * dphi_ks(k,:) ! backward
-c        new elastic strain increment?
-         dstran_el_ks(k+1,:) = dstran(:)  - dstran_pl_ks(k+1,:)
-c        new plastic acc strain
-         stran_pl_ks(k+1,:) = stran_pl(:) + dstran_pl_ks(k+1,:)
-c        new elastic acc strain
-         stran_el_ks(k+1,:) = stran_el(:) + dstran_el_ks(k+1,:)
-c        Update dE^(el)^(k+1) and update the predictor stress.
-         call mult_array(cel,stran_el_ks(k+1,:),ntens,spr_ks(k+1,:))
-
-         if (idiaw) then
             write(idia,*)'dstran_pl_k'
             call w_dim(idia,dstran_pl_ks(k,:),ntens,1d0,.false.)
             write(idia,*)'dstran_pl_k+1'
@@ -207,12 +205,11 @@ c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
       if (idiaw) call fill_line(idia,'===',72)
       stop -1
 
-
 c     update for n+1 state?
 
-c      if (idiaw) close(idia)
+c     if (idiaw) close(idia)
       return
-      end subroutine
+      end subroutine return_mapping
 
 c-----------------------------------------------------------------------
 c     Calculate fp using the below formula
@@ -232,4 +229,4 @@ c     intent(out) fp
          fp=fp+dphi(i) * Cel(i,j) * dphi(j) +dh
  10   continue
       return
-      end subroutine
+      end subroutine calc_fp
