@@ -101,6 +101,9 @@ c     print head
 c     restore stran_el, stran_pl, and yldp
       call restore_statev(statev,nstatv,eeq_ns(0),stran_el_ns(0,:),
      $     stran_pl_ns(0,:),ntens,yldp_ns(0,:),nyldp,0)
+c     It might be risky to use a non-zero eeq_ns(0) value
+      eeq_ns(0) = 0d0
+
 c     yld parameters pertaining to step n - need to find
 c     the updated yld parameters for step n+1 later...
 
@@ -171,7 +174,6 @@ c-----------------------------------------------------------------------
          call w_chr(idia,'* stress n')
          call w_dim(idia,stress,ntens,1d0/empa,.true.)
 
-
 c$$$           1. Save jacobian as elastic moduli
          ddsdde(:,:) = Cel(:,:)
 c$$$           2. Update strain.
@@ -204,7 +206,6 @@ c$$            5. Store updated state variables to statev
 
          if (idiaw) call w_chr(idia,'6')
 
-
          return
       else !! plastic
 
@@ -217,7 +218,7 @@ c     vi. Return mapping
          call return_mapping(Cel,spr,phi_ns(0),eeq_ns(0),dphi_n,
      $        dstran,stran,stran_el_ns(0,:),stran_pl_ns(0,:),
      $        ntens,idiaw,hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
-     $        yldc,nyldc,yldp_ns,nyldp)
+     $        iyld_law,yldc,nyldc,yldp_ns,nyldp)
          stop -1
          write(imsg,*)'return-mapping'
 c-----------------------------------------------------------------------
@@ -241,8 +242,6 @@ c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) +
       end subroutine umat
 
 c-----------------------------------------------------------------------
-
-
 
 
       subroutine restore_statev(statev,nstatv,eqpl,stran_el,stran_pl,

@@ -4,7 +4,7 @@ c     and integrate all state variables during the given incremental
 c     step defined by dstran (rate-independent ... yet?)
       subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,dstran,stran,
      $     stran_el,stran_pl,ntens,idiaw,hrdp,nhrdp,hrdc,nhrdc,
-     $     ihard_law
+     $     ihard_law,iyld_law,yldc,nyldc,yldp_ns,nyldp
 
 c$$$c     variables to be updated
 c$$$     $     depleq,              ! delta equivalent plastic strain for given time increment
@@ -42,7 +42,7 @@ c-----------------------------------------------------------------------
       implicit none
       character*255 fndia
       character*20 chr
-      integer ntens,mxnr,nhrdc,nhrdp,ihard_law
+      integer ntens,mxnr,nhrdc,nhrdp,ihard_law,iyld_law,nyldc,nyldp
       parameter(mxnr=20)
 c-----------------------------------------------------------------------
       dimension spr(ntens),dphi_n(ntens),
@@ -61,11 +61,12 @@ c-----------------------------------------------------------------------
      $     dphi_ks(mxnr,ntens),d2phi_ks(mxnr,ntens,ntens),phi_ks(mxnr),
      $     dh_ks(mxnr),h_flow_ks(mxnr),
 
-     $     hrdc(nhrdc),hrdp(nhrdp)
+     $     hrdc(nhrdc),hrdp(nhrdp),
+     $     yldc(nyldc),yldp_ns(0:1,nyldp)
 c-----------------------------------------------------------------------
       real*8 Cel,spr,dphi_n,dstran,stran,stran_el,dstran_el,dstran_el_ks
      $     ,stran_el_k,stran_el_ks,stran_pl,dstran_pl,dstran_pl_ks,
-     $     stran_pl_k,stran_pl_ks
+     $     stran_pl_k,stran_pl_ks,yldc,yldp_ns
       real*8 seq_k,spr_ks       ! eq stress at nr-step k, stress predic at nr-step k
       real*8 enorm_ks           ! m_(n+alpha)
       real*8 fo_ks,fp_ks        ! Fobjective, Jacobian for NR
@@ -88,7 +89,9 @@ c-----------------------------------------------------------------------
 
       empa=1d6
       gpa =1d9
-c      delta_eeq = (dstran(1)**2+dstran(2)**2+dstran(2)**2)/3.d0 !! initial guess
+
+c***  non-zero initial might be very risky.
+c     delta_eeq = (dstran(1)**2+dstran(2)**2+dstran(2)**2)/3.d0 !! initial guess
       delta_eeq = 0d0           ! initial guess on equivalent strain rate contribution to dstran
       dlamb_ks(1) = delta_eeq
       spr_ks(1,:) = spr(:)       !! stress predictor
@@ -153,9 +156,6 @@ c        f   = yield - hardening             (objective function)
 c           Find Fp
 c           ** Use values pertaining to n+1 step (assuming that current eeq_ks(k) is correct)
 
-c$$$            call vm_shell(spr_ks(k,:),phi_ks(k),dphi_ks(k,:),
-c$$$     $           d2phi_ks(k,:,:))
-
             call calc_fp(dphi_ks(k,:),Cel,dh_ks(k),ntens,fp_ks(k))
          endif
 
@@ -217,8 +217,15 @@ c     Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
 
 c------------------------------------------------------------------------
 c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
-         call vm_shell(spr_ks(k+1,:),phi_ks(k+1),dphi_ks(k+1,:),
-     $        d2phi_ks(k+1,:,:))
+
+         call update_yldp(iyld_law,yldp_ns,nyldp,dlamb_ks(k+1))
+         call yld(iyld_law,yldp_ns(1,:),yldc,nyldp,nyldc,
+     $        spr_ks(k+1,:),phi_ks(k+1),dphi_ks(k+1,:),
+     $        d2phi_ks(k+1,:,:),ntens)
+
+c$$$         call vm_shell(spr_ks(k+1,:),phi_ks(k+1),dphi_ks(k+1,:),
+c$$$     $        d2phi_ks(k+1,:,:))
+
          k=k+1
       enddo ! end of do while loop for NR procedure
 
@@ -237,7 +244,6 @@ c     States at k will be n+1 state variables
 c     stress     <- spr_ks(k)
 c     dstrain_pl <- dstran_pl_ks(k)
 c     dstrain_el <- dstran_el_ks(k)
-
 
 c     update for n+1 state?
 

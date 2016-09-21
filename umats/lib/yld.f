@@ -31,21 +31,30 @@ c***  Define phi,dphi,d2phi
          write(*,*)'unexpected iyld_law given'
          stop -1
       endif
-
       end subroutine yld
 c-----------------------------------------------------------------------
-      subroutine update_yldp(iyld_law,
-     $     yldp_ns,nyldp,deeq)
+      subroutine update_yldp(iyld_law,yldp_ns,nyldp,deeq)
+c     Arguments
+c     iyld_law : yield function choice
+c     yldp_ns  : yield parameters stored for two separate steps
+c     nyldp    : len of yield parameters for each separate step
+c     deeq     : incremental equivalent plastic strain
+c-----------------------------------------------------------------------
       implicit none
       integer iyld_law,nyldp,nyldc
       dimension yldp_ns(0:1,nyldp)
-      real*8 yldp_ns,eeq
-
-!     update laws.
+      real*8 yldp_ns,deeq
+c     Depending on the choice of yield function
+c     different types (and number) of state varibles are required.
       if (iyld_law.eq.0) then
+c        ! For isotropic hardening, deeq is the sole state variable
+c        that defines the yield surface 'size'
+
+c        Actually, this may be abundant for von Mises isotropic yield function
+c        stress will be sufficient to determine the yield surface...
          yldp_ns(1,1) = deeq + yldp_ns(0,1)
       else
-         write(*,*)'unexpected iyld_law given in update_yldp'
+         write(*,*)'Unexpected iyld_law given in update_yldp'
          stop -1
       endif
       end subroutine update_yldp
