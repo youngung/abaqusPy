@@ -1,6 +1,6 @@
 c-----------------------------------------------------------------------
       subroutine yld(iyld_law,yldp,yldc,nyldp,nyldc,
-     $     phi,dphi,d2phi)
+     $     stress,phi,dphi,d2phi,ntens)
 c-----------------------------------------------------------------------
 c***  Arguments
 c     iyld_law  : choice of yield function
@@ -18,19 +18,14 @@ c-----------------------------------------------------------------------
       implicit none
       integer iyld_law,nyldp,nyldc,ntens
       dimension yldp(nyldp),yldc(nyldc),dphi(ntens),d2phi(ntens,ntens)
-      real*8 yldp,yldc,dphi,d2phi
+      real*8 yldp,yldc,phi,dphi,d2phi
 
 c***  Local variables for better readibility
-      real*8 stress(ntens),strain(ntens)
-
-
-c***  Restore local variables from yldp
-      call restore_yld_statev(
-     $     iyld_law,yldp,nyldp,stress,strain,ntens,1)
-
+      dimension stress(ntens),strain(ntens)
+      real*8 stress,strain
 
 c***  Define phi,dphi,d2phi
-      if (iyld_law.eq.1) then
+      if (iyld_law.eq.0) then
          call vm_shell(stress,phi,dphi,d2phi)
       else
          write(*,*)'unexpected iyld_law given'
@@ -39,31 +34,21 @@ c***  Define phi,dphi,d2phi
 
       end subroutine yld
 c-----------------------------------------------------------------------
-      subroutine restore_yld_statev(iyld_law,yldp,nyldp,
-     $     stress,strain,ntens,iopt)
-c***  Arguments
-c     iopt: behavior (0: save to yldp; 1: read from yldp)
+      subroutine update_yldp(iyld_law,
+     $     yldp,nyldp,eeq)
       implicit none
-      integer iyld_law,nyldp,ntens
-      dimension yldp(nyldp),stress(ntens),strain(ntens)
-      real*8 yldp,stress,strain
-      integer i
+      integer iyld_law,nyldp,nyldc
+      dimension yldp(nyldp)
+      real*8 yldp,eeq
 
-      if (iyld_law.eq.1) then ! von mises
-         if (iopt.eq.0) then
-            do 10 i=1,ntens
-               stress(i) = yldp(i)
- 10         continue
-         else
-            do 10 i=1,ntens
-               yldp(i) = stress(i)
- 10         continue
-         endif
+!     update laws.
+      if (iyld_law.eq.0) then
+         yldp(1) = eeq
       else
-         write(*,*)'unexpected iyld_law given to restore_yld_statev'
+         write(*,*)'unexpected iyld_law given in update_yldp'
+         stop -1
       endif
-
-      end subroutine restore_yld_statev
+      end subroutine update_yldp
 c-----------------------------------------------------------------------
 c     Von Mises
       include "/home/younguj/repo/abaqusPy/umats/lib/vm.f"

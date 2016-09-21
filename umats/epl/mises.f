@@ -23,35 +23,46 @@ c$$$  and, if necessary, RPL, DDSDDT, DRPLDE, DRPLDT, PNEWDT
 c$$$  End of ABAQUS UMAT Interface
 
 
+c-----------------------------------------------------------------------
 c$$$  local arrays
       character*255 fndia,fnstr
       integer nhrdc,nhrdp
       parameter(nhrdc=4,nhrdp=1)
-      dimension Cel(ntens,ntens),dphi_n(ntens),d2phi_n(ntens,ntens),
-     $     stran_el(ntens),stran_pl(ntens),spr(ntens),epr(ntens),
+      dimension Cel(ntens,ntens),phi_ns(0:1),dphi_n(ntens),d2phi_n(ntens,ntens),
+     $     stran_el_ns(0:1,ntens),stran_pl_ns(0:1,ntens),
+     $     dstran_el(ntens),dstran_pl(ntens),
+
+     $     spr(ntens),epr(ntens),
      $     hrdc(nhrdc),hrdp(nhrdp)
       real*8 e,enu,G,eK,Cel
 c     predictor stress
       real*8 spr,epr
       real*8 hrdc,hrdp
-      real*8 eeq_n,yld_h,dh
-!     eeq_n: eq plastic strain at step n
-!     yld_h: flow stress at hardening curve
-!     dh: dH/dE^eq
+      dimension eeq_ns(0:1)
+      real*8 eeq_ns,flow_stress,dflow_stress
+!     eeq_ns: eq plastic strain at steps n,n+1
 
-      real*8 phi_n,dphi_n,d2phi_n
-      real*8 toler_yield,stran_el,stran_pl
+      real*8 phi_ns,dphi_n,d2phi_n
+      real*8 toler_yield,stran_el_ns,stran_pl_ns,dstran_el,dstran_pl
       integer imsg,idia,i,istr,ihrd_law,iyld_law
       logical idiaw
       real*8 empa,gpa
       parameter(toler_yield=1d-6,empa=1d6,gpa=1d9)
 
+
+c$$$  yld function parameters
+      integer nyldp,nyldc
+      parameter(nyldp=1,nyldc=1) ! this depends on iyld_law...
+      dimension yldp(nyldp),yldc(nyldc)
+
+      real*8 yldp,yldc
+
 c-----------------------------------------------------------------------
 c***  hardwired material parameters
 c-----------------------------------------------------------------------
 c**   material constitutive laws
-      ihrd_law=1                ! Voce isotropic hardening
-      iyld_law=1                ! von Mises (shell)
+      ihrd_law=0                ! Voce isotropic hardening
+      iyld_law=0                ! von Mises (shell)
 c**   hardening parameters
       hrdc(1) = 479.0d0
       hrdc(2) = 339.7d0
@@ -61,110 +72,152 @@ c**   elastic constants
       e = 210d0*gpa
       enu=0.3d0
 c-----------------------------------------------------------------------
-
       imsg=7
       idia=0  !315
       istr=425
-      if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1) then
-         idiaw=.true.
+!cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
+      idiaw=.true.
+      write(*,*)'0 idiaw:',idiaw
+      if (.true.) then
+
          fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
          fnstr='/home/younguj/repo/abaqusPy/examples/one/strstr.txt'
-         open(idia,position='append',file=fndia)
-         open(istr,position='append',file=fnstr)
+         if (idia.ne.0) then
+            open(idia,position='append',file=fndia)
+         endif
+         if (istr.ne.0) then
+            open(istr,position='append',file=fnstr)
+         endif
       endif
       write(*,*)'** File opened **'
+
+
+      write(*,*)'1 idiaw:',idiaw
 
 c     print head
       call print_head(0)
       call print_head(imsg)
 
-      call restore_statev(statev,nstatv,eeq_n,stran_el,stran_pl,
-     $     ntens,0)
-      write(*,*)'** state variable stored **'
+c     restore stran_el, stran_pl, and yldp
+      call restore_statev(statev,nstatv,eeq_ns(0),stran_el_ns(0,:),
+     $     stran_pl_ns(0,:),ntens,yldp,nyldp,0)
+c     yld parameters pertaining to step n - need to find
+c     the updated yld parameters for step n+1 later...
+
       if (idiaw) then
-         write(idia,*)'* stran'
+         call w_chr(idia,'** state variable stored **')
+         call w_chr(idia,'* stran')
          call w_dim(idia,stran,ntens,1d0,.true.)
-         write(,*)'* stran_el'
-         call w_dim(idia,stran_el,ntens,1d0,.true.)
-         write(*,*)'* stran_pl'
-         call w_dim(idia,stran_pl,ntens,1d0,.true.)
-         write(*,*)'* dstran'
+         call w_chr(idia,'* stran_el at step n')
+         call w_dim(idia,stran_el_ns(0,:),ntens,1d0,.true.)
+         call w_chr(idia,'* stran_pl at step n')
+         call w_dim(idia,stran_pl_ns(0,:),ntens,1d0,.true.)
+         call w_chr(idia,'* dstran')
          call w_dim(idia,dstran,ntens,1d0,.true.)
       endif
+
+      write(*,*)'2 idiaw:',idiaw
 
 c     Moduluar pseudo code for stress integration
 
 c-----------------------------------------------------------------------
 c     i.   Check the current (given) variables
       call emod_iso_shell(e,enu,G,eK,Cel)
-      write(*,*)'* C^el [GPa]'
-c      call w_mdim(idia,Cel,ntens,1d0/gpa)
-      call w_mdim(   0,Cel,ntens,1d0/gpa)
 c-----------------------------------------------------------------------
 c     ii.  Trial stress calculation
-c     Calculate predict elastic strain
-      call add_array2(stran_el,dstran,epr,ntens)
+c     Calculate predict elastic strain - assuming dstran = dstran_el
+      call add_array2(stran_el_ns(0,:),dstran,epr,ntens)
       call mult_array(Cel,epr,ntens,spr)
-c$$$      write(*,*)    '** MULT_ARRAY **'
-c$$$      write(imsg,*) '** MULT_ARRAY **'
-      write(*,*)'* trial stress [MPa]'
-c      call w_dim(idia,spr,ntens,1d0/empa,.true.)
-      call w_dim(0,spr,ntens,1d0/empa,.true.)
 
+      if (idiaw) then
+         call w_chr( idia,'* C^el [GPa]')
+         call w_mdim(idia,Cel,ntens,1d0/gpa)
+         call w_chr( idia,'* Trial elastic strain ')
+         call w_dim( idia,epr,ntens,1d0,.true.)
+         call w_chr( idia,'* Trial stress [MPa]')
+         call w_dim( idia,spr,ntens,1d0/empa,.true.)
+      endif
 c-----------------------------------------------------------------------
 c     iii. See if the pr stress (spr) calculation is in the plastic or
 c          elastic regime
-      call uhard(ihrd_law,hrdp,nhrdp,hrdc,nhrdc,yld_h,dh,empa)
+      hrdp(1) = eeq_ns(0)
+      call uhard(ihrd_law,hrdp,nhrdp,hrdc,nhrdc,
+     $     flow_stress,dflow_stress,empa)
+      if (idiaw) then
+         call w_val(idia,'% E^eq pl          :',eeq_ns(0))
+         call w_val(idia,'% flow_stress [MPa]:',flow_stress/empa)
+         call w_val(idia,'% dflow       [MPa];',dflow_stress/empa)
+         call w_val(idia,'yldp(1):',yldp(1))
+      endif
 
-c$$$  Use restore_yld_statev and yld for yield function calculations.
-      call restore_yld_statev(iyld_law,yldp,nyldp,spr,strain,ntens,0)
-      call yld(iyld_law,yldp,yldc,nyldp,nyldc,phi_n,dphi_n,d2phi_n)
+      call update_yldp(iyld_law,yldp,nyldp,eeq_ns(0))
+      call w_val(idia,'yldp(1):',yldp(1))
+c     predicting yield surface
+      call yld(iyld_law,yldp,yldc,nyldp,nyldc,spr,
+     $     phi_ns(0),dphi_n,d2phi_n,ntens)
+      if (idiaw) then
+         call w_val(idia,'*         phi step n [MPa]:',
+     $        phi_ns(0)/empa)
+         call w_val(idia,'* flow stress step n [MPa]:',
+     $        flow_stress/empa)
+      endif
 
-      write(*,*)'* phi_n [MPa]', phi_n/empa
-      write(*,*)'* yld_h [MPa]', yld_h/empa
+c-----------------------------------------------------------------------
+      if (phi_ns(0).lt.flow_stress) then ! elastic
 
-      if (phi_n.lt.yld_h) then
-c$$$         write(*,*)    'ELASTIC'
-c$$$         write(imsg,*) 'ELASTIC'
-c              1. Save jacobian as elastic moduli
+         call w_chr(idia,'* stran n')
+         call w_dim(idia,stran,ntens,1d0/empa,.true.)
+         call w_chr(idia,'* stress n')
+         call w_dim(idia,stress,ntens,1d0/empa,.true.)
+
+
+c$$$           1. Save jacobian as elastic moduli
          ddsdde(:,:) = Cel(:,:)
-c              2. Update strain.
+c$$$           2. Update strain.
+         stran_el_ns(1,:) = stran_el_ns(0,:) + dstran(:)
          call add_array(stran,dstran,ntens)
-c$$$         write(*,*)    'ADARRAY'
-c$$$         write(imsg,*) 'ADARRAY'
-c              3. Updates
-c                 3.1 update stress
-         call mult_array(ddsdde,stran,ntens,stress)
-c$$$         write(*,*)    'MULT_array'
-c$$$         write(imsg,*) 'MULT_array'
-c                 3.2 update strain (incremental strain belongs to elastic)
-         do i=1,ntens
-            stran_el(i) = stran_el(i) + dstran(i)
-         enddo
-c              4. Update all other state varaiables
-         call restore_statev(statev,nstatv,eeq_n,stran_el,stran_pl,
-     $        ntens,1)
-c$$$         write(*,*)
-c$$$         write(*,'(a7,i3)',   advance='no')'kinc:',kinc
-c$$$         write(imsg,*)
-c$$$         write(imsg,'(a7,i3)',advance='no')'kinc:',kinc
-c$$$         call w_dim(imsg,stran,ntens,1.d0,.true.)
-c$$$         call w_dim(imsg,stran_el,ntens,1.d0,.true.)
-c$$$         call w_dim(imsg,stran_pl,ntens,1.d0,.true.)
-c$$$         call w_dim(imsg,stress,ntens,1.d0,.true.)
-c$$$         call print_foot(0)
-c$$$         call print_foot(imsg)
-         return
-      else
-         write(*,*)   'PLASTIC'
-         write(imsg,*)'PLASTIC'
+c$$$           3. Updates stress
+         call mult_array(ddsdde,stran_el_ns(1,:),ntens,stress)
 
+         if (idiaw) then
+            call w_chr( idia,'* stress at n+1')
+            call w_dim( idia,stress,ntens,1d0/empa,.true.)
+            call w_chr( idia,'* stran n+1')
+            call w_dim( idia,stran,ntens,1d0/empa,.true.)
+            call w_chr( idia,'* ddsdde')
+            call w_mdim(idia,ddsdde,  ntens,1d0/gpa)
+            call w_chr( idia,'* stran_el_ns(n+1)')
+            call w_dim( idia,stran_el_ns(1,:),ntens,1d0,.true.)
+         endif
+
+         if (idiaw) call w_chr(idia,'5')
+c$$$           4. Update all other state varaiables
+         eeq_ns(1)        = eeq_ns(0)
+         stran_pl_ns(1,:) = stran_pl_ns(0,:)
+         call update_yldp(iyld_law,yldp,nyldp,eeq_ns(1))
+
+c$$            5. Store updated state variables to statev
+         call restore_statev(statev,nstatv,eeq_ns(1),stran_el_ns(1,:),
+     $        stran_pl_ns(1,:),ntens,yldp,nyldp,1)
+
+         if (idiaw) call w_chr(idia,'6')
+
+
+         return
+      else !! plastic
+
+
+         call w_chr(idia,'PLASTIC')
          call print_foot(0)
          call print_foot(imsg)
+
+         stop -1
+
 c-----------------------------------------------------------------------
 c     vi. Return mapping
-         call return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,
-     $        dstran,stran,stran_el,stran_pl,ntens,idiaw,
+         call return_mapping(Cel,spr,phi_ns(0),eeq_ns(0),dphi_n,
+     $        dstran,stran,stran_el_ns(0,:),stran_pl_ns(0,:),
+     $        ntens,idiaw,
      $        hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
      $        yldc,nyldc,yldp,nyldp)
          stop -1
@@ -176,6 +229,8 @@ c        e^pl_(n+1) is obtained.
 c        e^el_(n+1) is obtained.
 c       de^pl_(n+1) is obtained.
 c       de^el_(n+1) is obtained.
+c
+c       Update all state variables. (yldp included.)
 c-----------------------------------------------------------------------
 c     vi. Caculate jacobian (ddsdde)
 c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) + h(depl_ij_(n+1)) ]
@@ -186,9 +241,14 @@ c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) +
       call print_foot(imsg)
       return
       end subroutine umat
+
 c-----------------------------------------------------------------------
+
+
+
+
       subroutine restore_statev(statev,nstatv,eqpl,stran_el,stran_pl,
-     $     ntens,iopt)
+     $     ntens,yldp,nyldp,iopt)
 c     statev  : state variable array
 c     nstatv  : len of statev
 c     eqpl    : equivalent plastic strain
@@ -200,15 +260,19 @@ c                  0: read from statev
 c                  1: save to statev
       implicit none
       integer nstatv,ntens
-      dimension statev(nstatv),stran_el(ntens),stran_pl(ntens)
-      real*8 statev,eqpl,stran_el,stran_pl
-      integer iopt, i
+      dimension statev(nstatv),stran_el(ntens),stran_pl(ntens),
+     $     yldp(nyldp)
+      real*8 statev,eqpl,stran_el,stran_pl,yldp
+      integer iopt, i,nyldp
       if (iopt.eq.0) then
          ! read from statev
          eqpl = statev(1)
          do i=1,ntens
             stran_el(i) = statev(i+1)
             stran_pl(i) = statev(i+1+ntens)
+         enddo
+         do i=1,nyldp
+            yldp(i)     = statev(i+1+ntens*2)
          enddo
       elseif (iopt.eq.1) then
          ! save to statev
@@ -218,47 +282,14 @@ c                  1: save to statev
             statev(i+1)       = stran_el(i)
             statev(i+1+ntens) = stran_pl(i)
          enddo
+         do i=1,nyldp
+            statev(i+1+ntens*2) = yldp(i)
+         enddo
       else
          write(*,*) 'Unexpected iopt given'
          stop
       endif
       end subroutine
-c-----------------------------------------------------------------------
-c     print header
-      subroutine print_head(i)
-c     i: file unit (use std if 0, use imsg elsewhere)
-      integer i
-      call w_empty_lines(i,2)
-      if (i.eq.0) then ! USE std
-         write(*,*) '*------------------*'
-         write(*,*) '|       UMAT       |'
-         write(*,*) '*------------------*'
-      else
-         write(i,*) '*------------------*'
-         write(i,*) '|       UMAT       |'
-         write(i,*) '*------------------*'
-      endif
-      call w_empty_lines(i,1)
-      return
-      end subroutine print_head
-c-----------------------------------------------------------------------
-c     print footer
-      subroutine print_foot(i)
-c     i: file unit (use std if 0, use imsg elsewhere)
-      integer i
-      call w_empty_lines(i,2)
-      if (i.eq.0) then ! USE std
-         write(*,*) '*------------------*'
-         write(*,*) '|       END        |'
-         write(*,*) '*------------------*'
-      else
-         write(i,*) '*------------------*'
-         write(i,*) '|       END        |'
-         write(i,*) '*------------------*'
-      endif
-      call w_empty_lines(i,1)
-      return
-      end subroutine print_foot
 c-----------------------------------------------------------------------
 c     iso elastic
       include "/home/younguj/repo/abaqusPy/umats/lib/elast.f"

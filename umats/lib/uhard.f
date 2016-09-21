@@ -16,7 +16,7 @@ c     fact        : multiplicative factor applied to flow/dflow
       dimension hrdp(nhrdp),hrdc(nhrdc)
       real*8 flow_stress,dflow_stress,hrdp,hrdc,fact
 c-----------------------------------------------------------------------
-      if (ihard_law.eq.1) then  ! voce
+      if (ihard_law.eq.0) then  ! voce
 c        hrdp(1) : equivalent plastic strain
          call voce(hrdp(1),hrdc(1),hrdc(2),hrdc(3),hrdc(4),flow_stress,
      $        dflow_stress)

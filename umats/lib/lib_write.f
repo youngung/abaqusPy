@@ -171,6 +171,42 @@ c     chr : chracter
       return
       end subroutine w_chr
 c-----------------------------------------------------------------------
+c     print header
+      subroutine print_head(i)
+c     i: file unit (use std if 0, use imsg elsewhere)
+      integer i
+      call w_empty_lines(i,2)
+      if (i.eq.0) then ! USE std
+         write(*,*) '*------------------*'
+         write(*,*) '|       UMAT       |'
+         write(*,*) '*------------------*'
+      else
+         write(i,*) '*------------------*'
+         write(i,*) '|       UMAT       |'
+         write(i,*) '*------------------*'
+      endif
+      call w_empty_lines(i,1)
+      return
+      end subroutine print_head
+c-----------------------------------------------------------------------
+c     print footer
+      subroutine print_foot(i)
+c     i: file unit (use std if 0, use imsg elsewhere)
+      integer i
+      call w_empty_lines(i,2)
+      if (i.eq.0) then ! USE std
+         write(*,*) '*------------------*'
+         write(*,*) '|       END        |'
+         write(*,*) '*------------------*'
+      else
+         write(i,*) '*------------------*'
+         write(i,*) '|       END        |'
+         write(i,*) '*------------------*'
+      endif
+      call w_empty_lines(i,1)
+      return
+      end subroutine print_foot
+c-----------------------------------------------------------------------
 
 c$$$      program test
 c$$$      call w_chr(0,'dum')
