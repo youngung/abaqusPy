@@ -7,24 +7,38 @@ c     step defined by dstran (rate-independent ... yet?)
 
 
      $     hrdp,nhrdp,hrdc,nhrdc,ihard_law)
-
-
-c     Arguments
 c-----------------------------------------------------------------------
+c***  Arguments
+c     Cel    : elastic moduli
 c     spr    : predictor stress at k=0
+c     phi_n  : yield surface at the given step n
 c     eeq_n  : accumulative plastic equivalent strain at step n
 c     dphi_n : dphi at step n
 c     dstran : total incremental strain given between steps n and n+1
 c     stran  : total cumulative strain at step n
 c     stran_el: total elastic strain at step n
 c     stran_pl: total plastic strain at step n
+c     ntens   : len of stress/strain tensor (also applied to Cel)
+c     idiaw   : whether or not turn on the diagnostic streams
+c     hrdp    : hardening state variable arrays associated with hrdp
+c               (e.g., equivalent plastic strain for isotropic hardening)
+c     hrdc    : hardening constants (invariable)
+c     nhrdp   : Len of hrdp
+c     nhrdc   : Len of hrdc
+c     ihard_law: hardening law (refer to uhard.f for more details)
+c-----------------------------------------------------------------------
+c***  Intents of Arguments
+c     intent(in) Cel, spr, phi_n, eeq_n, dphi_n, dstran, stran, stran_el,
+c                stran_pl,ntens,idiaw, hrdp,nhrdp,hrdc,nhrdc,ihard_law
+c     intent(out) -- states at n+1 step
+c-----------------------------------------------------------------------
       implicit none
       character*255 fndia
       character*20 chr
       integer ntens,mxnr,nhrdc,nhrdp,ihard_law
       parameter(mxnr=20)
 c-----------------------------------------------------------------------
-      dimension spr(ntens),dphi_n(ntens),sn1(ntens),
+      dimension spr(ntens),dphi_n(ntens),
      $     spr_ks(mxnr,ntens),
      $     dstran(ntens),stran(ntens),
 
@@ -42,13 +56,11 @@ c-----------------------------------------------------------------------
 
      $     hrdc(nhrdc),hrdp(nhrdp)
 c-----------------------------------------------------------------------
-      real*8 Cel,spr,dphi_n,
-     $     dstran,stran,
-     $     stran_el,dstran_el,dstran_el_ks,stran_el_k,stran_el_ks,
-     $     stran_pl,dstran_pl,dstran_pl_ks,stran_pl_k,stran_pl_ks
-      real*8 sn1                ! stress at step (n+1) - to be determined
-      real*8 seq_k,spr_ks   ! eq stress at nr-step k, stress predic at nr-step k
-      real*8 enorm_ks            ! m_(n+alpha)
+      real*8 Cel,spr,dphi_n,dstran,stran,stran_el,dstran_el,dstran_el_ks
+     $     ,stran_el_k,stran_el_ks,stran_pl,dstran_pl,dstran_pl_ks,
+     $     stran_pl_k,stran_pl_ks
+      real*8 seq_k,spr_ks       ! eq stress at nr-step k, stress predic at nr-step k
+      real*8 enorm_ks           ! m_(n+alpha)
       real*8 fo_ks,fp_ks        ! Fobjective, Jacobian for NR
       real*8 dlamb_k,dlamb_ks,phi_n
       real*8 dphi_ks,d2phi_ks
@@ -59,16 +71,18 @@ c-----------------------------------------------------------------------
       parameter(tolerance=1d-6)
       logical idiaw,ibreak
 
-      write(*,*)'ntens:',ntens
       if (ntens.ne.3) then
+         call fill_line(0,'*',72)
+         write(*,*)'ntens:',ntens
          write(*,*)'Err: unexpected dimension of tensor given',ntens
-         stop
+         call fill_line(0,'*',72)
+         stop -1
       endif
 
       empa=1d6
       gpa =1d9
-      delta_eeq = (dstran(1)**2+dstran(2)**2+dstran(2)**2)/3.d0 !! initial guess
-c      delta_eeq = 0d0           ! initial guess on equivalent strain rate contribution to dstran
+c      delta_eeq = (dstran(1)**2+dstran(2)**2+dstran(2)**2)/3.d0 !! initial guess
+      delta_eeq = 0d0           ! initial guess on equivalent strain rate contribution to dstran
       dlamb_ks(1) = delta_eeq
       spr_ks(1,:) = spr(:)       !! stress predictor
       dphi_ks(1,:) = dphi_n(:)
@@ -87,7 +101,7 @@ c      idia=7   ! write to Abaqus msg file
 
       if (idiaw) then
          call w_empty_lines(idia,3)
-         write(idia,*)'Enter NR--'
+         call w_chr(idia,'Enter NR--')
       endif
 
       ibreak=.false.
@@ -96,7 +110,9 @@ c      idia=7   ! write to Abaqus msg file
 c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
          em_k(:) = dphi_ks(k,:) ! yield normal at current k
          eeq_ks(k) = eeq_n + dlamb_ks(k) ! assumed plastic strain at current k
-         eeq_k = eeq_ks(k)
+
+c***  Hardening state variable updates
+         hrdp(1) = eeq_ks(k)
 
          call uhard(ihard_law,hrdp,nhrdp,hrdc,nhrdc,h_flow_ks(k),
      $        dh_ks(k),empa)
@@ -110,12 +126,12 @@ c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
             call w_empty_lines(idia,2)
             call fill_line(idia,'*',72)
             call w_val(idia,'I-NR: ', float(k)*1d0)
-            write(*,*)'Spr_k'
+            call w_chr(idia,'Spr_k')
             call w_dim(idia,spr_ks(k,:),ntens,1d0/empa,.true.)
-            write(*,*)'m_k'
+            call w_chr(idia,'m_k')
             call w_dim(idia,em_k,ntens,1d0,.true.)
             call w_val(idia,'dlamb_ks(k) :',dlamb_ks(k))
-            call w_val(idia,'eeq_k       :',eeq_k)
+            call w_val(idia,'eeq_ks(k)   :',eeq_ks(k))
             call w_val(idia,'phi_k [MPa] :',phi_ks(k)/empa)
             call w_val(idia,'h_flow_ks [MPa] :',h_flow_ks(k)/empa)
             call w_val(idia,'hf(k)/hf(1): [%]',h_flow_ks(k)/h_flow_ks(1)*1d2)
@@ -165,31 +181,31 @@ c     Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
          if (idiaw) then
             call w_val(idia,'dlamb_ks(k+1)',dlamb_ks(k+1))
             call w_empty_lines(idia,2)
-            write(idiaw,*)'dstran'
+            call w_chr(idiaw,'dstran')
             call w_dim(idia,dstran(:),ntens,1d0,.false.)
             call w_empty_lines(idia,2)
-            write(idia,*)'dstran_pl_k'
+            call w_chr(idia,'dstran_pl_k')
             call w_dim(idia,dstran_pl_ks(k,:),ntens,1d0,.false.)
-            write(idia,*)'dstran_pl_k+1'
+            call w_chr(idia,'dstran_pl_k+1')
             call w_dim(idia,dstran_pl_ks(k+1,:),ntens,1d0,.false.)
             call w_empty_lines(idia,2)
-            write(idia,*)'dstran_el_k'
+            call w_chr(idia,'dstran_el_k')
             call w_dim(idia,dstran_el_ks(k,:),ntens,1d0,.false.)
-            write(idia,*)'dstran_el_k+1'
+            call w_chr(idia,'dstran_el_k+1')
             call w_dim(idia,dstran_el_ks(k+1,:),ntens,1d0,.false.)
             call w_empty_lines(idia,2)
-            write(idia,*)' stran_pl_k'
+            call w_chr(idia,' stran_pl_k')
             call w_dim(idia, stran_pl_ks(k,:),ntens,1d0,.false.)
-            write(idia,*)' stran_pl_k+1'
+            call w_chr(idia,' stran_pl_k+1')
             call w_dim(idia, stran_pl_ks(k+1,:),ntens,1d0,.false.)
             call w_empty_lines(idia,2)
-            write(idia,*)' stran_el_k'
+            call w_chr(idia,' stran_el_k')
             call w_dim(idia, stran_el_ks(k,:),ntens,1d0,.false.)
-            write(idia,*)' stran_el_k+1'
+            call w_chr(idia,' stran_el_k+1')
             call w_dim(idia, stran_el_ks(k+1,:),ntens,1d0,.false.)
-            write(idia,*)' old predictor stress [MPa]'
+            call w_chr(idia,' old predictor stress [MPa]')
             call w_dim(idia, spr_ks(k,:),ntens,1/empa,.false.)
-            write(idia,*)' new predictor stress [MPa]'
+            call w_chr(idia,' new predictor stress [MPa]')
             call w_dim(idia, spr_ks(k+1,:),ntens,1/empa,.false.)
          endif
 
@@ -201,7 +217,7 @@ c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
       enddo ! end of do while loop for NR procedure
 
 c     case when k exceeds mxnr
-      write(*,*) 'Error: NR procedure diverged in return_mapping.f'
+      call w_chr(idia,'Error: NR procedure diverged in return_mapping.f')
       if (idiaw) then
          call fill_line(idia,'===',72)
       endif
@@ -209,7 +225,7 @@ c     case when k exceeds mxnr
 
  100  continue
 
-      write(*,*) 'NR procedure converged'
+      call w_chr(idia,'NR procedure converged')
       if (idiaw) call fill_line(idia,'===',72)
 
 c     update for n+1 state?
