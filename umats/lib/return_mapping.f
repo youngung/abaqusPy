@@ -49,7 +49,7 @@ c-----------------------------------------------------------------------
       real*8 dlamb_k,dlamb_ks,phi_n
       real*8 dphi_ks,d2phi_ks
       real*8 delta_eeq,eeq_n,aux_n,eeq_k,eeq_ks,empa,gpa
-      real*8 hard_params,h_flow_ks,dh_ks,phi_ks,em_k,tolerance
+      real*8 hard_params,h_flow_ks,dh_ks,phi_ks,em_k,tolerance,tol_val
       integer k,idia,imsg
       parameter(tolerance=1d-6)
       logical idiaw,ibreak
@@ -87,7 +87,7 @@ c      idia=7   ! write to Abaqus msg file
       endif
 
       ibreak=.false.
-      do while (.not.(ibreak))
+      do while (k.le.mxnr)
 
 c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
          em_k(:) = dphi_ks(k,:) ! yield normal at current k
@@ -98,6 +98,8 @@ c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
      $        hard_params(3),hard_params(1),h_flow_ks(k),dh_ks(k))
          h_flow_ks(k) = h_flow_ks(k)   * empa
          dh_ks(k)     = dh_ks(k)       * empa
+
+         if (k.eq.1) tol_val=h_flow_ks(1)*tolerance
 
          stran_el_ks(k,:) = dstran_el_ks(k,:) + stran_el(:)
          stran_pl_ks(k,:) = dstran_pl_ks(k,:) + stran_pl(:)
@@ -121,13 +123,11 @@ c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
 c-----------------------------------------------------------------------
 c        f   = yield - hardening             (objective function)
          fo_ks(k) = phi_ks(k) - h_flow_ks(k)
-         if (abs(fo_ks(k)).le.tolerance*h_flow_ks(1))then
-            ibreak=.true.
+         if (abs(fo_ks(k)).le.tol_val)then
+            goto 100
          else
 c           Find Fp
 c           ** Use values pertaining to n+1 step (assuming that current eeq_ks(k) is correct)
-
-c           unit correction
 
             call vm_shell(spr_ks(k,:),phi_ks(k),dphi_ks(k,:),
      $           d2phi_ks(k,:,:))
@@ -139,7 +139,7 @@ c           unit correction
             call w_val(idia,'dh(k)[MPa]:',  dh_ks(k)/empa)
             call w_val(idia,'fo_ks(k)[MPa]:',fo_ks(k)/empa)
             call w_val(idia,'fp_ks(k)[GPa]:',fp_ks(k)/gpa)
-            call w_val(idia,'fo/toler %   :',fo_ks(k)/h_flow_ks(1)*1d2)
+            call w_val(idia,'fo/tol_val %   :',fo_ks(k)/tol_val*1d2)
          endif
 
 c------------------------------------------------------------------------
@@ -200,10 +200,15 @@ c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
             write(*,*) 'Err: Could not converge in NR scheme'
             stop -1
          endif
-      enddo
+      enddo ! end of do while loop for NR procedure
+      if (idiaw) then
+         call fill_line(idia,'===',72)
+      endif
+      stop -1
+
+ 100  continue
 
       if (idiaw) call fill_line(idia,'===',72)
-      stop -1
 
 c     update for n+1 state?
 

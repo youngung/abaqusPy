@@ -264,6 +264,8 @@ c     Von Mises
       include "/home/younguj/repo/abaqusPy/umats/lib/vm.f"
 c     lib.f
       include "/home/younguj/repo/abaqusPy/umats/lib/lib.f"
+c     lib_w.f
+      include "/home/younguj/repo/abaqusPy/umats/lib/lib_write.f"
 c     diag.f
       include "/home/younguj/repo/abaqusPy/umats/lib/diag.f"
 c     return_mapping.f
