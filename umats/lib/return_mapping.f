@@ -2,11 +2,18 @@ c-----------------------------------------------------------------------
 c     Return mapping subroutine to find stress at n-1 step
 c     and integrate all state variables during the given incremental
 c     step defined by dstran (rate-independent ... yet?)
-      subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,
-     $     dstran,stran,stran_el,stran_pl,ntens,idiaw,
+      subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,dstran,stran,
+     $     stran_el,stran_pl,ntens,idiaw,hrdp,nhrdp,hrdc,nhrdc,
+     $     ihard_law
 
-
-     $     hrdp,nhrdp,hrdc,nhrdc,ihard_law)
+c$$$c     variables to be updated
+c$$$     $     depleq,              ! delta equivalent plastic strain for given time increment
+c$$$     $     sn1,                 ! stress at n+1
+c$$$     $     stran_pl_n1,         ! delta plastic strain for given time increment
+c$$$     $     stran_el_n1          ! delta elastic strain for given time increment
+c$$$     $     dstran_pl,           ! acc plastic strain for n+1
+c$$$     $     dstran_el            ! acc elastic strain for n+1
+     $     )
 c-----------------------------------------------------------------------
 c***  Arguments
 c     Cel    : elastic moduli
@@ -111,9 +118,9 @@ c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
          em_k(:) = dphi_ks(k,:) ! yield normal at current k
          eeq_ks(k) = eeq_n + dlamb_ks(k) ! assumed plastic strain at current k
 
-c***  Hardening state variable updates
+c***  Hardening state variable updates according to NR step k
          hrdp(1) = eeq_ks(k)
-
+c***  --------------------------------
          call uhard(ihard_law,hrdp,nhrdp,hrdc,nhrdc,h_flow_ks(k),
      $        dh_ks(k),empa)
 
@@ -137,7 +144,6 @@ c***  Hardening state variable updates
             call w_val(idia,'hf(k)/hf(1): [%]',h_flow_ks(k)/h_flow_ks(1)*1d2)
             call w_val(idia,'dh_ks [MPa] :',dh_ks(k)/empa)
          endif
-
 c-----------------------------------------------------------------------
 c        f   = yield - hardening             (objective function)
          fo_ks(k) = phi_ks(k) - h_flow_ks(k)
@@ -159,7 +165,6 @@ c           ** Use values pertaining to n+1 step (assuming that current eeq_ks(k
             call w_val(idia,'fp_ks(k)[GPa]:',fp_ks(k)/gpa)
             call w_val(idia,'fo/tol_val %   :',fo_ks(k)/tol_val*1d2)
          endif
-
 c------------------------------------------------------------------------
 c         2.  Update the multiplier^(k+1)  (dlamb)
 c             dlamb^(k+1) = dlamb^k - fo_ks(k)/fp_ks(k)
@@ -223,17 +228,21 @@ c     case when k exceeds mxnr
       endif
       stop -1
 
- 100  continue
-
+ 100  continue ! successful NR run
       call w_chr(idia,'NR procedure converged')
       if (idiaw) call fill_line(idia,'===',72)
+
+c     States at k will be n+1 state variables
+c     stress     <- spr_ks(k)
+c     dstrain_pl <- dstran_pl_ks(k)
+c     dstrain_el <- dstran_el_ks(k)
+
 
 c     update for n+1 state?
 
 c     if (idiaw) close(idia)
       return
       end subroutine return_mapping
-
 c-----------------------------------------------------------------------
 c     Calculate fp using the below formula
 c     fp  = r(s^eq_(n+1)^k)/r(s_(n+1)^k) : -C^el : r(s^eq_(n+1)^k / r(s_(n+1)^k) + H`)

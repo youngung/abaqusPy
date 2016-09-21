@@ -41,19 +41,26 @@ c     predictor stress
 
       real*8 phi_n,dphi_n,d2phi_n
       real*8 toler_yield,stran_el,stran_pl
-      integer imsg,idia,i,istr,ihard_law
+      integer imsg,idia,i,istr,ihrd_law,iyld_law
       logical idiaw
       real*8 empa,gpa
       parameter(toler_yield=1d-6,empa=1d6,gpa=1d9)
 
-      ihard_law=1
+c-----------------------------------------------------------------------
+c***  hardwired material parameters
+c-----------------------------------------------------------------------
+c**   material constitutive laws
+      ihrd_law=1                ! Voce isotropic hardening
+      iyld_law=1                ! von Mises (shell)
+c**   hardening parameters
       hrdc(1) = 479.0d0
       hrdc(2) = 339.7d0
       hrdc(3) = 7.784d0
       hrdc(4) = 70.87d0
-
+c**   elastic constants
       e = 210d0*gpa
       enu=0.3d0
+c-----------------------------------------------------------------------
 
       imsg=7
       idia=315
@@ -109,7 +116,7 @@ c      call w_dim(idia,spr,ntens,1d0/empa,.true.)
       call w_dim(0,spr,ntens,1d0/empa,.true.)
 
 c     iii. See if the pr stress (spr) calculation is in the plastic or elastic regime
-      call uhard(ihard_law,hrdp,nhrdp,hrdc,nhrdc,yld_h,dh,empa)
+      call uhard(ihrd_law,hrdp,nhrdp,hrdc,nhrdc,yld_h,dh,empa)
       call vm_shell(spr,phi_n,dphi_n,d2phi_n)
 c$$$      write(*,*)    '** VM_SHELL **'
 c$$$      write(imsg,*) '** VM_SHELL **'
@@ -158,15 +165,15 @@ c$$$         call print_foot(imsg)
 c     vi. Return mapping
          call return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,
      $        dstran,stran,stran_el,stran_pl,ntens,idiaw,
-     $        hrdp,nhrdp,hrdc,nhrdc,ihard_law)
+     $        hrdp,nhrdp,hrdc,nhrdc,ihrd_law)
          stop -1
          write(imsg,*)'return-mapping'
 c     v. Exit from iv. means
-c       s_(n+1) is obtained.
-c       dlamb   is obtained
-c       de^(el)_(n+1) is obtained
-
-c       update plastic strain = depl_ij = depl_ij + n_ij dlamb
+c        s   _(n+1) is obtained.
+c        e^pl_(n+1) is obtained.
+c        e^el_(n+1) is obtained.
+c       de^pl_(n+1) is obtained.
+c       de^el_(n+1) is obtained.
 
 c     vi. Caculate jacobian (ddsdde)
 c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) + h(depl_ij_(n+1)) ]
