@@ -35,15 +35,15 @@ c***  Define phi,dphi,d2phi
       end subroutine yld
 c-----------------------------------------------------------------------
       subroutine update_yldp(iyld_law,
-     $     yldp,nyldp,eeq)
+     $     yldp_ns,nyldp,deeq)
       implicit none
       integer iyld_law,nyldp,nyldc
-      dimension yldp(nyldp)
-      real*8 yldp,eeq
+      dimension yldp_ns(0:1,nyldp)
+      real*8 yldp_ns,eeq
 
 !     update laws.
       if (iyld_law.eq.0) then
-         yldp(1) = eeq
+         yldp_ns(1,1) = deeq + yldp_ns(0,1)
       else
          write(*,*)'unexpected iyld_law given in update_yldp'
          stop -1
