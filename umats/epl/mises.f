@@ -25,13 +25,15 @@ c$$$  End of ABAQUS UMAT Interface
 
 c$$$  local arrays
       character*255 fndia,fnstr
+      integer nhrdc,nhrdp
+      parameter(nhrdc=4,nhrdp=1)
       dimension Cel(ntens,ntens),dphi_n(ntens),d2phi_n(ntens,ntens),
      $     stran_el(ntens),stran_pl(ntens),spr(ntens),epr(ntens),
-     $     voce_params(4)
+     $     hrdc(nhrdc),hrdp(nhrdp)
       real*8 e,enu,G,eK,Cel
 c     predictor stress
       real*8 spr,epr
-      real*8 voce_params
+      real*8 hrdc,hrdp
       real*8 eeq_n,yld_h,dh
 !     eeq_n: eq plastic strain at step n
 !     yld_h: flow stress at hardening curve
@@ -39,15 +41,17 @@ c     predictor stress
 
       real*8 phi_n,dphi_n,d2phi_n
       real*8 toler_yield,stran_el,stran_pl
-      integer imsg,idia,i,istr
+      integer imsg,idia,i,istr,ihard_law
       logical idiaw
       real*8 empa,gpa
       parameter(toler_yield=1d-6,empa=1d6,gpa=1d9)
 
-      voce_params(1) = 479.0d0
-      voce_params(2) = 339.7d0
-      voce_params(3) = 7.784d0
-      voce_params(4) = 70.87d0
+      ihard_law=1
+      hrdc(1) = 479.0d0
+      hrdc(2) = 339.7d0
+      hrdc(3) = 7.784d0
+      hrdc(4) = 70.87d0
+
       e = 210d0*gpa
       enu=0.3d0
 
@@ -105,8 +109,9 @@ c      call w_dim(idia,spr,ntens,1d0/empa,.true.)
       call w_dim(0,spr,ntens,1d0/empa,.true.)
 
 c     iii. See if the pr stress (spr) calculation is in the plastic or elastic regime
-      call voce(eeq_n, voce_params(1),voce_params(2),voce_params(3),
-     $     voce_params(1),yld_h,dh)
+c$$$      call voce(eeq_n, hrdc(1),hrdc(2),hrdc(3),
+c$$$     $     hrdc(1),yld_h,dh)
+      call uhard(ihard_law,hrdp,nhrdp,hrdc,nhrdc,yld_h,dh)
       yld_h = yld_h * empa
       dh    = dh    * empa
 c$$$      write(*,*)    '** VOCE **'
@@ -157,7 +162,7 @@ c$$$         call print_foot(imsg)
          call print_foot(0)
          call print_foot(imsg)
 c     vi. Return mapping
-         call return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,voce_params,
+         call return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,hrdc,
      $        dstran,stran,stran_el,stran_pl,ntens,idiaw)
          stop -1
          write(imsg,*)'return-mapping'
@@ -263,3 +268,5 @@ c     diag.f
       include "/home/younguj/repo/abaqusPy/umats/lib/diag.f"
 c     return_mapping.f
       include "/home/younguj/repo/abaqusPy/umats/lib/return_mapping.f"
+c     is.f - testing subroutines/functions (e.g., is_inf)
+      include "/home/younguj/repo/abaqusPy/umats/lib/is.f"

@@ -58,8 +58,11 @@ c-----------------------------------------------------------------------
       character*80 function get_fmt(val)
       implicit none
       real*8 val,aval
+      logical is_inf
       aval = dabs(val)
-      if (                       (aval.lt.1e-3)) then
+      if     (is_inf(aval))                      then
+         get_fmt='f10.0,x'
+      elseif (                   (aval.lt.1e-3)) then
          get_fmt="e10.2,x"
       elseif ((aval.ge.1e-3).and.(aval.lt.1e0 )) then
          get_fmt="f9.5,x"
@@ -67,18 +70,12 @@ c-----------------------------------------------------------------------
          get_fmt="f9.3,x"
       elseif ((aval.ge.1e3 ).and.(aval.lt.1e6 )) then
          get_fmt="f9.0,x"
-      elseif ((aval.ge.1e6 ))                   then
+      elseif ((aval.ge.1e6 ))                    then
          get_fmt="e10.2,x"
       else
          write(*,*) 'Err: Unexpected case of max value'
          stop
       endif
-
-c     TEST
-c$$$      write(*,*)'val:',aval
-c$$$      write(*,*)'fmt:'
-c$$$      write(*,*) get_fmt
-
       return
       end function
 c-----------------------------------------------------------------------
