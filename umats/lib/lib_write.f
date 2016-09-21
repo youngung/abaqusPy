@@ -1,24 +1,4 @@
 c-----------------------------------------------------------------------
-      subroutine w33f(imsg,aux)
-      implicit none
-      integer imsg,i,j
-      real*8 aux(3,3)
-      do i=1,3
-         write(imsg,'(3(e13.3,2x))') (aux(i,j),j=1,3)
-      enddo
-      return
-      end subroutine w33f
-c-----------------------------------------------------------------------
-      subroutine w33i(imsg,aux)
-      implicit none
-      integer imsg,i,j
-      integer aux(3,3)
-      do i=1,3
-         write(imsg,'(3(i13.3,2x))') (aux(i,j),j=1,3)
-      enddo
-      return
-      end subroutine w33i
-c-----------------------------------------------------------------------
       subroutine w_empty_lines(imsg,n)
 c     imsg: file unit - if imsg =0 use std (*)
       implicit none
@@ -77,7 +57,7 @@ c-----------------------------------------------------------------------
          stop
       endif
       return
-      end function
+      end function get_fmt
 c-----------------------------------------------------------------------
       subroutine w_val(iunit,str,v)
 c     iunit: file ID
@@ -162,3 +142,39 @@ c     ibr: flag to insert line-breaker
       return
       end subroutine w_dim
 c-----------------------------------------------------------------------
+      character*80 function get_fmt_str(str)
+      implicit none
+      character(len=*) str
+      character*80 ncc
+      integer nc
+      logical is_inf
+      nc = len(str)
+      write(ncc,'(i)') nc
+      ncc = adjustl(ncc)
+      get_fmt_str='(a'//trim(ncc)//',x)'
+      return
+      end function get_fmt_str
+c-----------------------------------------------------------------------
+      subroutine w_chr(iunit,str)
+c     iunit: file ID
+c     chr : chracter
+      implicit none
+      integer iunit,nc
+      character*80 fmt,get_fmt_str,ncc
+      character(len=*) str
+      fmt = get_fmt_str(str)
+      if (iunit.eq.0) then
+         write(*,    trim(fmt)) trim(str)
+      else
+         write(iunit,trim(fmt)) trim(str)
+      endif
+      return
+      end subroutine w_chr
+c-----------------------------------------------------------------------
+
+c$$$      program test
+c$$$      call w_chr(0,'dum')
+c$$$      call w_chr(0,'dum2439 33')
+c$$$      end program test
+c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/lib.f'
+c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/is.f'

@@ -209,7 +209,7 @@ c     case when k exceeds mxnr
 
  100  continue
 
-      write(*,*) 'Error: NR procedure diverged in return_mapping.f'
+      write(*,*) 'NR procedure converged'
       if (idiaw) call fill_line(idia,'===',72)
 
 c     update for n+1 state?
@@ -225,6 +225,11 @@ c     fp = dphi_i C_ij dphi_j + H
       subroutine calc_fp(dphi,Cel,dh,ntens,fp)
 c     intent(in) dphi,Cel,dh,ntens
 c     intent(out) fp
+c     dphi: round(s^eq)/round(s)
+c     Cel : elastic modulus
+c     dh  : round(s^flow)/round(e^eq)
+c     ntens: len of dphi (also applied to Cel)
+c     fp   : slope
       implicit none
       integer ntens
       dimension s(ntens),Cel(ntens,ntens),dphi(ntens)
