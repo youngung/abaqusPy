@@ -90,8 +90,6 @@ c-----------------------------------------------------------------------
          endif
       endif
       write(*,*)'** File opened **'
-
-
       write(*,*)'1 idiaw:',idiaw
 
 c     print head
@@ -215,10 +213,14 @@ c$$            5. Store updated state variables to statev
 
 c-----------------------------------------------------------------------
 c     vi. Return mapping
+c        Return mapping subroutine updates stress/statev
          call return_mapping(Cel,spr,phi_ns(0),eeq_ns(0),dphi_n,
      $        dstran,stran,stran_el_ns(0,:),stran_pl_ns(0,:),
      $        ntens,idiaw,hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
-     $        iyld_law,yldc,nyldc,yldp_ns,nyldp)
+     $        iyld_law,yldc,nyldc,yldp_ns,nyldp,
+
+c     variables to be updated within return_mapping
+     $        stress,statev,nstatv,ddsdde)
          stop -1
          write(imsg,*)'return-mapping'
 c-----------------------------------------------------------------------
@@ -240,7 +242,6 @@ c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) +
       call print_foot(imsg)
       return
       end subroutine umat
-
 c-----------------------------------------------------------------------
 
 

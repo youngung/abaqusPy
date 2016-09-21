@@ -4,15 +4,10 @@ c     and integrate all state variables during the given incremental
 c     step defined by dstran (rate-independent ... yet?)
       subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,dstran,stran,
      $     stran_el,stran_pl,ntens,idiaw,hrdp,nhrdp,hrdc,nhrdc,
-     $     ihard_law,iyld_law,yldc,nyldc,yldp_ns,nyldp
+     $     ihard_law,iyld_law,yldc,nyldc,yldp_ns,nyldp,
 
-c$$$c     variables to be updated
-c$$$     $     depleq,              ! delta equivalent plastic strain for given time increment
-c$$$     $     sn1,                 ! stress at n+1
-c$$$     $     stran_pl_n1,         ! delta plastic strain for given time increment
-c$$$     $     stran_el_n1          ! delta elastic strain for given time increment
-c$$$     $     dstran_pl,           ! acc plastic strain for n+1
-c$$$     $     dstran_el            ! acc elastic strain for n+1
+c          variables to be updated.
+     $     snew,statev,nstatv,ddsdde
      $     )
 c-----------------------------------------------------------------------
 c***  Arguments
@@ -42,11 +37,12 @@ c-----------------------------------------------------------------------
       implicit none
       character*255 fndia
       character*20 chr
-      integer ntens,mxnr,nhrdc,nhrdp,ihard_law,iyld_law,nyldc,nyldp
-      parameter(mxnr=20)
+      integer ntens,mxnr,nhrdc,nhrdp,ihard_law,iyld_law,nyldc,nyldp,
+     $     nstatv
+      parameter(mxnr=100)
 c-----------------------------------------------------------------------
-      dimension spr(ntens),dphi_n(ntens),
-     $     spr_ks(mxnr,ntens),
+      dimension spr(ntens),dphi_n(ntens),snew(ntens),
+     $     spr_ks(mxnr,ntens),statev(nstatv),
      $     dstran(ntens),stran(ntens),
 
      $     stran_el(ntens),
@@ -62,11 +58,12 @@ c-----------------------------------------------------------------------
      $     dh_ks(mxnr),h_flow_ks(mxnr),
 
      $     hrdc(nhrdc),hrdp(nhrdp),
-     $     yldc(nyldc),yldp_ns(0:1,nyldp)
+     $     yldc(nyldc),yldp_ns(0:1,nyldp),
+     $     ddsdde(ntens,ntens)
 c-----------------------------------------------------------------------
       real*8 Cel,spr,dphi_n,dstran,stran,stran_el,dstran_el,dstran_el_ks
      $     ,stran_el_k,stran_el_ks,stran_pl,dstran_pl,dstran_pl_ks,
-     $     stran_pl_k,stran_pl_ks,yldc,yldp_ns
+     $     stran_pl_k,stran_pl_ks,yldc,yldp_ns,statev,snew,ddsdde
       real*8 seq_k,spr_ks       ! eq stress at nr-step k, stress predic at nr-step k
       real*8 enorm_ks           ! m_(n+alpha)
       real*8 fo_ks,fp_ks        ! Fobjective, Jacobian for NR
@@ -76,7 +73,7 @@ c-----------------------------------------------------------------------
       real*8 h_flow_ks,dh_ks,phi_ks,em_k,tolerance,tol_val
       real*8 hrdc,hrdp
       integer k,idia,imsg
-      parameter(tolerance=1d-6)
+      parameter(tolerance=1d-8)
       logical idiaw,ibreak
 
       if (ntens.ne.3) then
@@ -217,15 +214,10 @@ c     Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
 
 c------------------------------------------------------------------------
 c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
-
          call update_yldp(iyld_law,yldp_ns,nyldp,dlamb_ks(k+1))
          call yld(iyld_law,yldp_ns(1,:),yldc,nyldp,nyldc,
      $        spr_ks(k+1,:),phi_ks(k+1),dphi_ks(k+1,:),
      $        d2phi_ks(k+1,:,:),ntens)
-
-c$$$         call vm_shell(spr_ks(k+1,:),phi_ks(k+1),dphi_ks(k+1,:),
-c$$$     $        d2phi_ks(k+1,:,:))
-
          k=k+1
       enddo ! end of do while loop for NR procedure
 
@@ -236,16 +228,17 @@ c     case when k exceeds mxnr
       endif
       stop -1
 
+c-----------------------------------------------------------------------
  100  continue ! successful NR run
       call w_chr(idia,'NR procedure converged')
       if (idiaw) call fill_line(idia,'===',72)
-
-c     States at k will be n+1 state variables
-c     stress     <- spr_ks(k)
-c     dstrain_pl <- dstran_pl_ks(k)
-c     dstrain_el <- dstran_el_ks(k)
-
-c     update for n+1 state?
+c***  update state variables
+      call restore_statev(statev,nstatv,dlamb_ks(k),stran_el_ks(k+1,:),
+     $     stran_pl_ks(k,:),ntens,yldp_ns(1,:),nyldp,1)
+c***  new stress
+      snew(:)=spr_ks(k,:)
+c***  new jacobian
+      call calc_epl_jacob(Cel,dphi_ks(k,:),dh_ks(k),ntens,ddsdde)
 
 c     if (idiaw) close(idia)
       return
@@ -274,3 +267,36 @@ c     fp   : slope
  10   continue
       return
       end subroutine calc_fp
+c-----------------------------------------------------------------------
+c     calculate elasto-plastic consistent tangent modulus
+c     Following J. W. Yoon et. al., 1999, IJP 15, p35-67
+      subroutine calc_epl_jacob(Cel,dphi,dh,ntens,jacob)
+      implicit none
+      integer ntens
+      dimension Cel(ntens,ntens),dphi(ntens),jacob(ntens,ntens)
+      real*8 Cel,dphi,jacob,dh
+
+c     local varaiables
+      dimension a(ntens),b(ntens)
+      real*8 deno,a,b
+      integer i,j
+
+      deno=0d0
+      a(:)=0d0
+      b(:)=0d0
+      jacob(:,:)=0d0
+      do 5 i=1,ntens
+      do 5 j=1,ntens
+         deno = deno + dphi(i) * cel(i,j)*dphi(j)
+         a(i) = cel(i,j) * dphi(j)
+         b(i) = cel(i,j) * dphi(j)
+ 5    continue
+      deno = deno + dh
+
+      do 10 i=1,ntens
+      do 10 j=1,ntens
+         jacob(i,j) = cel(i,j) - a(i) * b(j) / deno
+ 10   continue
+
+      return
+      end subroutine calc_epl_jacob
