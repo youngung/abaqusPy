@@ -63,7 +63,7 @@ c**   elastic constants
 c-----------------------------------------------------------------------
 
       imsg=7
-      idia=315
+      idia=0  !315
       istr=425
       if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1) then
          idiaw=.true.
@@ -82,29 +82,25 @@ c     print head
      $     ntens,0)
       write(*,*)'** state variable stored **'
       if (idiaw) then
-         write(*,*)'* stran'
-c         call w_dim(idia,stran,ntens,1d0,.true.)
-         call w_dim(0,stran,ntens,1d0,.true.)
-         write(*,*)'* stran_el'
-c         call w_dim(idia,stran_el,ntens,1d0,.true.)
-         call w_dim(0,stran_el,ntens,1d0,.true.)
+         write(idia,*)'* stran'
+         call w_dim(idia,stran,ntens,1d0,.true.)
+         write(,*)'* stran_el'
+         call w_dim(idia,stran_el,ntens,1d0,.true.)
          write(*,*)'* stran_pl'
-c         call w_dim(idia,stran_pl,ntens,1d0,.true.)
-         call w_dim(0,stran_pl,ntens,1d0,.true.)
+         call w_dim(idia,stran_pl,ntens,1d0,.true.)
          write(*,*)'* dstran'
-c         call w_dim(idia,dstran,ntens,1d0,.true.)
-         call w_dim(0,dstran,ntens,1d0,.true.)
+         call w_dim(idia,dstran,ntens,1d0,.true.)
       endif
 
 c     Moduluar pseudo code for stress integration
 
+c-----------------------------------------------------------------------
 c     i.   Check the current (given) variables
       call emod_iso_shell(e,enu,G,eK,Cel)
-c$$$      write(*,*)    '** EMOD_ISO_SHELL **'
-c$$$      write(imsg,*) '** EMOD_ISO_SHELL **'
       write(*,*)'* C^el [GPa]'
 c      call w_mdim(idia,Cel,ntens,1d0/gpa)
       call w_mdim(   0,Cel,ntens,1d0/gpa)
+c-----------------------------------------------------------------------
 c     ii.  Trial stress calculation
 c     Calculate predict elastic strain
       call add_array2(stran_el,dstran,epr,ntens)
@@ -115,11 +111,14 @@ c$$$      write(imsg,*) '** MULT_ARRAY **'
 c      call w_dim(idia,spr,ntens,1d0/empa,.true.)
       call w_dim(0,spr,ntens,1d0/empa,.true.)
 
-c     iii. See if the pr stress (spr) calculation is in the plastic or elastic regime
+c-----------------------------------------------------------------------
+c     iii. See if the pr stress (spr) calculation is in the plastic or
+c          elastic regime
       call uhard(ihrd_law,hrdp,nhrdp,hrdc,nhrdc,yld_h,dh,empa)
-      call vm_shell(spr,phi_n,dphi_n,d2phi_n)
-c$$$      write(*,*)    '** VM_SHELL **'
-c$$$      write(imsg,*) '** VM_SHELL **'
+
+c$$$  Use restore_yld_statev and yld for yield function calculations.
+      call restore_yld_statev(iyld_law,yldp,nyldp,spr,strain,ntens,0)
+      call yld(iyld_law,yldp,yldc,nyldp,nyldc,phi_n,dphi_n,d2phi_n)
 
       write(*,*)'* phi_n [MPa]', phi_n/empa
       write(*,*)'* yld_h [MPa]', yld_h/empa
@@ -162,19 +161,22 @@ c$$$         call print_foot(imsg)
 
          call print_foot(0)
          call print_foot(imsg)
+c-----------------------------------------------------------------------
 c     vi. Return mapping
          call return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,
      $        dstran,stran,stran_el,stran_pl,ntens,idiaw,
-     $        hrdp,nhrdp,hrdc,nhrdc,ihrd_law)
+     $        hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
+     $        yldc,nyldc,yldp,nyldp)
          stop -1
          write(imsg,*)'return-mapping'
+c-----------------------------------------------------------------------
 c     v. Exit from iv. means
 c        s   _(n+1) is obtained.
 c        e^pl_(n+1) is obtained.
 c        e^el_(n+1) is obtained.
 c       de^pl_(n+1) is obtained.
 c       de^el_(n+1) is obtained.
-
+c-----------------------------------------------------------------------
 c     vi. Caculate jacobian (ddsdde)
 c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) + h(depl_ij_(n+1)) ]
       endif
@@ -262,8 +264,6 @@ c     iso elastic
       include "/home/younguj/repo/abaqusPy/umats/lib/elast.f"
 c     UHARD using Voce
       include "/home/younguj/repo/abaqusPy/umats/lib/uhard.f"
-c     Von Mises
-      include "/home/younguj/repo/abaqusPy/umats/lib/vm.f"
 c     lib.f
       include "/home/younguj/repo/abaqusPy/umats/lib/lib.f"
 c     lib_w.f
@@ -274,3 +274,5 @@ c     return_mapping.f
       include "/home/younguj/repo/abaqusPy/umats/lib/return_mapping.f"
 c     is.f - testing subroutines/functions (e.g., is_inf)
       include "/home/younguj/repo/abaqusPy/umats/lib/is.f"
+c     yld.f - yield function associated calculations
+      include "/home/younguj/repo/abaqusPy/umats/lib/yld.f"

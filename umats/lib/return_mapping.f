@@ -153,8 +153,9 @@ c        f   = yield - hardening             (objective function)
 c           Find Fp
 c           ** Use values pertaining to n+1 step (assuming that current eeq_ks(k) is correct)
 
-            call vm_shell(spr_ks(k,:),phi_ks(k),dphi_ks(k,:),
-     $           d2phi_ks(k,:,:))
+c$$$            call vm_shell(spr_ks(k,:),phi_ks(k),dphi_ks(k,:),
+c$$$     $           d2phi_ks(k,:,:))
+
             call calc_fp(dphi_ks(k,:),Cel,dh_ks(k),ntens,fp_ks(k))
          endif
 
