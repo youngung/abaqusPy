@@ -2,14 +2,18 @@ c-----------------------------------------------------------------------
 c     Return mapping subroutine to find stress at n-1 step
 c     and integrate all state variables during the given incremental
 c     step defined by dstran (rate-independent ... yet?)
-      subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,hard_params,
-     $     dstran,stran,stran_el,stran_pl,ntens,idiaw)
+      subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,
+     $     dstran,stran,stran_el,stran_pl,ntens,idiaw,
+
+
+     $     hrdp,nhrdp,hrdc,nhrdc,ihard_law)
+
+
 c     Arguments
 c-----------------------------------------------------------------------
 c     spr    : predictor stress at k=0
 c     eeq_n  : accumulative plastic equivalent strain at step n
 c     dphi_n : dphi at step n
-c     hard_params (quite self-explanatory)
 c     dstran : total incremental strain given between steps n and n+1
 c     stran  : total cumulative strain at step n
 c     stran_el: total elastic strain at step n
@@ -17,13 +21,12 @@ c     stran_pl: total plastic strain at step n
       implicit none
       character*255 fndia
       character*20 chr
-      integer ntens,mxnr
+      integer ntens,mxnr,nhrdc,nhrdp,ihard_law
       parameter(mxnr=20)
 c-----------------------------------------------------------------------
       dimension spr(ntens),dphi_n(ntens),sn1(ntens),
      $     spr_ks(mxnr,ntens),
      $     dstran(ntens),stran(ntens),
-
 
      $     stran_el(ntens),
      $     dstran_el(ntens),dstran_el_ks(mxnr,ntens),
@@ -32,11 +35,12 @@ c-----------------------------------------------------------------------
      $     dstran_pl(ntens),dstran_pl_ks(mxnr,ntens),
      $     stran_pl_ks(mxnr,ntens),
 
-
      $     aux_n(ntens),em_k(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
      $     enorm_ks(mxnr,ntens),fo_ks(mxnr),fp_ks(mxnr),dlamb_ks(mxnr),
      $     dphi_ks(mxnr,ntens),d2phi_ks(mxnr,ntens,ntens),phi_ks(mxnr),
-     $     hard_params(4),dh_ks(mxnr),h_flow_ks(mxnr)
+     $     dh_ks(mxnr),h_flow_ks(mxnr),
+
+     $     hrdc(nhrdc),hrdp(nhrdp)
 c-----------------------------------------------------------------------
       real*8 Cel,spr,dphi_n,
      $     dstran,stran,
@@ -49,7 +53,8 @@ c-----------------------------------------------------------------------
       real*8 dlamb_k,dlamb_ks,phi_n
       real*8 dphi_ks,d2phi_ks
       real*8 delta_eeq,eeq_n,aux_n,eeq_k,eeq_ks,empa,gpa
-      real*8 hard_params,h_flow_ks,dh_ks,phi_ks,em_k,tolerance,tol_val
+      real*8 h_flow_ks,dh_ks,phi_ks,em_k,tolerance,tol_val
+      real*8 hrdc,hrdp
       integer k,idia,imsg
       parameter(tolerance=1d-6)
       logical idiaw,ibreak
@@ -68,7 +73,6 @@ c      delta_eeq = 0d0           ! initial guess on equivalent strain rate contr
       spr_ks(1,:) = spr(:)       !! stress predictor
       dphi_ks(1,:) = dphi_n(:)
       phi_ks(1) = phi_n
-
 
       dstran_el_ks(1,:) = dstran(:)
       dstran_pl_ks(1,:) = 0d0   !! or using delta_eeq ...
@@ -94,10 +98,8 @@ c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
          eeq_ks(k) = eeq_n + dlamb_ks(k) ! assumed plastic strain at current k
          eeq_k = eeq_ks(k)
 
-         call voce(eeq_ks(k),hard_params(1),hard_params(2),
-     $        hard_params(3),hard_params(1),h_flow_ks(k),dh_ks(k))
-         h_flow_ks(k) = h_flow_ks(k)   * empa
-         dh_ks(k)     = dh_ks(k)       * empa
+         call uhard(ihard_law,hrdp,nhrdp,hrdc,nhrdc,h_flow_ks(k),
+     $        dh_ks(k),empa)
 
          if (k.eq.1) tol_val=h_flow_ks(1)*tolerance
 
@@ -196,11 +198,10 @@ c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
          call vm_shell(spr_ks(k+1,:),phi_ks(k+1),dphi_ks(k+1,:),
      $        d2phi_ks(k+1,:,:))
          k=k+1
-         if (k.ge.mxnr) then
-            write(*,*) 'Err: Could not converge in NR scheme'
-            stop -1
-         endif
       enddo ! end of do while loop for NR procedure
+
+c     case when k exceeds mxnr
+      write(*,*) 'Error: NR procedure diverged in return_mapping.f'
       if (idiaw) then
          call fill_line(idia,'===',72)
       endif
@@ -208,6 +209,7 @@ c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
 
  100  continue
 
+      write(*,*) 'Error: NR procedure diverged in return_mapping.f'
       if (idiaw) call fill_line(idia,'===',72)
 
 c     update for n+1 state?

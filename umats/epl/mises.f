@@ -109,13 +109,7 @@ c      call w_dim(idia,spr,ntens,1d0/empa,.true.)
       call w_dim(0,spr,ntens,1d0/empa,.true.)
 
 c     iii. See if the pr stress (spr) calculation is in the plastic or elastic regime
-c$$$      call voce(eeq_n, hrdc(1),hrdc(2),hrdc(3),
-c$$$     $     hrdc(1),yld_h,dh)
-      call uhard(ihard_law,hrdp,nhrdp,hrdc,nhrdc,yld_h,dh)
-      yld_h = yld_h * empa
-      dh    = dh    * empa
-c$$$      write(*,*)    '** VOCE **'
-c$$$      write(imsg,*) '** VOCE **'
+      call uhard(ihard_law,hrdp,nhrdp,hrdc,nhrdc,yld_h,dh,empa)
       call vm_shell(spr,phi_n,dphi_n,d2phi_n)
 c$$$      write(*,*)    '** VM_SHELL **'
 c$$$      write(imsg,*) '** VM_SHELL **'
@@ -162,8 +156,9 @@ c$$$         call print_foot(imsg)
          call print_foot(0)
          call print_foot(imsg)
 c     vi. Return mapping
-         call return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,hrdc,
-     $        dstran,stran,stran_el,stran_pl,ntens,idiaw)
+         call return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,
+     $        dstran,stran,stran_el,stran_pl,ntens,idiaw,
+     $        hrdp,nhrdp,hrdc,nhrdc,ihard_law)
          stop -1
          write(imsg,*)'return-mapping'
 c     v. Exit from iv. means
