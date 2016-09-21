@@ -2,12 +2,12 @@ c-----------------------------------------------------------------------
 c     Return mapping subroutine to find stress at n-1 step
 c     and integrate all state variables during the given incremental
 c     step defined by dstran (rate-independent ... yet?)
-      subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,dstran,stran,
+      subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,dstran,
      $     stran_el,stran_pl,ntens,idiaw,hrdp,nhrdp,hrdc,nhrdc,
      $     ihard_law,iyld_law,yldc,nyldc,yldp_ns,nyldp,
 
 c          variables to be updated.
-     $     snew,statev,nstatv,ddsdde
+     $     spd,snew,statev,nstatv,ddsdde,ifail
      $     )
 c-----------------------------------------------------------------------
 c***  Arguments
@@ -17,7 +17,6 @@ c     phi_n  : yield surface at the given step n
 c     eeq_n  : accumulative plastic equivalent strain at step n
 c     dphi_n : dphi at step n
 c     dstran : total incremental strain given between steps n and n+1
-c     stran  : total cumulative strain at step n
 c     stran_el: total elastic strain at step n
 c     stran_pl: total plastic strain at step n
 c     ntens   : len of stress/strain tensor (also applied to Cel)
@@ -30,7 +29,7 @@ c     nhrdc   : Len of hrdc
 c     ihard_law: hardening law (refer to uhard.f for more details)
 c-----------------------------------------------------------------------
 c***  Intents of Arguments
-c     intent(in) Cel, spr, phi_n, eeq_n, dphi_n, dstran, stran, stran_el,
+c     intent(in) Cel, spr, phi_n, eeq_n, dphi_n, dstran, stran_el,
 c                stran_pl,ntens,idiaw, hrdp,nhrdp,hrdc,nhrdc,ihard_law
 c     intent(out) -- states at n+1 step
 c-----------------------------------------------------------------------
@@ -39,11 +38,11 @@ c-----------------------------------------------------------------------
       character*20 chr
       integer ntens,mxnr,nhrdc,nhrdp,ihard_law,iyld_law,nyldc,nyldp,
      $     nstatv
-      parameter(mxnr=100)
+      parameter(mxnr=20)
 c-----------------------------------------------------------------------
       dimension spr(ntens),dphi_n(ntens),snew(ntens),
      $     spr_ks(mxnr,ntens),statev(nstatv),
-     $     dstran(ntens),stran(ntens),
+     $     dstran(ntens),
 
      $     stran_el(ntens),
      $     dstran_el(ntens),dstran_el_ks(mxnr,ntens),
@@ -61,9 +60,10 @@ c-----------------------------------------------------------------------
      $     yldc(nyldc),yldp_ns(0:1,nyldp),
      $     ddsdde(ntens,ntens)
 c-----------------------------------------------------------------------
-      real*8 Cel,spr,dphi_n,dstran,stran,stran_el,dstran_el,dstran_el_ks
+      real*8 Cel,spr,dphi_n,dstran,stran_el,dstran_el,dstran_el_ks
      $     ,stran_el_k,stran_el_ks,stran_pl,dstran_pl,dstran_pl_ks,
-     $     stran_pl_k,stran_pl_ks,yldc,yldp_ns,statev,snew,ddsdde
+     $     stran_pl_k,stran_pl_ks,yldc,yldp_ns,statev,snew,ddsdde,
+     $     spd
       real*8 seq_k,spr_ks       ! eq stress at nr-step k, stress predic at nr-step k
       real*8 enorm_ks           ! m_(n+alpha)
       real*8 fo_ks,fp_ks        ! Fobjective, Jacobian for NR
@@ -73,8 +73,9 @@ c-----------------------------------------------------------------------
       real*8 h_flow_ks,dh_ks,phi_ks,em_k,tolerance,tol_val
       real*8 hrdc,hrdp
       integer k,idia,imsg
-      parameter(tolerance=1d-8)
-      logical idiaw,ibreak
+      parameter(tolerance=1d-6)
+      logical idiaw,ibreak,ifail
+      ifail=.false. ! in case NR fails
 
       if (ntens.ne.3) then
          call fill_line(0,'*',72)
@@ -226,17 +227,20 @@ c     case when k exceeds mxnr
       if (idiaw) then
          call fill_line(idia,'===',72)
       endif
-      stop -1
+!      stop -1
+      ifail=.true.
 
 c-----------------------------------------------------------------------
  100  continue ! successful NR run
       call w_chr(idia,'NR procedure converged')
       if (idiaw) call fill_line(idia,'===',72)
 c***  update state variables
-      call restore_statev(statev,nstatv,dlamb_ks(k),stran_el_ks(k+1,:),
-     $     stran_pl_ks(k,:),ntens,yldp_ns(1,:),nyldp,1)
+      call restore_statev(statev,nstatv,eeq_n+dlamb_ks(k),stran_el_ks(k+1,:),
+     $     stran_pl_ks(k,:),ntens,yldp_ns(1,:),nyldp,1,.false.,idia)
 c***  new stress
       snew(:)=spr_ks(k,:)
+c$$$c***  plastic dissipation
+c$$$      spd = spd +
 c***  new jacobian
       call calc_epl_jacob(Cel,dphi_ks(k,:),dh_ks(k),ntens,ddsdde)
 
@@ -279,17 +283,18 @@ c     Following J. W. Yoon et. al., 1999, IJP 15, p35-67
 c     local varaiables
       dimension a(ntens),b(ntens)
       real*8 deno,a,b
-      integer i,j
+      integer i,j,k
 
       deno=0d0
       a(:)=0d0
       b(:)=0d0
       jacob(:,:)=0d0
+
       do 5 i=1,ntens
       do 5 j=1,ntens
-         deno = deno + dphi(i) * cel(i,j)*dphi(j)
-         a(i) = cel(i,j) * dphi(j)
-         b(i) = cel(i,j) * dphi(j)
+         deno = deno + dphi(i)*cel(i,j)*dphi(j)
+         a(i) = a(i) + cel(i,j) * dphi(j)
+         b(i) = b(i) + cel(i,j) * dphi(j)
  5    continue
       deno = deno + dh
 
@@ -297,6 +302,30 @@ c     local varaiables
       do 10 j=1,ntens
          jacob(i,j) = cel(i,j) - a(i) * b(j) / deno
  10   continue
+
+
+      write(*,*)'------------------------------------------'
+      write(*,*)'dphi:',dphi
+      write(*,*)'------------------------------------------'
+      write(*,*)'dh:',dh
+      write(*,*)'deno:',deno
+      write(*,*)'a(i)'
+      do 20 i=1,ntens
+         write(*,'(3e13.3)') a(i)
+ 20   continue
+      write(*,*)'b(i)'
+      do 30 i=1,ntens
+         write(*,'(3e13.3)') b(i)
+ 30   continue
+      write(*,*)'------------------------------------------'
+
+      write(*,*)'jacob - Cel'
+      do 40 i=1,ntens
+      do 40 j=1,ntens
+         write(*,'(3e13.3)') (jacob(i,j) -cel(i,j))/1d9
+ 40   continue
+      write(*,*)'------------------------------------------'
+
 
       return
       end subroutine calc_epl_jacob

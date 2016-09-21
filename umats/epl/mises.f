@@ -45,7 +45,7 @@ c     predictor stress
       real*8 phi_ns,dphi_n,d2phi_n
       real*8 toler_yield,stran_el_ns,stran_pl_ns,dstran_el,dstran_pl
       integer imsg,idia,i,istr,ihrd_law,iyld_law
-      logical idiaw
+      logical idiaw,inr_fail
       real*8 empa,gpa
       parameter(toler_yield=1d-6,empa=1d6,gpa=1d9)
 
@@ -98,16 +98,17 @@ c     print head
 
 c     restore stran_el, stran_pl, and yldp
       call restore_statev(statev,nstatv,eeq_ns(0),stran_el_ns(0,:),
-     $     stran_pl_ns(0,:),ntens,yldp_ns(0,:),nyldp,0)
-c     It might be risky to use a non-zero eeq_ns(0) value
-      eeq_ns(0) = 0d0
+     $     stran_pl_ns(0,:),ntens,yldp_ns(0,:),nyldp,0,.false.,idia)
 
 c     yld parameters pertaining to step n - need to find
 c     the updated yld parameters for step n+1 later...
 
       if (idiaw) then
-         call w_chr(idia,'** state variable stored **')
-         call w_chr(idia,'* stran')
+         call w_val(idia,'* dtime:',dtime)
+         call w_val(idia,'* time1:',time(1))
+         call w_val(idia,'* time2:',time(2))
+         call w_chr(idia,'** state variable restored **')
+         call w_chr(idia,'* stran at step n')
          call w_dim(idia,stran,ntens,1d0,.true.)
          call w_chr(idia,'* stran_el at step n')
          call w_dim(idia,stran_el_ns(0,:),ntens,1d0,.true.)
@@ -167,24 +168,24 @@ c     predicting yield surface
 c-----------------------------------------------------------------------
       if (phi_ns(0).lt.flow_stress) then ! elastic
          deq=0d0                !
-         call w_chr(idia,'* stran n')
+         call w_chr(idia,'* stran at step n')
          call w_dim(idia,stran,ntens,1d0/empa,.true.)
-         call w_chr(idia,'* stress n')
+         call w_chr(idia,'* stress at step n')
          call w_dim(idia,stress,ntens,1d0/empa,.true.)
 
 c$$$           1. Save jacobian as elastic moduli
          ddsdde(:,:) = Cel(:,:)
 c$$$           2. Update strain.
          stran_el_ns(1,:) = stran_el_ns(0,:) + dstran(:)
-         call add_array(stran,dstran,ntens)
+c         call add_array(stran,dstran,ntens)
 c$$$           3. Updates stress
          call mult_array(ddsdde,stran_el_ns(1,:),ntens,stress)
 
          if (idiaw) then
             call w_chr( idia,'* stress at n+1')
             call w_dim( idia,stress,ntens,1d0/empa,.true.)
-            call w_chr( idia,'* stran n+1')
-            call w_dim( idia,stran,ntens,1d0/empa,.true.)
+c            call w_chr( idia,'* stran n+1')
+c            call w_dim( idia,stran,ntens,1d0/empa,.true.)
             call w_chr( idia,'* ddsdde')
             call w_mdim(idia,ddsdde,  ntens,1d0/gpa)
             call w_chr( idia,'* stran_el_ns(n+1)')
@@ -200,7 +201,7 @@ c$$$           4. Update all other state varaiables
 
 c$$            5. Store updated state variables to statev
          call restore_statev(statev,nstatv,eeq_ns(1),stran_el_ns(1,:),
-     $        stran_pl_ns(1,:),ntens,yldp_ns(1,:),nyldp,1)
+     $        stran_pl_ns(1,:),ntens,yldp_ns(1,:),nyldp,1,.false.,idia)
 
          if (idiaw) call w_chr(idia,'6')
 
@@ -210,18 +211,45 @@ c$$            5. Store updated state variables to statev
          call w_chr(idia,'PLASTIC')
          call print_foot(0)
          call print_foot(imsg)
-
 c-----------------------------------------------------------------------
 c     vi. Return mapping
 c        Return mapping subroutine updates stress/statev
+c$$$         if (idiaw) then
+c$$$            call w_chr(idia,'inquiry for state variable before RM')
+c$$$            call restore_statev(statev,nstatv,eeq_ns(1),
+c$$$     $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
+c$$$     $           nyldp,0,.true.,idia)
+c$$$         endif
          call return_mapping(Cel,spr,phi_ns(0),eeq_ns(0),dphi_n,
-     $        dstran,stran,stran_el_ns(0,:),stran_pl_ns(0,:),
+     $        dstran,stran_el_ns(0,:),stran_pl_ns(0,:),
      $        ntens,idiaw,hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
      $        iyld_law,yldc,nyldc,yldp_ns,nyldp,
 
 c     variables to be updated within return_mapping
-     $        stress,statev,nstatv,ddsdde)
-         stop -1
+     $        spd,stress,statev,nstatv,ddsdde,inr_fail)
+
+         if (inr_fail) then
+            ! reduce time step?
+            pnewdt = 0.5
+            call w_chr(idia,'dtime:',dtime)
+         endif
+         
+
+         if (idiaw) then
+c$$$            call w_chr(idia,'inquiry for state variable after RM')
+c$$$            call restore_statev(statev,nstatv,eeq_ns(1),
+c$$$     $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
+c$$$     $           nyldp,0,.true.,idia)
+            call w_chr( idia,'* stress at n+1')
+            call w_dim( idia,stress,ntens,1d0/empa,.true.)
+            call w_chr( idia,'* stran n+1')
+            call w_dim( idia,stran,ntens,1d0/empa,.true.)
+            call w_chr( idia,'* ddsdde')
+            call w_mdim(idia,ddsdde,  ntens,1d0/gpa)
+            call w_chr( idia,'* stran_el_ns(n+1)')
+            call w_dim( idia,stran_el_ns(1,:),ntens,1d0,.true.)
+         endif
+
          write(imsg,*)'return-mapping'
 c-----------------------------------------------------------------------
 c     v. Exit from iv. means
@@ -243,10 +271,10 @@ c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) +
       return
       end subroutine umat
 c-----------------------------------------------------------------------
-
-
       subroutine restore_statev(statev,nstatv,eqpl,stran_el,stran_pl,
-     $     ntens,yldp,nyldp,iopt)
+     $     ntens,yldp,nyldp,iopt,verbose,iunit)
+c-----------------------------------------------------------------------
+c     Arguments
 c     statev  : state variable array
 c     nstatv  : len of statev
 c     eqpl    : equivalent plastic strain
@@ -256,12 +284,18 @@ c     ntens   : len of stran_el and stran_pl
 c     iopt    : option to define the behavior of restore_statev
 c                  0: read from statev
 c                  1: save to statev
+c     verbose
+c     iunit   : file unit (if not zero) or std to which
+c               inquiry stream will be written
       implicit none
       integer nstatv,ntens
       dimension statev(nstatv),stran_el(ntens),stran_pl(ntens),
      $     yldp(nyldp)
       real*8 statev,eqpl,stran_el,stran_pl,yldp
-      integer iopt, i,nyldp
+      integer iopt,i,nyldp,iunit
+      logical verbose
+
+
       if (iopt.eq.0) then
          ! read from statev
          eqpl = statev(1)
@@ -287,6 +321,22 @@ c                  1: save to statev
          write(*,*) 'Unexpected iopt given'
          stop
       endif
+
+      if (verbose) then
+         call w_empty_lines(iunit,2)
+         call fill_line(iunit,'*',72)
+         call w_chr(iunit,'inquiry request on state variables')
+         call w_val(iunit,' eqpl   ',eqpl)
+         call w_chr(iunit,'stran_el ')
+         call w_dim(iunit,stran_el,ntens,1.d0,.false.)
+         call w_chr(iunit,'stran_pl ')
+         call w_dim(iunit,stran_pl,ntens,1.d0,.false.)
+         call w_chr(iunit,'yldp')
+         call w_dim(iunit,yldp,nyldp,1.d0,.false.)
+         call fill_line(iunit,'*',72)
+         call w_empty_lines(iunit,2)
+      endif
+
       end subroutine
 c-----------------------------------------------------------------------
 c     iso elastic
