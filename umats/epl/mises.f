@@ -53,9 +53,9 @@ c     predictor stress
 c$$$  yld function parameters
       integer nyldp,nyldc
       parameter(nyldp=1,nyldc=1) ! this depends on iyld_law...
-      dimension yldp(nyldp),yldc(nyldc)
+      dimension yldp_ns(0:1,nyldp),yldc(nyldc)
 
-      real*8 yldp,yldc
+      real*8 yldp_ns,yldc,deq_pr,deq
 
 c-----------------------------------------------------------------------
 c***  hardwired material parameters
@@ -100,7 +100,7 @@ c     print head
 
 c     restore stran_el, stran_pl, and yldp
       call restore_statev(statev,nstatv,eeq_ns(0),stran_el_ns(0,:),
-     $     stran_pl_ns(0,:),ntens,yldp,nyldp,0)
+     $     stran_pl_ns(0,:),ntens,yldp_ns(0,:),nyldp,0)
 c     yld parameters pertaining to step n - need to find
 c     the updated yld parameters for step n+1 later...
 
@@ -140,20 +140,21 @@ c     Calculate predict elastic strain - assuming dstran = dstran_el
 c-----------------------------------------------------------------------
 c     iii. See if the pr stress (spr) calculation is in the plastic or
 c          elastic regime
-      hrdp(1) = eeq_ns(0)
+      deq_pr = 0.               !assuming no plastic increment
+      hrdp(1) = eeq_ns(0)+deq_pr
       call uhard(ihrd_law,hrdp,nhrdp,hrdc,nhrdc,
      $     flow_stress,dflow_stress,empa)
       if (idiaw) then
          call w_val(idia,'% E^eq pl          :',eeq_ns(0))
          call w_val(idia,'% flow_stress [MPa]:',flow_stress/empa)
          call w_val(idia,'% dflow       [MPa];',dflow_stress/empa)
-         call w_val(idia,'yldp(1):',yldp(1))
+         call w_val(idia,'yldp_ns(0,1):',yldp_ns(0,1))
       endif
 
-      call update_yldp(iyld_law,yldp,nyldp,eeq_ns(0))
-      call w_val(idia,'yldp(1):',yldp(1))
+      call update_yldp(iyld_law,yldp_ns,nyldp,deq_pr)
+      call w_val(idia,'yldp_ns(1):',yldp_ns(1,1))
 c     predicting yield surface
-      call yld(iyld_law,yldp,yldc,nyldp,nyldc,spr,
+      call yld(iyld_law,yldp_ns(1,:),yldc,nyldp,nyldc,spr,
      $     phi_ns(0),dphi_n,d2phi_n,ntens)
       if (idiaw) then
          call w_val(idia,'*         phi step n [MPa]:',
@@ -164,7 +165,7 @@ c     predicting yield surface
 
 c-----------------------------------------------------------------------
       if (phi_ns(0).lt.flow_stress) then ! elastic
-
+         deq=0d0                !
          call w_chr(idia,'* stran n')
          call w_dim(idia,stran,ntens,1d0/empa,.true.)
          call w_chr(idia,'* stress n')
@@ -192,13 +193,14 @@ c$$$           3. Updates stress
 
          if (idiaw) call w_chr(idia,'5')
 c$$$           4. Update all other state varaiables
-         eeq_ns(1)        = eeq_ns(0)
+
+         eeq_ns(1)        = eeq_ns(0) + deq
          stran_pl_ns(1,:) = stran_pl_ns(0,:)
-         call update_yldp(iyld_law,yldp,nyldp,eeq_ns(1))
+         call update_yldp(iyld_law,yldp_ns,nyldp,deq)
 
 c$$            5. Store updated state variables to statev
          call restore_statev(statev,nstatv,eeq_ns(1),stran_el_ns(1,:),
-     $        stran_pl_ns(1,:),ntens,yldp,nyldp,1)
+     $        stran_pl_ns(1,:),ntens,yldp_ns(1,:),nyldp,1)
 
          if (idiaw) call w_chr(idia,'6')
 
@@ -206,20 +208,16 @@ c$$            5. Store updated state variables to statev
          return
       else !! plastic
 
-
          call w_chr(idia,'PLASTIC')
          call print_foot(0)
          call print_foot(imsg)
-
-         stop -1
 
 c-----------------------------------------------------------------------
 c     vi. Return mapping
          call return_mapping(Cel,spr,phi_ns(0),eeq_ns(0),dphi_n,
      $        dstran,stran,stran_el_ns(0,:),stran_pl_ns(0,:),
-     $        ntens,idiaw,
-     $        hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
-     $        yldc,nyldc,yldp,nyldp)
+     $        ntens,idiaw,hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
+     $        yldc,nyldc,yldp_ns,nyldp)
          stop -1
          write(imsg,*)'return-mapping'
 c-----------------------------------------------------------------------
