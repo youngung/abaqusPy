@@ -83,7 +83,6 @@ c         call w_dim(idia,stran_pl,ntens,1d0,.true.)
          write(*,*)'* dstran'
 c         call w_dim(idia,dstran,ntens,1d0,.true.)
          call w_dim(0,dstran,ntens,1d0,.true.)
-
       endif
 
 c     Moduluar pseudo code for stress integration
