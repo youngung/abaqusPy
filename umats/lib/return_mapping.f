@@ -38,7 +38,6 @@ c-----------------------------------------------------------------------
      $     dphi_ks(mxnr,ntens),d2phi_ks(mxnr,ntens,ntens),phi_ks(mxnr),
      $     voce_params(4),dh_ks(mxnr)
 c-----------------------------------------------------------------------
-
       real*8 Cel,spr,dphi_n,
      $     dstran,stran,
      $     stran_el,dstran_el,dstran_el_ks,stran_el_k,stran_el_ks,
@@ -50,7 +49,7 @@ c-----------------------------------------------------------------------
       real*8 dlamb_k,dlamb_ks,phi_n
       real*8 dphi_ks,d2phi_ks
       real*8 delta_eeq,eeq_n,aux_n,eeq_k,eeq_ks,empa,gpa
-      real*8 voce_params,h_flow,dh_ks,phi_k,phi_ks,em_k,tolerance
+      real*8 voce_params,h_flow,dh_ks,phi_ks,em_k,tolerance
       integer k,idia,imsg
       parameter(tolerance=1d-10)
       logical idiaw,ibreak
@@ -69,7 +68,7 @@ c      delta_eeq = (dstran(1)**2+dstran(2)**2+dstran(2)**2)/3.d0 !! initial gues
       delta_eeq = 0d0           ! initial guess on equivalent strain rate contribution to dstran
       dlamb_ks(1) = delta_eeq
       spr_ks(1,:) = spr(:)       !! stress predictor
-      enorm_ks(1,:) = dphi_n(:)
+      dphi_ks(1,:) = dphi_n(:)
       phi_ks(1) = phi_n
 
 
@@ -96,10 +95,9 @@ c$$$         open(idia,position='append',file=fndia)
       do while (.not.(ibreak))
 
 c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
-         em_k(:) = enorm_ks(k,:) ! yield normal at current k
+         em_k(:) = dphi_ks(k,:) ! yield normal at current k
          eeq_ks(k) = eeq_n + dlamb_ks(k) ! assumed plastic strain at current k
          eeq_k = eeq_ks(k)
-         phi_k = phi_ks(k)
 
          stran_el_ks(k,:) = dstran_el_ks(k,:) + stran_el(:)
          stran_pl_ks(k,:) = dstran_pl_ks(k,:) + stran_pl(:)
@@ -113,24 +111,20 @@ c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
             call w_dim(0,spr_ks(k,:),ntens,1d0/empa,.true.)
             write(*,*)'m_k'
             call w_dim(0,em_k,ntens,1d0,.true.)
-            call w_val(0,'delta_eeq   :',delta_eeq)
+            call w_val(0,'dlamb_ks(k) :',dlamb_ks(k))
             call w_val(0,'eeq_k       :',eeq_k)
-            call w_val(0,'phi_n [MPa] :',phi_k/empa)
+            call w_val(0,'phi_k [MPa] :',phi_ks(k)/empa)
          endif
 
-         if (k.eq.2) then
-            call fill_line(0,'===',72)
-            stop
-         endif
+
 c-----------------------------------------------------------------------
-
-
 
 c        f   = yield - hardening             (objective function)
          fo_ks(k) = phi_ks(k) - h_flow
 
+         call w_val(0,'fo_ks(k)',fo_ks(k))
 
-         if (fo_ks(k).le.tolerance)then
+         if (abs(fo_ks(k)).le.tolerance)then
             ibreak=.true.
          else
 c           Find Fp
@@ -147,7 +141,7 @@ c           unit correction
 
          if (idiaw) then
             call w_val(0,'h_flow [MPa]:',h_flow/empa)
-            call w_val(0,'dh(k+1)[MPa]:',dh_ks(k+1)/empa)
+            call w_val(0,'dh(k)[MPa]:',  dh_ks(k)/empa)
             call w_val(0,'fo_ks(k)[MPa]:',fo_ks(k)/empa)
             call w_val(0,'fp_ks(k)[GPa]:',fp_ks(k)/gpa)
          endif
@@ -155,8 +149,10 @@ c           unit correction
 c------------------------------------------------------------------------
 c         2.  Update the multiplier^(k+1)  (dlamb)
 c             dlamb^(k+1) = dlamb^k - fo_ks(k)/fp_ks(k)
-         dlamb_ks(k+1) = dlamb_ks(k) - fo_ks(k)/fp_ks(k)
+         dlamb_ks(k+1) = dlamb_ks(k) + fo_ks(k)/fp_ks(k)
          call w_val(0,'dlamb_ks(k+1)',dlamb_ks(k+1))
+
+
 
 c             find the new predictor stress for next NR step
 c                Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
@@ -167,7 +163,7 @@ c                Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
 
          call w_empty_lines(0,2)
 c        new plastic strain increment
-         dstran_pl_ks(k+1,:) = -dlamb_ks(k+1) * dphi_ks(k,:) ! backward
+         dstran_pl_ks(k+1,:) = dlamb_ks(k+1) * dphi_ks(k,:) ! backward
          write(*,*)'dstran_pl_k'
          call w_dim(0,dstran_pl_ks(k,:),ntens,1d0,.false.)
          write(*,*)'dstran_pl_k+1'
@@ -209,6 +205,10 @@ c         Update dE^(el)^(k+1) and update the predictor stress.
          write(*,*)' new predictor stress [MPa]'
          call w_dim(0, spr_ks(k+1,:),ntens,1/empa,.false.)
 
+         if (k.eq.9) then
+            call fill_line(0,'===',72)
+            stop
+         endif
 
 c$$$         if (idiaw) then
 c$$$            call w_dim(idia,dstran,ntens,1d0,.false.)
@@ -219,7 +219,7 @@ c$$$         endif
 
 c------------------------------------------------------------------------
 c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
-         call vm_shell(spr_ks(k+1,:),enorm_ks(k+1,:),dphi_ks(k+1,:),
+         call vm_shell(spr_ks(k+1,:),phi_ks(k+1),dphi_ks(k+1,:),
      $        d2phi_ks(k+1,:,:))
          k=k+1
          if (k.ge.mxnr) then
@@ -228,6 +228,7 @@ c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
          endif
       enddo
 
+c     update for n+1 state
 
 
 c      if (idiaw) close(idia)
