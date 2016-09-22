@@ -144,7 +144,7 @@ def TensileOneElement(
     else:
         myMat = myModel.Material('myUMAT')
         myMat.UserMaterial(mechanicalConstants=(200e9,0.3))
-        myMat.Depvar(n=10) ## Number of state variables
+        myMat.Depvar(n=20) ## Number of state variables
 
     ### Create Shell Section!
     thickness = 1e-3 ## 1 mm thickness
@@ -210,7 +210,7 @@ def TensileOneElement(
     ## Modify output request
     # Field output
     myModel.fieldOutputRequests['F-Output-1'].setValues(
-        variables=('E','U','S','EE',))
+        variables=('E','U','S','EE','PE'))
     # History output
     # myModel.historyOutputRequests['H-Output-1'].setValues(
     # variables=('E11',),region=myAssembly.sets['MidSpan'])
@@ -323,7 +323,7 @@ if __name__=='main':
 umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
 
 ## Job testing methods
-runSingle(umatFN=umatFN,iwait=True,isub=True,totalStrain=0.01)
+runSingle(umatFN=umatFN,iwait=True,isub=True,totalStrain=0.20)
 
 ## testing at various angles
 #runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False)
