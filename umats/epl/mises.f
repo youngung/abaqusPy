@@ -2,7 +2,10 @@ c-----------------------------------------------------------------------
 c     General USER MAT subroutine that is highly modulized for each
 c     individual constitutitve components to allow easy modifications
 c     using new material models.
-
+c
+c
+c
+c     Youngung Jeong@Clemson
 c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
 c$$$  ABAQUS UMAT Interface.
@@ -49,7 +52,7 @@ c     predictor stress
 
       real*8 phi_ns,dphi_n,d2phi_n
       real*8 stran_el_ns,stran_pl_ns,dstran_el,dstran_pl
-      integer imsg,idia,i,istr,ihrd_law,iyld_law
+      integer imsg,idia,i,istv,ihrd_law,iyld_law
       logical idiaw,failnr
       real*8 empa,gpa
       parameter(empa=1d6,gpa=1d9)
@@ -76,8 +79,8 @@ c**   elastic constants
       enu=0.3d0
 c-----------------------------------------------------------------------
       imsg=7
-      idia=315
-      istr=425
+      idia=315 ! 0 (in case stdo is preferred)
+      istv=425 ! reserved for state variable output file
 
       stress_ns(0,:) = stress(:)
 
@@ -85,12 +88,8 @@ c-----------------------------------------------------------------------
 !cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
       if (idiaw) then
          fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
-         fnstr='/home/younguj/repo/abaqusPy/examples/one/strstr.txt'
          if (idia.ne.0) then
             open(idia,position='append',file=fndia)
-         endif
-         if (istr.ne.0) then
-            open(istr,position='append',file=fnstr)
          endif
          call print_head(idia)
       endif
@@ -98,7 +97,8 @@ c     print head
 
 c     restore stran_el, stran_pl, and yldp
       call restore_statev(statev,nstatv,eeq_ns(0),stran_el_ns(0,:),
-     $     stran_pl_ns(0,:),ntens,yldp_ns(0,:),nyldp,0,.false.,idia)
+     $     stran_pl_ns(0,:),ntens,yldp_ns(0,:),nyldp,0,.false.,idia,
+     $     .false.,kinc,noel,npt,time(0),stress)
 
 c     yld parameters pertaining to step n - need to find
 c     the updated yld parameters for step n+1 later...
@@ -152,9 +152,9 @@ c          elastic regime
       call uhard(ihrd_law,hrdp,nhrdp,hrdc,nhrdc,
      $     flow_stress,dflow_stress,empa)
       if (idiaw) then
-         call w_val(idia,'% E^eq pl          :',eeq_ns(0))
-         call w_val(idia,'% flow_stress [MPa]:',flow_stress/empa)
-         call w_val(idia,'% dflow       [MPa];',dflow_stress/empa)
+         call w_val(idia,'* E^eq pl          :',eeq_ns(0))
+         call w_val(idia,'* flow_stress [MPa]:',flow_stress/empa)
+         call w_val(idia,'* dflow       [MPa];',dflow_stress/empa)
          call w_val(idia,'yldp_ns(0,1):',yldp_ns(0,1))
       endif
 
@@ -174,7 +174,7 @@ c-----------------------------------------------------------------------
       if (phi_ns(0).lt.flow_stress) then ! elastic
          call update_elastic(idia,idiaw,iyld_law,ntens,nyldp,nstatv,
      $        ddsdde,cel,stran,stran_el_ns,stran_pl_ns,dstran,stress,
-     $        eeq_ns,deq,yldp_ns,statev)
+     $        eeq_ns,deq,yldp_ns,statev,kinc)
       else !! plastic
          if (idiaw) then
             call w_chr(idia,'PLASTIC')
@@ -187,15 +187,16 @@ c        Return mapping subroutine updates stress/statev
             call w_chr(idia,'** Inquiry for state variable before RM')
             call restore_statev(statev,nstatv,eeq_ns(1),
      $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
-     $           nyldp,0,.true.,idia)
+     $           nyldp,0,.true.,idia,
+     $           .false.,kinc,noel,npt,time(0),stress)
          endif
-         if (idiaw) call w_chr(imsg,'** Begin return-mapping **')
+         if (idiaw) call w_chr(idia,'** Begin return-mapping **')
          call return_mapping(Cel,stress_ns(1,:),phi_ns(0),eeq_ns(0),
      $        dphi_n,dstran,stran_el_ns(0,:),stran_pl_ns(0,:),
      $        ntens,idiaw,idia,hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
      $        iyld_law,yldc,nyldc,yldp_ns,nyldp,
-     $        spd,stress,statev,nstatv,ddsdde,failnr)
-         if (idiaw) call w_chr(imsg,'** Exit return-mapping **')
+     $        spd,stress,statev,nstatv,ddsdde,failnr,kinc)
+         if (idiaw) call w_chr(idia,'** Exit return-mapping **')
          if (failnr) then
             ! reduce time step?
             pnewdt = 0.5d0
@@ -213,7 +214,8 @@ c        Return mapping subroutine updates stress/statev
             call w_chr(idia,'** inquiry for state variable after RM')
             call restore_statev(statev,nstatv,eeq_ns(1),
      $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
-     $           nyldp,0,.true.,idia)
+     $           nyldp,0,.true.,idia,
+     $           .false.,kinc,noel,npt,time(0),stress)
             call w_chr( idia,'* stress at n   [MPa]')
             call w_dim( idia,stress_ns(0,:),ntens,1d0/empa,.true.)
             call w_chr( idia,'* spr           [MPa]')
@@ -250,8 +252,17 @@ c-----------------------------------------------------------------------
 c     vi. Caculate jacobian (ddsdde)
 c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) + h(depl_ij_(n+1)) ]
       endif
+
+c     Write statev
+      if (noel.eq.1 .and. dtime.gt.0 .and. npt.eq.1) then
+         call restore_statev(statev,nstatv,eeq_ns(1),
+     $        stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
+     $        nyldp,0,.false.,idia,
+     $        .true.,kinc,noel,npt,time(1),stress)
+      endif
+
+
       if (idia.ne.0.and.idiaw) close(idia)
-      close(istr)
 
       if (idiaw) then
          call print_foot(idia)
@@ -259,140 +270,21 @@ c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) +
       return
       end subroutine umat
 c-----------------------------------------------------------------------
-      subroutine update_elastic(idia,idiaw,iyld_law,ntens,nyldp,nstatv,
-     $     ddsdde,cel,stran,stran_el_ns,stran_pl_ns,dstran,stress,
-     $     eeq_ns,deq,yldp_ns,statev)
-      implicit none
-      integer idia,iyld_law,nstatv,ntens,nyldp
-      logical idiaw
-      dimension ddsdde(ntens,ntens),cel(ntens,ntens),stran(ntens),
-     $     stran_el_ns(0:1,ntens),stran_pl_ns(0:1,ntens),dstran(ntens),
-     $     stress(ntens),yldp_ns(0:1,nyldp),statev(nstatv),eeq_ns(0:1)
-      real*8 ddsdde,cel,stran,stran_el_ns,stran_pl_ns,dstran,
-     $     stress,yldp_ns,statev,eeq_ns,deq
-      real*8 empa,gpa
-      empa = 1d6
-      gpa  = 1d9
-      deq=0d0
-      if (idiaw) then
-         call w_chr(idia,'* stran at step n')
-         call w_dim(idia,stran,ntens,1d0/empa,.true.)
-         call w_chr(idia,'* stress at step n')
-         call w_dim(idia,stress,ntens,1d0/empa,.true.)
-      endif
-
-c$$$  1. Save jacobian as elastic moduli
-      ddsdde(:,:) = Cel(:,:)
-c$$$  2. Update strain.
-      stran_el_ns(1,:) = stran_el_ns(0,:) + dstran(:)
-c     call add_array(stran,dstran,ntens)
-c$$$  3. Updates stress
-      call mult_array(ddsdde,stran_el_ns(1,:),ntens,stress)
-
-      if (idiaw) then
-         call w_chr( idia,'* stress at n+1')
-         call w_dim( idia,stress,ntens,1d0/empa,.true.)
-c     call w_chr( idia,'* stran n+1')
-c     call w_dim( idia,stran,ntens,1d0/empa,.true.)
-         call w_chr( idia,'* ddsdde')
-         call w_mdim(idia,ddsdde,  ntens,1d0/gpa)
-         call w_chr( idia,'* stran_el_ns(n+1)')
-         call w_dim( idia,stran_el_ns(1,:),ntens,1d0,.true.)
-      endif
-
-      if (idiaw) call w_chr(idia,'5')
-c$$$  4. Update all other state varaiables
-
-      eeq_ns(1)        = eeq_ns(0) + deq
-      stran_pl_ns(1,:) = stran_pl_ns(0,:)
-      call update_yldp(iyld_law,yldp_ns,nyldp,deq)
-
-c$$   5. Store updated state variables to statev
-      call restore_statev(statev,nstatv,eeq_ns(1),stran_el_ns(1,:),
-     $     stran_pl_ns(1,:),ntens,yldp_ns(1,:),nyldp,1,.false.,idia)
-
-      if (idiaw) call w_chr(idia,'6')
-      return
-      end subroutine update_elastic
-c-----------------------------------------------------------------------
-      subroutine restore_statev(statev,nstatv,eqpl,stran_el,stran_pl,
-     $     ntens,yldp,nyldp,iopt,verbose,iunit)
-c-----------------------------------------------------------------------
-c     Arguments
-c     statev  : state variable array
-c     nstatv  : len of statev
-c     eqpl    : equivalent plastic strain
-c     stran_el: cumulative elastic strain
-c     stran_pl: cumulative plastic strain
-c     ntens   : len of stran_el and stran_pl
-c     iopt    : option to define the behavior of restore_statev
-c                  0: read from statev
-c                  1: save to statev
-c     verbose
-c     iunit   : file unit (if not zero) or std to which
-c               inquiry stream will be written
-      implicit none
-      integer nstatv,ntens
-      dimension statev(nstatv),stran_el(ntens),stran_pl(ntens),
-     $     yldp(nyldp)
-      real*8 statev,eqpl,stran_el,stran_pl,yldp
-      integer iopt,i,nyldp,iunit
-      logical verbose
-      if (iopt.eq.0) then
-         ! read from statev
-         eqpl = statev(1)
-         do i=1,ntens
-            stran_el(i) = statev(i+1)
-            stran_pl(i) = statev(i+1+ntens)
-         enddo
-         do i=1,nyldp
-            yldp(i)     = statev(i+1+ntens*2)
-         enddo
-      elseif (iopt.eq.1) then
-         ! save to statev
-         ! read from statev
-         statev(1) = eqpl
-         do i=1,ntens
-            statev(i+1)       = stran_el(i)
-            statev(i+1+ntens) = stran_pl(i)
-         enddo
-         do i=1,nyldp
-            statev(i+1+ntens*2) = yldp(i)
-         enddo
-      else
-         write(*,*) 'Unexpected iopt given'
-         stop
-      endif
-      if (verbose) then
-         call w_empty_lines(iunit,2)
-         call fill_line(iunit,'*',72)
-         call w_chr(iunit,'inquiry request on state variables')
-         call w_val(iunit,' eqpl   ',eqpl)
-         call w_chr(iunit,'stran_el ')
-         call w_dim(iunit,stran_el,ntens,1.d0,.true.)
-         call w_chr(iunit,'stran_pl ')
-         call w_dim(iunit,stran_pl,ntens,1.d0,.true.)
-         call w_chr(iunit,'yldp')
-         call w_dim(iunit,yldp,nyldp,1.d0,.true.)
-         call fill_line(iunit,'*',72)
-         call w_empty_lines(iunit,2)
-      endif
-      return
-      end subroutine
-c-----------------------------------------------------------------------
 c     iso elastic
       include "/home/younguj/repo/abaqusPy/umats/lib/elast.f"
+c     elastic update
+      include "/home/younguj/repo/abaqusPy/umats/lib/update_elastic.f"
 c     UHARD using Voce
       include "/home/younguj/repo/abaqusPy/umats/lib/uhard.f"
 c     lib.f
       include "/home/younguj/repo/abaqusPy/umats/lib/lib.f"
 c     lib_w.f
       include "/home/younguj/repo/abaqusPy/umats/lib/lib_write.f"
-c     diag.f
-      include "/home/younguj/repo/abaqusPy/umats/lib/diag.f"
 c     return_mapping.f
       include "/home/younguj/repo/abaqusPy/umats/lib/return_mapping.f"
 c     is.f - testing subroutines/functions (e.g., is_inf)
       include "/home/younguj/repo/abaqusPy/umats/lib/is.f"
 c     yld.f - yield function associated calculations
       include "/home/younguj/repo/abaqusPy/umats/lib/yld.f"
+c     restore_state.f - save/read from statev
+      include "/home/younguj/repo/abaqusPy/umats/lib/restore_statev.f"

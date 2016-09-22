@@ -7,7 +7,7 @@ c     step defined by dstran (rate-independent ... yet?)
      $     ihard_law,iyld_law,yldc,nyldc,yldp_ns,nyldp,
 
 c          variables to be updated.
-     $     spd,snew,statev,nstatv,ddsdde,failnr
+     $     spd,snew,statev,nstatv,ddsdde,failnr,kinc,noel,npt,time
      $     )
 c-----------------------------------------------------------------------
 c***  Arguments
@@ -38,12 +38,12 @@ c-----------------------------------------------------------------------
       character*255 fndia
       character*20 chr
       integer ntens,mxnr,nhrdc,nhrdp,ihard_law,iyld_law,nyldc,nyldp,
-     $     nstatv
+     $     nstatv,kinc,noel,npt
       parameter(mxnr=10)
 c-----------------------------------------------------------------------
       dimension spr(ntens),dphi_n(ntens),snew(ntens),
      $     spr_ks(mxnr,ntens),statev(nstatv),
-     $     dstran(ntens),
+     $     dstran(ntens),time(2),
 
      $     stran_el(ntens),
      $     dstran_el(ntens),dstran_el_ks(mxnr,ntens),
@@ -64,7 +64,7 @@ c-----------------------------------------------------------------------
       real*8 Cel,spr,dphi_n,dstran,stran_el,dstran_el,dstran_el_ks
      $     ,stran_el_k,stran_el_ks,stran_pl,dstran_pl,dstran_pl_ks,
      $     stran_pl_k,stran_pl_ks,yldc,yldp_ns,statev,snew,ddsdde,
-     $     spd
+     $     spd,time
 
       real*8 spr_ks       ! eq stress at nr-step k, stress predic at nr-step k
       real*8 fo_ks,fp_ks        ! Fobjective, Jacobian for NR
@@ -238,7 +238,8 @@ c-----------------------------------------------------------------------
 c***  update state variables
       call restore_statev(statev,nstatv,eeq_n+dlamb_ks(k),
      $     stran_el_ks(k,:),stran_pl_ks(k,:),ntens,yldp_ns(1,:),
-     $     nyldp,1,.true.,idia)
+     $     nyldp,1,.true.,idia,.false.,kinc,noel,npt,time(0),
+     $     spr_ks(k+1,:))
 c***  new stress
       snew(:)=spr_ks(k,:)
 c$$$  plastic dissipation
