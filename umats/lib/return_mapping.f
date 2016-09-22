@@ -239,10 +239,11 @@ c***  update state variables
      $     stran_pl_ks(k,:),ntens,yldp_ns(1,:),nyldp,1,.false.,idia)
 c***  new stress
       snew(:)=spr_ks(k,:)
-c$$$c***  plastic dissipation
+c$$$  plastic dissipation
 c$$$      spd = spd +
 c***  new jacobian
-      call calc_epl_jacob(Cel,dphi_ks(k,:),dh_ks(k),ntens,ddsdde)
+      call calc_epl_jacob(Cel,dphi_ks(k,:),dh_ks(k),ntens,ddsdde,
+     $     idia,idiaw)
 
 c     if (idiaw) close(idia)
       return
@@ -275,6 +276,15 @@ c-----------------------------------------------------------------------
 c     Calculate elasto-plastic consistent tangent modulus
 c     Following J. W. Yoon et. al., 1999, IJP 15, p35-67
       subroutine calc_epl_jacob(Cel,dphi,dh,ntens,jacob,idia,idiaw)
+c     Arguments
+c-----------------------------------------------------------------------
+c     Cel   : elastic constants
+c     dphi  : 1st derivative of yield potential w.r.t. stress
+c     dh    : dh/de^eq
+c     ntens : Len of tensor
+c     jacob : Jacobian
+c     idia  : File unit
+c     idiaw : Flag to write the stream
       implicit none
       integer ntens
       dimension Cel(ntens,ntens),dphi(ntens),jacob(ntens,ntens)
@@ -303,30 +313,21 @@ c     local varaiables
       do 10 j=1,ntens
          jacob(i,j) = cel(i,j) - a(i) * b(j) / deno
  10   continue
-
 c-----------------------------------------------------------------------
-      write(*,*)'------------------------------------------'
-      write(*,*)'dphi:',dphi
-      write(*,*)'------------------------------------------'
-      write(*,*)'dh:',dh
-      write(*,*)'deno:',deno
-      write(*,*)'a(i)'
-      do 20 i=1,ntens
-         write(*,'(3e13.3)') a(i)
- 20   continue
-      write(*,*)'b(i)'
-      do 30 i=1,ntens
-         write(*,'(3e13.3)') b(i)
- 30   continue
-      write(*,*)'------------------------------------------'
-
-      write(*,*)'jacob - Cel'
-      do 40 i=1,ntens
-      do 40 j=1,ntens
-         write(*,'(3e13.3)') (jacob(i,j) -cel(i,j))/1d9
- 40   continue
-      write(*,*)'------------------------------------------'
-
-
+      if (idiaw) then
+         call fill_line(idia,'*',50)
+         call w_chr(idia,'calc_epl_jacob')
+         call w_val(idia,'dphi:',dphi)
+         call w_val(idia,'dh:',dh)
+         call w_val(idia,'deno:',deno)
+         call w_chr(idia,'a(i)')
+         call w_dim(idia,a,ntens,1.d0.,.false.)
+         call w_chr(idia,'b(i)')
+         call w_dim(idia,b,ntens,1.d0.,.false.)
+         call w_chr(idia,'C^epl [Gpa]')
+         call w_mdim(idia,jacob,ntens,1d0/gpa)
+         call fill_line(idia,'*',50)
+      endif
       return
       end subroutine calc_epl_jacob
+c-----------------------------------------------------------------------
