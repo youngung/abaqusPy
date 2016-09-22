@@ -4,7 +4,6 @@ c     individual constitutitve components to allow easy modifications
 c     using new material models.
 c
 c
-c
 c     Youngung Jeong@Clemson
 c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
@@ -84,8 +83,9 @@ c-----------------------------------------------------------------------
 
       stress_ns(0,:) = stress(:)
 
-      idiaw=.true.
+      idiaw=.false.
 !cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
+      call print_head(0)
       if (idiaw) then
          fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
          if (idia.ne.0) then
@@ -261,12 +261,8 @@ c     Write statev
      $        .true.,kinc,noel,npt,time(1),stress)
       endif
 
-
       if (idia.ne.0.and.idiaw) close(idia)
-
-      if (idiaw) then
-         call print_foot(idia)
-      endif
+      if (idiaw) call print_foot(idia)
       return
       end subroutine umat
 c-----------------------------------------------------------------------

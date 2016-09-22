@@ -323,7 +323,7 @@ if __name__=='main':
 umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
 
 ## Job testing methods
-runSingle(umatFN=umatFN,iwait=True,isub=True,totalStrain=0.20)
+runSingle(umatFN=umatFN,iwait=True,isub=True,totalStrain=0.01)
 
 ## testing at various angles
 #runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False)

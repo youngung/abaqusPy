@@ -39,24 +39,24 @@ c-----------------------------------------------------------------------
       logical verbose,iw
       if (iopt.eq.0) then
          ! read from statev
-         eqpl = statev(1)
          do 5 i=1,ntens
-            stran_el(i) = statev(i+1)
-            stran_pl(i) = statev(i+1+ntens)
+            stran_el(i) = statev(i)
+            stran_pl(i) = statev(i+ntens)
  5       continue
+         eqpl = statev(2*ntens+1)
          do 10 i=1,nyldp
-            yldp(i)     = statev(i+1+ntens*2)
+            yldp(i)     = statev(2*ntens+i+1)
  10      continue
       elseif (iopt.eq.1) then
          ! save to statev
          ! read from statev
-         statev(1) = eqpl
          do 15 i=1,ntens
-            statev(i+1)       = stran_el(i)
-            statev(i+1+ntens) = stran_pl(i)
+            statev(i)       = stran_el(i)
+            statev(i+ntens) = stran_pl(i)
  15      continue
+         statev(2*ntens+1) = eqpl
          do 20 i=1,nyldp
-            statev(i+1+ntens*2) = yldp(i)
+            statev(2*ntens+i+1) = yldp(i)
  20      continue
       else
          write(*,*) 'Unexpected iopt given'
