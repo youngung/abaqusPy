@@ -105,11 +105,11 @@ c     yld parameters pertaining to step n - need to find
 c     the updated yld parameters for step n+1 later...
 
       if (idiaw) then
-         call w_val(idia,'* noel :', noel)
-         call w_val(idia,'* kinc :', kinc)
-         call w_val(idia,'* npt  :', npt)
-         call w_val(idia,'* kspt :', kspt)
-         call w_val(idia,'* layer:', layer)
+         call w_ival(idia,'* noel :', noel)
+         call w_ival(idia,'* kinc :', kinc)
+         call w_ival(idia,'* npt  :', npt)
+         call w_ival(idia,'* kspt :', kspt)
+         call w_ival(idia,'* layer:', layer)
          call w_val(idia,'* dtime:',dtime)
          call w_val(idia,'* time1:',time(1))
          call w_val(idia,'* time2:',time(2))
@@ -215,28 +215,28 @@ c        Return mapping subroutine updates stress/statev
             call restore_statev(statev,nstatv,eeq_ns(1),
      $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
      $           nyldp,0,.true.,idia)
-            call w_chr( idia,'* stress at n')
+            call w_chr( idia,'* stress at n   [MPa]')
             call w_dim( idia,stress_ns(0,:),ntens,1d0/empa,.true.)
-            call w_chr( idia,'* spr')
+            call w_chr( idia,'* spr           [MPa]')
             call w_dim( idia,spr,ntens,1d0/empa,.true.)
-            call w_chr( idia,'* stress at n+1')
+            call w_chr( idia,'* stress at n+1 [MPa]')
             call w_dim( idia,stress_ns(1,:),ntens,1d0/empa,.true.)
-            call w_chr( idia,'* stress')
+            call w_chr( idia,'* stress        [MPa]')
             call w_dim( idia,stress(:),ntens,1d0/empa,.true.)
 
-            call w_chr( idia,'* stran_pl at n')
-            call w_dim( idia,stran_pl_ns(0,:),ntens,1d0/empa,.true.)
-            call w_chr( idia,'* stran_pl at n+1')
-            call w_dim( idia,stran_pl_ns(1,:),ntens,1d0/empa,.true.)
-            call w_chr( idia,'* stran n+1')
-            call w_dim( idia,stran,ntens,1d0/empa,.true.)
-            call w_chr( idia,'* ddsdde')
-            call w_mdim(idia,ddsdde,  ntens,1d0/gpa)
-            call w_chr( idia,'* stran_el_ns(n+1)')
+            call w_chr( idia,'* stran_pl at n    :')
+            call w_dim( idia,stran_pl_ns(0,:),ntens,1d0,.true.)
+            call w_chr( idia,'* stran_pl at n+1  :')
+            call w_dim( idia,stran_pl_ns(1,:),ntens,1d0,.true.)
+            call w_chr( idia,'* stran n+1        :')
+            call w_dim( idia,stran,ntens,1d0,.true.)
+            call w_chr( idia,'* ddsdde     [GPa] :')
+            call w_mdim(idia,ddsdde,ntens,1d0/gpa)
+            call w_chr( idia,'* stran_el_ns(n+1) :')
             call w_dim( idia,stran_el_ns(1,:),ntens,1d0,.true.)
          endif
 
-         !call stop_debug(0) ! debug
+         !call stop_debug(0)     ! debug
 
 c-----------------------------------------------------------------------
 c     v. Exit from iv. means

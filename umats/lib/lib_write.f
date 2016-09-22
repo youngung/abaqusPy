@@ -1,6 +1,9 @@
 c-----------------------------------------------------------------------
+c     write a empty line(s)
       subroutine w_empty_lines(imsg,n)
+c     Arguments
 c     imsg: file unit - if imsg =0 use std (*)
+c     n   : the number of lines to be emptied
       implicit none
       integer imsg,n,i
       if (imsg.eq.0) then
@@ -15,8 +18,11 @@ c     imsg: file unit - if imsg =0 use std (*)
       return
       end subroutine w_empty_lines
 c-----------------------------------------------------------------------
+c     Fille a line(s) with the given <chr> by repeating it for <n> times
       subroutine fill_line(imsg,chr,n)
 c     imsg: file unit - if imsg =0 use std (*)
+c     chr : symbol that will fill the lines
+c     n   : the number of repetition
       implicit none
       character*1 chr
       integer imsg, n, i
@@ -35,7 +41,10 @@ c     imsg: file unit - if imsg =0 use std (*)
       return
       end subroutine fill_line
 c-----------------------------------------------------------------------
+c     Get the suitable format to print the given value <val>
       character*80 function get_fmt(val)
+c     Argument
+c     val: the value
       implicit none
       real*8 val,aval
       logical is_inf
@@ -59,9 +68,45 @@ c-----------------------------------------------------------------------
       return
       end function get_fmt
 c-----------------------------------------------------------------------
+c     Given the character value <str> find a suitible format to write
+c     this value
+      character*80 function get_fmt_str(str)
+c     Argument
+c     str: the subjected character with any arbitrary size
+      implicit none
+      character(len=*) str
+      character*80 ncc
+      integer nc
+      logical is_inf
+      nc = len(str)
+      write(ncc,'(i)') nc
+      ncc = adjustl(ncc)
+      get_fmt_str='(a'//trim(ncc)//',x)'
+      return
+      end function get_fmt_str
+c-----------------------------------------------------------------------
+c     Given the integer value <ival> find a suitible format to write
+c     this value.
+      character*80 function get_fmt_int(ival)
+c     Argument
+c     ival: integer value
+      implicit none
+      integer ival,nc
+      character*80 ncc
+      character*20 nc_no
+      write(ncc,'(i)')ival
+      ncc = adjustl(ncc)
+      nc=len(trim(ncc)) ! number of character for this integer value
+      write(nc_no,'(i)') nc
+      get_fmt_int='(i'//trim(adjustl(nc_no))//',x)'
+      return
+      end function get_fmt_int
+c-----------------------------------------------------------------------
       subroutine w_val(iunit,str,v)
+c     Arguments
 c     iunit: file ID
-c     chr : chracter
+c     str : chracter that describe the passed value
+c     v   : the value
       implicit none
       integer iunit,nc
       character*80 fmt,get_fmt,ncc
@@ -80,12 +125,35 @@ c     chr : chracter
       return
       end subroutine w_val
 c-----------------------------------------------------------------------
+      subroutine w_ival(iunit,str,iv)
+c     Arguments
+c     iunit: file ID
+c     str : chracter that describe the passed value
+c     iv  : the integer value
+      implicit none
+      integer iunit,nc
+      character*80 fmt,get_fmt_int,ncc
+      character(len=*) str
+      integer iv
+      fmt = get_fmt_int(iv)
+      nc = len(str)
+      write(ncc,'(i)') nc
+      ncc=adjustl(ncc)
+      fmt = trim('(a')//trim(ncc)//',x,'//trim(fmt)//')'
+      if (iunit.eq.0) then
+         write(*,    trim(fmt)) trim(str),iv
+      else
+         write(iunit,trim(fmt)) trim(str),iv
+      endif
+      return
+      end subroutine w_ival
+c-----------------------------------------------------------------------
+c     print out a 2nd order square matrix array
       subroutine w_mdim(iunit,array,ndi,fact)
 c     iunit: file ID
-c     array: 1-Dimensional array
+c     array: 2-Dimensional array
 c     ndi: size of the (ndi x ndi) array
-c     fact:multiplicative factor to scale the elements in the array
-c     ibr: flag to insert line-breaker
+c     fact: multiplicative factor to scale the elements in the array
       implicit none
       character*80 fmt,clen,get_fmt
       integer ndi,iunit, i, j
@@ -141,19 +209,6 @@ c     ibr: flag to insert line-breaker
       endif
       return
       end subroutine w_dim
-c-----------------------------------------------------------------------
-      character*80 function get_fmt_str(str)
-      implicit none
-      character(len=*) str
-      character*80 ncc
-      integer nc
-      logical is_inf
-      nc = len(str)
-      write(ncc,'(i)') nc
-      ncc = adjustl(ncc)
-      get_fmt_str='(a'//trim(ncc)//',x)'
-      return
-      end function get_fmt_str
 c-----------------------------------------------------------------------
       subroutine w_chr(iunit,str)
 c     iunit: file ID
@@ -220,8 +275,15 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
 
 c$$$      program test
-c$$$      call w_chr(0,'dum')
-c$$$      call w_chr(0,'dum2439 33')
+c$$$      character*80 get_fmt_int
+c$$$c$$$      call w_chr(0,'dum')
+c$$$c$$$      call w_chr(0,'dum2439 33')
+c$$$
+c$$$      write(*,*) get_fmt_int(1)
+c$$$      write(*,*) get_fmt_int(10)
+c$$$      write(*,*) get_fmt_int(100)
+c$$$      write(*,*) get_fmt_int(10000)
+c$$$
 c$$$      end program test
 c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/lib.f'
 c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/is.f'
