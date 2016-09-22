@@ -238,8 +238,9 @@ c-----------------------------------------------------------------------
       if (idiaw) call w_chr(idia,'NR procedure converged')
       if (idiaw) call fill_line(idia,'===',72)
 c***  update state variables
-      call restore_statev(statev,nstatv,eeq_n+dlamb_ks(k),stran_el_ks(k+1,:),
-     $     stran_pl_ks(k,:),ntens,yldp_ns(1,:),nyldp,1,.true.,idia)
+      call restore_statev(statev,nstatv,eeq_n+dlamb_ks(k),
+     $     stran_el_ks(k,:),stran_pl_ks(k,:),ntens,yldp_ns(1,:),
+     $     nyldp,1,.true.,idia)
 c***  new stress
       snew(:)=spr_ks(k,:)
 c$$$  plastic dissipation

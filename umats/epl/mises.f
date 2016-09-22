@@ -208,8 +208,6 @@ c        Return mapping subroutine updates stress/statev
             return ! out of umat
          endif
 
-
-
          stress_ns(1,:) = stress(:)
 
          if (idiaw) then
@@ -238,7 +236,7 @@ c        Return mapping subroutine updates stress/statev
             call w_dim( idia,stran_el_ns(1,:),ntens,1d0,.true.)
          endif
 
-         call stop_debug(0) ! debug
+         !call stop_debug(0) ! debug
 
 c-----------------------------------------------------------------------
 c     v. Exit from iv. means
