@@ -81,7 +81,6 @@ c-----------------------------------------------------------------------
 
       stress_ns(0,:) = stress(:)
 
-
       idiaw=.true.
 !cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
       if (idiaw) then
@@ -260,13 +259,9 @@ c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) +
       return
       end subroutine umat
 c-----------------------------------------------------------------------
-      subroutine update_elastic(
-     $     idia,idiaw,iyld_law,
-     $     ntens,nyldp,nstatv,
-     $     ddsdde,cel,
-     $     stran,stran_el_ns,stran_pl_ns,dstran,stress,eeq_ns,deq,
-     $     yldp_ns,
-     $     statev)
+      subroutine update_elastic(idia,idiaw,iyld_law,ntens,nyldp,nstatv,
+     $     ddsdde,cel,stran,stran_el_ns,stran_pl_ns,dstran,stress,
+     $     eeq_ns,deq,yldp_ns,statev)
       implicit none
       integer idia,iyld_law,nstatv,ntens,nyldp
       logical idiaw
@@ -343,8 +338,6 @@ c               inquiry stream will be written
       real*8 statev,eqpl,stran_el,stran_pl,yldp
       integer iopt,i,nyldp,iunit
       logical verbose
-
-
       if (iopt.eq.0) then
          ! read from statev
          eqpl = statev(1)
@@ -370,7 +363,6 @@ c               inquiry stream will be written
          write(*,*) 'Unexpected iopt given'
          stop
       endif
-
       if (verbose) then
          call w_empty_lines(iunit,2)
          call fill_line(iunit,'*',72)
@@ -385,7 +377,7 @@ c               inquiry stream will be written
          call fill_line(iunit,'*',72)
          call w_empty_lines(iunit,2)
       endif
-
+      return
       end subroutine
 c-----------------------------------------------------------------------
 c     iso elastic
