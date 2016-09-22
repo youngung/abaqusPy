@@ -52,8 +52,8 @@ c-----------------------------------------------------------------------
      $     dstran_pl(ntens),dstran_pl_ks(mxnr,ntens),
      $     stran_pl_ks(mxnr,ntens),
 
-     $     aux_n(ntens),em_k(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
-     $     enorm_ks(mxnr,ntens),fo_ks(mxnr),fp_ks(mxnr),dlamb_ks(mxnr),
+     $     aux_n(ntens),Cel(ntens,ntens),eeq_ks(mxnr),
+     $     fo_ks(mxnr),fp_ks(mxnr),dlamb_ks(mxnr),
      $     dphi_ks(mxnr,ntens),d2phi_ks(mxnr,ntens,ntens),phi_ks(mxnr),
      $     dh_ks(mxnr),h_flow_ks(mxnr),
 
@@ -66,13 +66,12 @@ c-----------------------------------------------------------------------
      $     stran_pl_k,stran_pl_ks,yldc,yldp_ns,statev,snew,ddsdde,
      $     spd
 
-      real*8 seq_k,spr_ks       ! eq stress at nr-step k, stress predic at nr-step k
-      real*8 enorm_ks           ! m_(n+alpha)
+      real*8 spr_ks       ! eq stress at nr-step k, stress predic at nr-step k
       real*8 fo_ks,fp_ks        ! Fobjective, Jacobian for NR
-      real*8 dlamb_k,dlamb_ks,phi_n
+      real*8 dlamb_ks,phi_n
       real*8 dphi_ks,d2phi_ks
-      real*8 delta_eeq,eeq_n,aux_n,eeq_k,eeq_ks,empa,gpa
-      real*8 h_flow_ks,dh_ks,phi_ks,em_k,tolerance,tol_val
+      real*8 delta_eeq,eeq_n,aux_n,eeq_ks,empa,gpa
+      real*8 h_flow_ks,dh_ks,phi_ks,tolerance,tol_val
       real*8 hrdc,hrdp
       integer k,idia,imsg
       parameter(tolerance=1d-6)
@@ -117,8 +116,8 @@ c      idia=7   ! write to Abaqus msg file
       ibreak=.false.
       do while (k.le.mxnr)
 
-c         s_k(:) = spr_ks(k,:)    ! predictor stress at current k
-         em_k(:) = dphi_ks(k,:) ! yield normal at current k
+c        spr_ks(k,:)    ! predictor stress at current k
+c        dphi_ks(k,:) ! yield normal at current k
          eeq_ks(k) = eeq_n + dlamb_ks(k) ! assumed plastic strain at current k
 
 c***  Hardening state variable updates according to NR step k
@@ -138,8 +137,8 @@ c***  --------------------------------
             call w_val(idia,'I-NR: ', float(k)*1d0)
             call w_chr(idia,'Spr_k')
             call w_dim(idia,spr_ks(k,:),ntens,1d0/empa,.true.)
-            call w_chr(idia,'m_k')
-            call w_dim(idia,em_k,ntens,1d0,.true.)
+            call w_chr(idia,'m_k or (dphi_k)')
+            call w_dim(idia,dphi_ks(k,:),ntens,1d0,.true.)
             call w_val(idia,'dlamb_ks(k) :',dlamb_ks(k))
             call w_val(idia,'eeq_ks(k)   :',eeq_ks(k))
             call w_val(idia,'phi_k [MPa] :',phi_ks(k)/empa)
@@ -155,7 +154,6 @@ c        f   = yield - hardening             (objective function)
          else
 c           Find Fp
 c           ** Use values pertaining to n+1 step (assuming that current eeq_ks(k) is correct)
-
             call calc_fp(dphi_ks(k,:),Cel,dh_ks(k),ntens,fp_ks(k))
          endif
 
