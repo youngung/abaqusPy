@@ -65,6 +65,7 @@ c-----------------------------------------------------------------------
      $     ,stran_el_k,stran_el_ks,stran_pl,dstran_pl,dstran_pl_ks,
      $     stran_pl_k,stran_pl_ks,yldc,yldp_ns,statev,snew,ddsdde,
      $     spd
+
       real*8 seq_k,spr_ks       ! eq stress at nr-step k, stress predic at nr-step k
       real*8 enorm_ks           ! m_(n+alpha)
       real*8 fo_ks,fp_ks        ! Fobjective, Jacobian for NR
@@ -74,7 +75,7 @@ c-----------------------------------------------------------------------
       real*8 h_flow_ks,dh_ks,phi_ks,em_k,tolerance,tol_val
       real*8 hrdc,hrdp
       integer k,idia,imsg
-      parameter(tolerance=1d-4)
+      parameter(tolerance=1d-6)
       logical idiaw,ibreak,failnr
       failnr=.false.             ! in case NR fails
 
@@ -238,7 +239,7 @@ c-----------------------------------------------------------------------
       if (idiaw) call fill_line(idia,'===',72)
 c***  update state variables
       call restore_statev(statev,nstatv,eeq_n+dlamb_ks(k),stran_el_ks(k+1,:),
-     $     stran_pl_ks(k,:),ntens,yldp_ns(1,:),nyldp,1,.false.,idia)
+     $     stran_pl_ks(k,:),ntens,yldp_ns(1,:),nyldp,1,.true.,idia)
 c***  new stress
       snew(:)=spr_ks(k,:)
 c$$$  plastic dissipation

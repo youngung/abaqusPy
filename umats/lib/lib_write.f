@@ -207,6 +207,17 @@ c     i: file unit (use std if 0, use imsg elsewhere)
       return
       end subroutine print_foot
 c-----------------------------------------------------------------------
+      subroutine stop_debug(iunit)
+      implicit none
+      integer iunit
+      call w_empty_lines(iunit,3)
+      call fill_line(iunit,'*',52)
+      call w_chr(iunit, '--  Reached safely at debugging the point  --')
+      call fill_line(iunit,'*',52)
+      call w_empty_lines(iunit,3)
+      stop -1
+      end subroutine
+c-----------------------------------------------------------------------
 
 c$$$      program test
 c$$$      call w_chr(0,'dum')
