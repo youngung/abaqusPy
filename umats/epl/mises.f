@@ -1,3 +1,10 @@
+c-----------------------------------------------------------------------
+c     General USER MAT subroutine that is highly modulized for each
+c     individual constitutitve components to allow easy modifications
+c     using new material models.
+
+c     youngung.jeong@gmail.com
+c-----------------------------------------------------------------------
 c$$$  ABAQUS UMAT Interface.
       SUBROUTINE UMAT(STRESS,STATEV,DDSDDE,SSE,SPD,SCD,RPL,DDSDDT,DRPLDE
      $     ,DRPLDT,STRAN,DSTRAN,TIME,DTIME,TEMP,DTEMP,PREDEF,DPRED,
@@ -28,12 +35,10 @@ c$$$  local arrays
       character*255 fndia,fnstr
       integer nhrdc,nhrdp
       parameter(nhrdc=4,nhrdp=1)
-      dimension Cel(ntens,ntens),phi_ns(0:1),dphi_n(ntens),d2phi_n(ntens,ntens),
-     $     stran_el_ns(0:1,ntens),stran_pl_ns(0:1,ntens),
-     $     dstran_el(ntens),dstran_pl(ntens),
-
-     $     spr(ntens),epr(ntens),
-     $     hrdc(nhrdc),hrdp(nhrdp)
+      dimension Cel(ntens,ntens),phi_ns(0:1),dphi_n(ntens),
+     $     d2phi_n(ntens,ntens),stran_el_ns(0:1,ntens),
+     $     stran_pl_ns(0:1,ntens),dstran_el(ntens),dstran_pl(ntens),
+     $     spr(ntens),epr(ntens),hrdc(nhrdc),hrdp(nhrdp)
       real*8 e,enu,G,eK,Cel
 c     predictor stress
       real*8 spr,epr
@@ -48,7 +53,6 @@ c     predictor stress
       logical idiaw,failnr
       real*8 empa,gpa
       parameter(empa=1d6,gpa=1d9)
-
 
 c$$$  yld function parameters
       integer nyldp,nyldc
@@ -77,7 +81,6 @@ c-----------------------------------------------------------------------
       istr=425
 !cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
       idiaw=.true.
-      write(*,*)'0 idiaw:',idiaw
       if (.true.) then
 
          fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
@@ -89,8 +92,6 @@ c-----------------------------------------------------------------------
             open(istr,position='append',file=fnstr)
          endif
       endif
-      write(*,*)'** File opened **'
-      write(*,*)'1 idiaw:',idiaw
 
 c     print head
       call print_head(0)
@@ -118,10 +119,7 @@ c     the updated yld parameters for step n+1 later...
          call w_dim(idia,dstran,ntens,1d0,.true.)
       endif
 
-      write(*,*)'2 idiaw:',idiaw
-
 c     Moduluar pseudo code for stress integration
-
 c-----------------------------------------------------------------------
 c     i.   Check the current (given) variables
       call emod_iso_shell(e,enu,G,eK,Cel)
@@ -167,47 +165,10 @@ c     predicting yield surface
 
 c-----------------------------------------------------------------------
       if (phi_ns(0).lt.flow_stress) then ! elastic
-         deq=0d0                !
-         call w_chr(idia,'* stran at step n')
-         call w_dim(idia,stran,ntens,1d0/empa,.true.)
-         call w_chr(idia,'* stress at step n')
-         call w_dim(idia,stress,ntens,1d0/empa,.true.)
-
-c$$$           1. Save jacobian as elastic moduli
-         ddsdde(:,:) = Cel(:,:)
-c$$$           2. Update strain.
-         stran_el_ns(1,:) = stran_el_ns(0,:) + dstran(:)
-c         call add_array(stran,dstran,ntens)
-c$$$           3. Updates stress
-         call mult_array(ddsdde,stran_el_ns(1,:),ntens,stress)
-
-         if (idiaw) then
-            call w_chr( idia,'* stress at n+1')
-            call w_dim( idia,stress,ntens,1d0/empa,.true.)
-c            call w_chr( idia,'* stran n+1')
-c            call w_dim( idia,stran,ntens,1d0/empa,.true.)
-            call w_chr( idia,'* ddsdde')
-            call w_mdim(idia,ddsdde,  ntens,1d0/gpa)
-            call w_chr( idia,'* stran_el_ns(n+1)')
-            call w_dim( idia,stran_el_ns(1,:),ntens,1d0,.true.)
-         endif
-
-         if (idiaw) call w_chr(idia,'5')
-c$$$           4. Update all other state varaiables
-
-         eeq_ns(1)        = eeq_ns(0) + deq
-         stran_pl_ns(1,:) = stran_pl_ns(0,:)
-         call update_yldp(iyld_law,yldp_ns,nyldp,deq)
-
-c$$            5. Store updated state variables to statev
-         call restore_statev(statev,nstatv,eeq_ns(1),stran_el_ns(1,:),
-     $        stran_pl_ns(1,:),ntens,yldp_ns(1,:),nyldp,1,.false.,idia)
-
-         if (idiaw) call w_chr(idia,'6')
-
-         return
+         call update_elastic(idia,idiaw,iyld_law,ntens,nyldp,nstatv,
+     $        ddsdde,cel,stran,stran_el_ns,stran_pl_ns,dstran,stress,
+     $        eeq_ns,deq,yldp_ns,statev)
       else !! plastic
-
          call w_chr(idia,'PLASTIC')
          call print_foot(0)
          call print_foot(imsg)
@@ -236,7 +197,6 @@ c     variables to be updated within return_mapping
             call fill_line(idia,'*',72)
             return ! out of umat
          endif
-         
 
          if (idiaw) then
 c$$$            call w_chr(idia,'inquiry for state variable after RM')
@@ -273,6 +233,64 @@ c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) +
       call print_foot(imsg)
       return
       end subroutine umat
+c-----------------------------------------------------------------------
+      subroutine update_elastic(
+     $     idia,idiaw,iyld_law,
+     $     ntens,nyldp,nstatv,
+     $     ddsdde,cel,
+     $     stran,stran_el_ns,stran_pl_ns,dstran,stress,eeq_ns,deq,
+     $     yldp_ns,
+     $     statev)
+      implicit none
+      integer idia,iyld_law,nstatv,ntens,nyldp
+      logical idiaw
+      dimension ddsdde(ntens,ntens),cel(ntens,ntens),stran(ntens),
+     $     stran_el_ns(0:1,ntens),stran_pl_ns(0:1,ntens),dstran(ntens),
+     $     stress(ntens),yldp_ns(0:1,nyldp),statev(nstatv),eeq_ns(0:1)
+      real*8 ddsdde,cel,stran,stran_el_ns,stran_pl_ns,dstran,
+     $     stress,yldp_ns,statev,eeq_ns,deq
+      real*8 empa,gpa
+      empa = 1d6
+      gpa  = 1d9
+      deq=0d0
+      call w_chr(idia,'* stran at step n')
+      call w_dim(idia,stran,ntens,1d0/empa,.true.)
+      call w_chr(idia,'* stress at step n')
+      call w_dim(idia,stress,ntens,1d0/empa,.true.)
+
+c$$$  1. Save jacobian as elastic moduli
+      ddsdde(:,:) = Cel(:,:)
+c$$$  2. Update strain.
+      stran_el_ns(1,:) = stran_el_ns(0,:) + dstran(:)
+c     call add_array(stran,dstran,ntens)
+c$$$  3. Updates stress
+      call mult_array(ddsdde,stran_el_ns(1,:),ntens,stress)
+
+      if (idiaw) then
+         call w_chr( idia,'* stress at n+1')
+         call w_dim( idia,stress,ntens,1d0/empa,.true.)
+c     call w_chr( idia,'* stran n+1')
+c     call w_dim( idia,stran,ntens,1d0/empa,.true.)
+         call w_chr( idia,'* ddsdde')
+         call w_mdim(idia,ddsdde,  ntens,1d0/gpa)
+         call w_chr( idia,'* stran_el_ns(n+1)')
+         call w_dim( idia,stran_el_ns(1,:),ntens,1d0,.true.)
+      endif
+
+      if (idiaw) call w_chr(idia,'5')
+c$$$  4. Update all other state varaiables
+
+      eeq_ns(1)        = eeq_ns(0) + deq
+      stran_pl_ns(1,:) = stran_pl_ns(0,:)
+      call update_yldp(iyld_law,yldp_ns,nyldp,deq)
+
+c$$   5. Store updated state variables to statev
+      call restore_statev(statev,nstatv,eeq_ns(1),stran_el_ns(1,:),
+     $     stran_pl_ns(1,:),ntens,yldp_ns(1,:),nyldp,1,.false.,idia)
+
+      if (idiaw) call w_chr(idia,'6')
+      return
+      end subroutine update_elastic
 c-----------------------------------------------------------------------
       subroutine restore_statev(statev,nstatv,eqpl,stran_el,stran_pl,
      $     ntens,yldp,nyldp,iopt,verbose,iunit)

@@ -170,7 +170,7 @@ c             dlamb^(k+1) = dlamb^k - fo_ks(k)/fp_ks(k)
          dlamb_ks(k+1) = dlamb_ks(k) + fo_ks(k)/fp_ks(k)
 
 c     new plastic strain increment
-         dstran_pl_ks(k+1,:) = dlamb_ks(k+1) * dphi_ks(k,:) ! backward
+         dstran_pl_ks(k+1,:) = dlamb_ks(k+1) * dphi_ks(k,:)
 c     new elastic strain increment?
          dstran_el_ks(k+1,:) = dstran(:)  - dstran_pl_ks(k+1,:)
 c     new plastic acc strain
@@ -272,9 +272,9 @@ c     fp   : slope
       return
       end subroutine calc_fp
 c-----------------------------------------------------------------------
-c     calculate elasto-plastic consistent tangent modulus
+c     Calculate elasto-plastic consistent tangent modulus
 c     Following J. W. Yoon et. al., 1999, IJP 15, p35-67
-      subroutine calc_epl_jacob(Cel,dphi,dh,ntens,jacob)
+      subroutine calc_epl_jacob(Cel,dphi,dh,ntens,jacob,idia,idiaw)
       implicit none
       integer ntens
       dimension Cel(ntens,ntens),dphi(ntens),jacob(ntens,ntens)
@@ -283,7 +283,8 @@ c     Following J. W. Yoon et. al., 1999, IJP 15, p35-67
 c     local varaiables
       dimension a(ntens),b(ntens)
       real*8 deno,a,b
-      integer i,j,k
+      integer i,j,k,idia
+      logical idiaw
 
       deno=0d0
       a(:)=0d0
@@ -303,7 +304,7 @@ c     local varaiables
          jacob(i,j) = cel(i,j) - a(i) * b(j) / deno
  10   continue
 
-
+c-----------------------------------------------------------------------
       write(*,*)'------------------------------------------'
       write(*,*)'dphi:',dphi
       write(*,*)'------------------------------------------'
