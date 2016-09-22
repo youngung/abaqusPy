@@ -76,6 +76,10 @@ def main(fnout='strstr.txt',fnOdb=None):
 
     e11=odb.steps['TensionContinue'].historyRegions[
         'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['E11'].data
+    ee11=odb.steps['TensionContinue'].historyRegions[
+        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['EE11'].data
+    ee22=odb.steps['TensionContinue'].historyRegions[
+        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['EE22'].data
     pe11=odb.steps['TensionContinue'].historyRegions[
         'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['PE11'].data
     pe22=odb.steps['TensionContinue'].historyRegions[
@@ -84,16 +88,19 @@ def main(fnout='strstr.txt',fnOdb=None):
         'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['S11'].data
     e11=np.array(e11);    s11=np.array(s11)
     pe11=np.array(pe11); pe22=np.array(pe22)
+    ee11=np.array(ee11); ee22=np.array(ee22)
     ## Discard the time stamps.
     time=e11[:,0]
     s11=s11[:,1]
-    e11=e11[:,1];
-    pe11=pe11[:,1];
-    pe22=pe22[:,1];
+    e11=e11[:,1]
+    pe11=pe11[:,1]
+    pe22=pe22[:,1]
+    ee11=ee11[:,1]
+    ee22=ee22[:,1]
 
-    FlowCurve=np.array([e11,s11,pe11,pe22,time]).T
-    fnFlowCurve=os.path.join(fnout)
-    np.savetxt(fnFlowCurve,FlowCurve)
+    FlowCurve=np.array([e11,s11,pe11,pe22,time,ee11,ee22]).T
+    fnFlowCurve=os.path.join(os.getcwd(),fnout)
+    np.savetxt(fnFlowCurve,FlowCurve,fmt='%13.5e')
 
     print 'fnFlowCurve file %s has been saved using onePP.py'%fnFlowCurve
 
@@ -106,4 +113,4 @@ fns=glob.glob('*.odb')
 #(fnout='strstr.txt',fnOdb=None
 for i in xrange(len(fns)):
     print 'Concerned file name:',fns[i]
-    main(fnout=fns[i].split('.odb')[0]+'.txt',fnOdb=fns[i])
+    odb=main(fnout=fns[i].split('.odb')[0]+'.txt',fnOdb=fns[i])

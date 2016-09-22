@@ -51,18 +51,19 @@ xyCoords=square(length=length)
 
 def TensileOneElement(
     Theta=0.,isub=False,iwait=False,
-    umatFN=None,myMatFunc=None):
+    umatFN=None,myMatFunc=None,totalStrain=0.05):
     """
     Prep one shell element tests
 
     Arguments
     ---------
-    Theta     = 0 : c.c.w in-plane rotation of material
-                   from global axis 1
-    isub      = False
-    iwait     = False
-    umatFN    = None
-    myMatFunc = None
+    Theta        = 0 : c.c.w in-plane rotation of material
+                      from global axis 1
+    isub        = False
+    iwait       = False
+    umatFN      = None
+    myMatFunc   = None
+    totalStrain = 0.05
     """
     ### Model declaration
     gpa=1.e9
@@ -182,14 +183,14 @@ def TensileOneElement(
 
     ### Define boundary conditions...
     epsRate=1e-3 #0.001/sec
-    delEpsMax=1e-4 ## I want incremental step less than ...
+    delEpsMax=1e-5 ## I want incremental step less than ...
     minTimeInc=delEpsMax/epsRate
     ## approximate gauge length:
     L0=1.*length   ## one element
     vel=epsRate*L0 ## velocity
 
     ### total (engi) strain wanted: 0.02
-    totalStrain = 0.20
+    # totalStrain = 0.20
     Lf=(1.+totalStrain)*L0
     totalDisplace=Lf-L0
     deltaTime=totalDisplace/vel ## total delta Time
@@ -209,7 +210,7 @@ def TensileOneElement(
     ## Modify output request
     # Field output
     myModel.fieldOutputRequests['F-Output-1'].setValues(
-        variables=('E','U','S'))
+        variables=('E','U','S','EE',))
     # History output
     # myModel.historyOutputRequests['H-Output-1'].setValues(
     # variables=('E11',),region=myAssembly.sets['MidSpan'])
@@ -251,7 +252,7 @@ def TensileOneElement(
     myModel.HistoryOutputRequest(
         name='StressStrain',rebar=EXCLUDE,
         createStepName='TensionContinue',variables=(
-            'S11','E11','E22','PE11','PE22'),
+            'S11','E11','E22','PE11','PE22','EE11','EE22'),
         region=myAssembly.sets['ORIGIN'],sectionPoints=DEFAULT)
     myAssembly.regenerate()
 
@@ -322,7 +323,7 @@ if __name__=='main':
 umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
 
 ## Job testing methods
-runSingle(umatFN=umatFN,iwait=True,isub=True)
+runSingle(umatFN=umatFN,iwait=True,isub=True,totalStrain=0.01)
 
 ## testing at various angles
 #runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False)
