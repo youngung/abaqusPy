@@ -7,7 +7,7 @@ c     step defined by dstran (rate-independent ... yet?)
      $     ihard_law,iyld_law,yldc,nyldc,yldp_ns,nyldp,
 
 c          variables to be updated.
-     $     spd,snew,statev,nstatv,ddsdde,ifail
+     $     spd,snew,statev,nstatv,ddsdde,failnr
      $     )
 c-----------------------------------------------------------------------
 c***  Arguments
@@ -38,7 +38,7 @@ c-----------------------------------------------------------------------
       character*20 chr
       integer ntens,mxnr,nhrdc,nhrdp,ihard_law,iyld_law,nyldc,nyldp,
      $     nstatv
-      parameter(mxnr=20)
+      parameter(mxnr=10)
 c-----------------------------------------------------------------------
       dimension spr(ntens),dphi_n(ntens),snew(ntens),
      $     spr_ks(mxnr,ntens),statev(nstatv),
@@ -73,9 +73,9 @@ c-----------------------------------------------------------------------
       real*8 h_flow_ks,dh_ks,phi_ks,em_k,tolerance,tol_val
       real*8 hrdc,hrdp
       integer k,idia,imsg
-      parameter(tolerance=1d-6)
-      logical idiaw,ibreak,ifail
-      ifail=.false. ! in case NR fails
+      parameter(tolerance=1d-4)
+      logical idiaw,ibreak,failnr
+      failnr=.false.             ! in case NR fails
 
       if (ntens.ne.3) then
          call fill_line(0,'*',72)
@@ -223,12 +223,12 @@ c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
       enddo ! end of do while loop for NR procedure
 
 c     case when k exceeds mxnr
-      call w_chr(idia,'Error: NR procedure diverged in return_mapping.f')
+      call w_chr(idia,'Warning: NR procedure failed to converge')
       if (idiaw) then
          call fill_line(idia,'===',72)
       endif
-!      stop -1
-      ifail=.true.
+      failnr=.true.
+      return ! to get out before updating state variables.
 
 c-----------------------------------------------------------------------
  100  continue ! successful NR run

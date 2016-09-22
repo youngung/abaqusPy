@@ -43,11 +43,11 @@ c     predictor stress
 !     eeq_ns: eq plastic strain at steps n,n+1
 
       real*8 phi_ns,dphi_n,d2phi_n
-      real*8 toler_yield,stran_el_ns,stran_pl_ns,dstran_el,dstran_pl
+      real*8 stran_el_ns,stran_pl_ns,dstran_el,dstran_pl
       integer imsg,idia,i,istr,ihrd_law,iyld_law
-      logical idiaw,inr_fail
+      logical idiaw,failnr
       real*8 empa,gpa
-      parameter(toler_yield=1d-6,empa=1d6,gpa=1d9)
+      parameter(empa=1d6,gpa=1d9)
 
 
 c$$$  yld function parameters
@@ -226,12 +226,15 @@ c$$$         endif
      $        iyld_law,yldc,nyldc,yldp_ns,nyldp,
 
 c     variables to be updated within return_mapping
-     $        spd,stress,statev,nstatv,ddsdde,inr_fail)
+     $        spd,stress,statev,nstatv,ddsdde,failnr)
 
-         if (inr_fail) then
+         if (failnr) then
             ! reduce time step?
-            pnewdt = 0.5
-            call w_chr(idia,'dtime:',dtime)
+            pnewdt = 0.5d0
+            call w_val(idia,'** dtime :',dtime)
+            call w_val(idia,'** pnewdt:',pnewdt)
+            call fill_line(idia,'*',72)
+            return ! out of umat
          endif
          
 
