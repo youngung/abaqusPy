@@ -29,7 +29,6 @@ c$$$  User coding to define DDSDDE, STRESS, STATEV, SSE, SPD, SCD
 c$$$  and, if necessary, RPL, DDSDDT, DRPLDE, DRPLDT, PNEWDT
 c$$$  End of ABAQUS UMAT Interface
 
-
 c-----------------------------------------------------------------------
 c$$$  local arrays
       character*255 fndia,fnstr
@@ -58,7 +57,6 @@ c$$$  yld function parameters
       integer nyldp,nyldc
       parameter(nyldp=1,nyldc=1) ! this depends on iyld_law...
       dimension yldp_ns(0:1,nyldp),yldc(nyldc)
-
       real*8 yldp_ns,yldc,deq_pr,deq
 
 c-----------------------------------------------------------------------
@@ -77,12 +75,12 @@ c**   elastic constants
       enu=0.3d0
 c-----------------------------------------------------------------------
       imsg=7
-      idia=0  !315
+      idia=315
       istr=425
-!cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
-      idiaw=.true.
-      if (.true.) then
 
+      idiaw=.true.
+!cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
+      if (idiaw) then
          fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
          fnstr='/home/younguj/repo/abaqusPy/examples/one/strstr.txt'
          if (idia.ne.0) then
@@ -91,11 +89,9 @@ c-----------------------------------------------------------------------
          if (istr.ne.0) then
             open(istr,position='append',file=fnstr)
          endif
+         call print_head(idia)
       endif
-
 c     print head
-      call print_head(0)
-      call print_head(imsg)
 
 c     restore stran_el, stran_pl, and yldp
       call restore_statev(statev,nstatv,eeq_ns(0),stran_el_ns(0,:),
@@ -152,7 +148,7 @@ c          elastic regime
       endif
 
       call update_yldp(iyld_law,yldp_ns,nyldp,deq_pr)
-      call w_val(idia,'yldp_ns(1):',yldp_ns(1,1))
+      if (idiaw) call w_val(idia,'yldp_ns(1):',yldp_ns(1,1))
 c     predicting yield surface
       call yld(iyld_law,yldp_ns(1,:),yldc,nyldp,nyldc,spr,
      $     phi_ns(0),dphi_n,d2phi_n,ntens)
@@ -169,9 +165,10 @@ c-----------------------------------------------------------------------
      $        ddsdde,cel,stran,stran_el_ns,stran_pl_ns,dstran,stress,
      $        eeq_ns,deq,yldp_ns,statev)
       else !! plastic
-         call w_chr(idia,'PLASTIC')
-         call print_foot(0)
-         call print_foot(imsg)
+         if (idiaw) then
+            call w_chr(idia,'PLASTIC')
+            call print_foot(idia)
+         endif
 c-----------------------------------------------------------------------
 c     vi. Return mapping
 c        Return mapping subroutine updates stress/statev
@@ -183,7 +180,7 @@ c$$$     $           nyldp,0,.true.,idia)
 c$$$         endif
          call return_mapping(Cel,spr,phi_ns(0),eeq_ns(0),dphi_n,
      $        dstran,stran_el_ns(0,:),stran_pl_ns(0,:),
-     $        ntens,idiaw,hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
+     $        ntens,idiaw,idia,hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
      $        iyld_law,yldc,nyldc,yldp_ns,nyldp,
 
 c     variables to be updated within return_mapping
@@ -192,9 +189,11 @@ c     variables to be updated within return_mapping
          if (failnr) then
             ! reduce time step?
             pnewdt = 0.5d0
-            call w_val(idia,'** dtime :',dtime)
-            call w_val(idia,'** pnewdt:',pnewdt)
-            call fill_line(idia,'*',72)
+            if (idiaw) then
+               call w_val(idia,'** dtime :',dtime)
+               call w_val(idia,'** pnewdt:',pnewdt)
+               call fill_line(idia,'*',72)
+            endif
             return ! out of umat
          endif
 
@@ -227,10 +226,12 @@ c-----------------------------------------------------------------------
 c     vi. Caculate jacobian (ddsdde)
 c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) + h(depl_ij_(n+1)) ]
       endif
-      close(idia)
+      if (idia.ne.0.and.idiaw) close(idia)
       close(istr)
-      call print_foot(0)
-      call print_foot(imsg)
+
+      if (idiaw) then
+         call print_foot(idia)
+      endif
       return
       end subroutine umat
 c-----------------------------------------------------------------------
@@ -253,10 +254,12 @@ c-----------------------------------------------------------------------
       empa = 1d6
       gpa  = 1d9
       deq=0d0
-      call w_chr(idia,'* stran at step n')
-      call w_dim(idia,stran,ntens,1d0/empa,.true.)
-      call w_chr(idia,'* stress at step n')
-      call w_dim(idia,stress,ntens,1d0/empa,.true.)
+      if (idiaw) then
+         call w_chr(idia,'* stran at step n')
+         call w_dim(idia,stran,ntens,1d0/empa,.true.)
+         call w_chr(idia,'* stress at step n')
+         call w_dim(idia,stress,ntens,1d0/empa,.true.)
+      endif
 
 c$$$  1. Save jacobian as elastic moduli
       ddsdde(:,:) = Cel(:,:)

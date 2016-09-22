@@ -3,7 +3,7 @@ c     Return mapping subroutine to find stress at n-1 step
 c     and integrate all state variables during the given incremental
 c     step defined by dstran (rate-independent ... yet?)
       subroutine return_mapping(Cel,spr,phi_n,eeq_n,dphi_n,dstran,
-     $     stran_el,stran_pl,ntens,idiaw,hrdp,nhrdp,hrdc,nhrdc,
+     $     stran_el,stran_pl,ntens,idiaw,idia,hrdp,nhrdp,hrdc,nhrdc,
      $     ihard_law,iyld_law,yldc,nyldc,yldp_ns,nyldp,
 
 c          variables to be updated.
@@ -11,16 +11,17 @@ c          variables to be updated.
      $     )
 c-----------------------------------------------------------------------
 c***  Arguments
-c     Cel    : elastic moduli
-c     spr    : predictor stress at k=0
-c     phi_n  : yield surface at the given step n
-c     eeq_n  : accumulative plastic equivalent strain at step n
-c     dphi_n : dphi at step n
-c     dstran : total incremental strain given between steps n and n+1
+c     Cel     : elastic moduli
+c     spr     : predictor stress at k=0
+c     phi_n   : yield surface at the given step n
+c     eeq_n   : accumulative plastic equivalent strain at step n
+c     dphi_n  : dphi at step n
+c     dstran  : total incremental strain given between steps n and n+1
 c     stran_el: total elastic strain at step n
 c     stran_pl: total plastic strain at step n
 c     ntens   : len of stress/strain tensor (also applied to Cel)
 c     idiaw   : whether or not turn on the diagnostic streams
+c     idia    : idia
 c     hrdp    : hardening state variable arrays associated with hrdp
 c               (e.g., equivalent plastic strain for isotropic hardening)
 c     hrdc    : hardening constants (invariable)
@@ -104,7 +105,7 @@ c     iv. return mapping (loop over k)
       k=1
 
 c      idia=315 ! write to diagnostic file
-      idia=0   ! write to stdo
+c      idia=0   ! write to stdo
 c      idia=7   ! write to Abaqus msg file
 
       if (idiaw) then
@@ -185,7 +186,7 @@ c     Using  dE = dE^(el)^(k+1) + dlamb^(k+1),
          if (idiaw) then
             call w_val(idia,'dlamb_ks(k+1)',dlamb_ks(k+1))
             call w_empty_lines(idia,2)
-            call w_chr(idiaw,'dstran')
+            call w_chr(idia,'dstran')
             call w_dim(idia,dstran(:),ntens,1d0,.false.)
             call w_empty_lines(idia,2)
             call w_chr(idia,'dstran_pl_k')
@@ -223,8 +224,9 @@ c        3. Find normal of the updated predictor stress (s_(n+1)^(k+1))
       enddo ! end of do while loop for NR procedure
 
 c     case when k exceeds mxnr
-      call w_chr(idia,'Warning: NR procedure failed to converge')
+
       if (idiaw) then
+         call w_chr(idia,'Warning: NR procedure failed to converge')
          call fill_line(idia,'===',72)
       endif
       failnr=.true.
@@ -232,7 +234,7 @@ c     case when k exceeds mxnr
 
 c-----------------------------------------------------------------------
  100  continue ! successful NR run
-      call w_chr(idia,'NR procedure converged')
+      if (idiaw) call w_chr(idia,'NR procedure converged')
       if (idiaw) call fill_line(idia,'===',72)
 c***  update state variables
       call restore_statev(statev,nstatv,eeq_n+dlamb_ks(k),stran_el_ks(k+1,:),
@@ -292,10 +294,11 @@ c     idiaw : Flag to write the stream
 
 c     local varaiables
       dimension a(ntens),b(ntens)
-      real*8 deno,a,b
+      real*8 deno,a,b,gpa
       integer i,j,k,idia
       logical idiaw
 
+      gpa=1d9
       deno=0d0
       a(:)=0d0
       b(:)=0d0
@@ -321,9 +324,9 @@ c-----------------------------------------------------------------------
          call w_val(idia,'dh:',dh)
          call w_val(idia,'deno:',deno)
          call w_chr(idia,'a(i)')
-         call w_dim(idia,a,ntens,1.d0.,.false.)
+         call w_dim(idia,a,ntens,1.d0,.false.)
          call w_chr(idia,'b(i)')
-         call w_dim(idia,b,ntens,1.d0.,.false.)
+         call w_dim(idia,b,ntens,1.d0,.false.)
          call w_chr(idia,'C^epl [Gpa]')
          call w_mdim(idia,jacob,ntens,1d0/gpa)
          call fill_line(idia,'*',50)
