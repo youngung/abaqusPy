@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-c     write a empty line(s)
+c     write an empty line(s)
       subroutine w_empty_lines(imsg,n)
 c     Arguments
 c     imsg: file unit - if imsg =0 use std (*)
@@ -7,18 +7,18 @@ c     n   : the number of lines to be emptied
       implicit none
       integer imsg,n,i
       if (imsg.eq.0) then
-         do i=1,n
+         do 5 i=1,n
             write(*,*)
-         enddo
+ 5       continue
       else
-         do i=1,n
+         do 10 i=1,n
             write(imsg,*)
-         enddo
+ 10      continue
       endif
       return
       end subroutine w_empty_lines
 c-----------------------------------------------------------------------
-c     Fille a line(s) with the given <chr> by repeating it for <n> times
+c     Fill a line(s) with the given <chr> by repeating it for <n> times
       subroutine fill_line(imsg,chr,n)
 c     imsg: file unit - if imsg =0 use std (*)
 c     chr : symbol that will fill the lines
@@ -27,14 +27,14 @@ c     n   : the number of repetition
       character*1 chr
       integer imsg, n, i
       if (imsg.eq.0) then
-         do i=1,n
+         do 5 i=1,n
             write(*,   '(a1)',advance='no') chr
-         enddo
+ 5       continue
          write(*,*)
       else
-         do i=1,n
+         do 10 i=1,n
             write(imsg,'(a1)',advance='no') chr
-         enddo
+ 10      continue
          write(imsg,*)
       endif
 
@@ -52,7 +52,7 @@ c     val: the value
       if     (is_inf(aval))                      then
          get_fmt='f10.0,x'
       elseif (                   (aval.lt.1e-3)) then
-         get_fmt="e10.2,x"
+         get_fmt="e12.4,x"
       elseif ((aval.ge.1e-3).and.(aval.lt.1e0 )) then
          get_fmt="f9.5,x"
       elseif ((aval.ge.1e0 ).and.(aval.lt.1e3 )) then
@@ -60,10 +60,10 @@ c     val: the value
       elseif ((aval.ge.1e3 ).and.(aval.lt.1e6 )) then
          get_fmt="f9.0,x"
       elseif ((aval.ge.1e6 ))                    then
-         get_fmt="e10.2,x"
+         get_fmt="e12.4,x"
       else
          write(*,*) 'Err: Unexpected case of max value'
-         stop
+         stop -1
       endif
       return
       end function get_fmt
@@ -169,13 +169,13 @@ c     fact: multiplicative factor to scale the elements in the array
       fmt = '('//trim(clen)//trim(fmt)//')'
 
       if (iunit.ne.0) then
-         do i=1,ndi
+         do 15 i=1,ndi
             write(iunit,fmt) (brray(i,j),j=1,ndi)
-         enddo
+ 15      continue
       else
-         do i=1,ndi
+         do 20 i=1,ndi
             write(*   ,fmt) (brray(i,j),j=1,ndi)
-         enddo
+ 20      continue
       endif
       return
       end subroutine w_mdim
@@ -275,14 +275,23 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
 
 c$$$      program test
-c$$$      character*80 get_fmt_int
+c$$$      character*80 get_fmt_int,get_fmt
+c$$$      integer i,n
+c$$$      real*8 val
+c$$$
+c$$$      do i=-9,9
+c$$$         val = 10d0**i
+c$$$         !write(*,*) i, trim(get_fmt(val))
+c$$$         call w_val(0,'dum',val)
+c$$$      enddo
+c$$$
 c$$$c$$$      call w_chr(0,'dum')
 c$$$c$$$      call w_chr(0,'dum2439 33')
 c$$$
-c$$$      write(*,*) get_fmt_int(1)
-c$$$      write(*,*) get_fmt_int(10)
-c$$$      write(*,*) get_fmt_int(100)
-c$$$      write(*,*) get_fmt_int(10000)
+c$$$c$$$      write(*,*) get_fmt_int(1)
+c$$$c$$$      write(*,*) get_fmt_int(10)
+c$$$c$$$      write(*,*) get_fmt_int(100)
+c$$$c$$$      write(*,*) get_fmt_int(10000)
 c$$$
 c$$$      end program test
 c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/lib.f'
