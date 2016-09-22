@@ -320,7 +320,7 @@ if __name__=='main':
 ## controlling job conditions
 #umatFN=None
 #umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
-umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
+umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
 
 ## Job testing methods
 runSingle(umatFN=umatFN,iwait=True,isub=True,totalStrain=0.01)

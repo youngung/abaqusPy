@@ -363,5 +363,5 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
     return myModel, myJob
 
 
-umatFN='/home/younguj/repo/abaqusPy/umats/epl/mises.f'
+umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
 main(umatFN=umatFN,Theta=0.)
