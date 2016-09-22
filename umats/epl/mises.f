@@ -37,10 +37,11 @@ c$$$  local arrays
       dimension Cel(ntens,ntens),phi_ns(0:1),dphi_n(ntens),
      $     d2phi_n(ntens,ntens),stran_el_ns(0:1,ntens),
      $     stran_pl_ns(0:1,ntens),dstran_el(ntens),dstran_pl(ntens),
-     $     spr(ntens),epr(ntens),hrdc(nhrdc),hrdp(nhrdp)
+     $     spr(ntens),epr(ntens),hrdc(nhrdc),hrdp(nhrdp),
+     $     stress_ns(0:1,ntens)
       real*8 e,enu,G,eK,Cel
 c     predictor stress
-      real*8 spr,epr
+      real*8 spr,epr,stress_ns
       real*8 hrdc,hrdp
       dimension eeq_ns(0:1)
       real*8 eeq_ns,flow_stress,dflow_stress
@@ -78,6 +79,9 @@ c-----------------------------------------------------------------------
       idia=315
       istr=425
 
+      stress_ns(0,:) = stress(:)
+
+
       idiaw=.true.
 !cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
       if (idiaw) then
@@ -101,9 +105,16 @@ c     yld parameters pertaining to step n - need to find
 c     the updated yld parameters for step n+1 later...
 
       if (idiaw) then
+         call w_val(idia,'* noel :', noel)
+         call w_val(idia,'* kinc :', kinc)
+         call w_val(idia,'* npt  :', npt)
+         call w_val(idia,'* kspt :', kspt)
+         call w_val(idia,'* layer:', layer)
          call w_val(idia,'* dtime:',dtime)
          call w_val(idia,'* time1:',time(1))
          call w_val(idia,'* time2:',time(2))
+         call w_chr(idia,'* JSTEP:')
+         call w_dim(idia,jstep,4,1d0,.true.)
          call w_chr(idia,'** state variable restored **')
          call w_chr(idia,'* stran at step n')
          call w_dim(idia,stran,ntens,1d0,.true.)
@@ -123,7 +134,8 @@ c-----------------------------------------------------------------------
 c     ii.  Trial stress calculation
 c     Calculate predict elastic strain - assuming dstran = dstran_el
       call add_array2(stran_el_ns(0,:),dstran,epr,ntens)
-      call mult_array(Cel,epr,ntens,spr)
+      call mult_array(Cel,epr,ntens,stress_ns(1,:))
+      spr(:) = stress_ns(1,:)
 
       if (idiaw) then
          call w_chr( idia,'* C^el [GPa]')
@@ -131,10 +143,10 @@ c     Calculate predict elastic strain - assuming dstran = dstran_el
          call w_chr( idia,'* Trial elastic strain ')
          call w_dim( idia,epr,ntens,1d0,.true.)
          call w_chr( idia,'* Trial stress [MPa]')
-         call w_dim( idia,spr,ntens,1d0/empa,.true.)
+         call w_dim( idia,stress_ns(1,:),ntens,1d0/empa,.true.)
       endif
 c-----------------------------------------------------------------------
-c     iii. See if the pr stress (spr) calculation is in the plastic or
+c     iii. See if the pr stress (stress_ns(1,:)) calculation is in the plastic or
 c          elastic regime
       deq_pr = 0.               !assuming no plastic increment
       hrdp(1) = eeq_ns(0)+deq_pr
@@ -150,7 +162,7 @@ c          elastic regime
       call update_yldp(iyld_law,yldp_ns,nyldp,deq_pr)
       if (idiaw) call w_val(idia,'yldp_ns(1):',yldp_ns(1,1))
 c     predicting yield surface
-      call yld(iyld_law,yldp_ns(1,:),yldc,nyldp,nyldc,spr,
+      call yld(iyld_law,yldp_ns(1,:),yldc,nyldp,nyldc,stress_ns(1,:),
      $     phi_ns(0),dphi_n,d2phi_n,ntens)
       if (idiaw) then
          call w_val(idia,'*         phi step n [MPa]:',
@@ -172,20 +184,19 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
 c     vi. Return mapping
 c        Return mapping subroutine updates stress/statev
-c$$$         if (idiaw) then
-c$$$            call w_chr(idia,'inquiry for state variable before RM')
-c$$$            call restore_statev(statev,nstatv,eeq_ns(1),
-c$$$     $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
-c$$$     $           nyldp,0,.true.,idia)
-c$$$         endif
-         call return_mapping(Cel,spr,phi_ns(0),eeq_ns(0),dphi_n,
-     $        dstran,stran_el_ns(0,:),stran_pl_ns(0,:),
+         if (idiaw) then
+            call w_chr(idia,'** Inquiry for state variable before RM')
+            call restore_statev(statev,nstatv,eeq_ns(1),
+     $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
+     $           nyldp,0,.true.,idia)
+         endif
+         if (idiaw) call w_chr(imsg,'** Begin return-mapping **')
+         call return_mapping(Cel,stress_ns(1,:),phi_ns(0),eeq_ns(0),
+     $        dphi_n,dstran,stran_el_ns(0,:),stran_pl_ns(0,:),
      $        ntens,idiaw,idia,hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
      $        iyld_law,yldc,nyldc,yldp_ns,nyldp,
-
-c     variables to be updated within return_mapping
      $        spd,stress,statev,nstatv,ddsdde,failnr)
-
+         if (idiaw) call w_chr(imsg,'** Exit return-mapping **')
          if (failnr) then
             ! reduce time step?
             pnewdt = 0.5d0
@@ -197,13 +208,28 @@ c     variables to be updated within return_mapping
             return ! out of umat
          endif
 
+
+
+         stress_ns(1,:) = stress(:)
+
          if (idiaw) then
-c$$$            call w_chr(idia,'inquiry for state variable after RM')
-c$$$            call restore_statev(statev,nstatv,eeq_ns(1),
-c$$$     $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
-c$$$     $           nyldp,0,.true.,idia)
+            call w_chr(idia,'** inquiry for state variable after RM')
+            call restore_statev(statev,nstatv,eeq_ns(1),
+     $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
+     $           nyldp,0,.true.,idia)
+            call w_chr( idia,'* stress at n')
+            call w_dim( idia,stress_ns(0,:),ntens,1d0/empa,.true.)
+            call w_chr( idia,'* spr')
+            call w_dim( idia,spr,ntens,1d0/empa,.true.)
             call w_chr( idia,'* stress at n+1')
-            call w_dim( idia,stress,ntens,1d0/empa,.true.)
+            call w_dim( idia,stress_ns(1,:),ntens,1d0/empa,.true.)
+            call w_chr( idia,'* stress')
+            call w_dim( idia,stress(:),ntens,1d0/empa,.true.)
+
+            call w_chr( idia,'* stran_pl at n')
+            call w_dim( idia,stran_pl_ns(0,:),ntens,1d0/empa,.true.)
+            call w_chr( idia,'* stran_pl at n+1')
+            call w_dim( idia,stran_pl_ns(1,:),ntens,1d0/empa,.true.)
             call w_chr( idia,'* stran n+1')
             call w_dim( idia,stran,ntens,1d0/empa,.true.)
             call w_chr( idia,'* ddsdde')
@@ -212,7 +238,8 @@ c$$$     $           nyldp,0,.true.,idia)
             call w_dim( idia,stran_el_ns(1,:),ntens,1d0,.true.)
          endif
 
-         write(imsg,*)'return-mapping'
+         call stop_debug(0) ! debug
+
 c-----------------------------------------------------------------------
 c     v. Exit from iv. means
 c        s   _(n+1) is obtained.
@@ -352,11 +379,11 @@ c               inquiry stream will be written
          call w_chr(iunit,'inquiry request on state variables')
          call w_val(iunit,' eqpl   ',eqpl)
          call w_chr(iunit,'stran_el ')
-         call w_dim(iunit,stran_el,ntens,1.d0,.false.)
+         call w_dim(iunit,stran_el,ntens,1.d0,.true.)
          call w_chr(iunit,'stran_pl ')
-         call w_dim(iunit,stran_pl,ntens,1.d0,.false.)
+         call w_dim(iunit,stran_pl,ntens,1.d0,.true.)
          call w_chr(iunit,'yldp')
-         call w_dim(iunit,yldp,nyldp,1.d0,.false.)
+         call w_dim(iunit,yldp,nyldp,1.d0,.true.)
          call fill_line(iunit,'*',72)
          call w_empty_lines(iunit,2)
       endif
