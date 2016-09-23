@@ -9,12 +9,13 @@ import os
 
 import numpy as np
 
-def main(fnout='strstr.txt',fnOdb=None):
+def main(fnout='strstr.txt',fnOdb=None,iumat=False):
     """
 
     Arguments
     ---------
     fnout    : output filename
+    iumat    : False (flag to determine if user material is used.
     """
     # fnOdb=os.path.join(os.getcwd(),'OneElement.odb')
     print 'fnOdb:',fnOdb
@@ -74,18 +75,47 @@ def main(fnout='strstr.txt',fnOdb=None):
     mySectionName = odb.sections.keys()[0]
 
 
+    ## Commonly available variables
     e11=odb.steps['TensionContinue'].historyRegions[
-        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['E11'].data
-    ee11=odb.steps['TensionContinue'].historyRegions[
-        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['EE11'].data
-    ee22=odb.steps['TensionContinue'].historyRegions[
-        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['EE22'].data
-    pe11=odb.steps['TensionContinue'].historyRegions[
-        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['PE11'].data
-    pe22=odb.steps['TensionContinue'].historyRegions[
-        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['PE22'].data
+        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+        historyOutputs['E11'].data
     s11=odb.steps['TensionContinue'].historyRegions[
-        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].historyOutputs['S11'].data
+        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+        historyOutputs['S11'].data
+
+    ## In case intrinsic material feature in abaqus is used.
+    if not(iumat):
+        ee11=odb.steps['TensionContinue'].historyRegions[
+            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+            historyOutputs['EE11'].data
+        ee22=odb.steps['TensionContinue'].historyRegions[
+            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+            historyOutputs['EE22'].data
+        pe11=odb.steps['TensionContinue'].historyRegions[
+            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+            historyOutputs['PE11'].data
+        pe22=odb.steps['TensionContinue'].historyRegions[
+            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+            historyOutputs['PE22'].data
+    elif (iumat):
+        ee11=odb.steps['TensionContinue'].historyRegions[
+            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+            historyOutputs['SDV1'].data
+        ee22=odb.steps['TensionContinue'].historyRegions[
+            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+            historyOutputs['SDV2'].data
+        pe11=odb.steps['TensionContinue'].historyRegions[
+            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+            historyOutputs['SDV4'].data
+        pe22=odb.steps['TensionContinue'].historyRegions[
+            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+            historyOutputs['SDV5'].data
+    else:
+        print 'Unexpected iumat given:',iumat
+    ## In case intrinsic material feature in abaqus is used.
+
+
+
     e11=np.array(e11);    s11=np.array(s11)
     pe11=np.array(pe11); pe22=np.array(pe22)
     ee11=np.array(ee11); ee22=np.array(ee22)
@@ -113,4 +143,4 @@ fns=glob.glob('*.odb')
 #(fnout='strstr.txt',fnOdb=None
 for i in xrange(len(fns)):
     print 'Concerned file name:',fns[i]
-    odb=main(fnout=fns[i].split('.odb')[0]+'.txt',fnOdb=fns[i])
+    odb=main(fnout=fns[i].split('.odb')[0]+'.txt',fnOdb=fns[i],iumat=True)

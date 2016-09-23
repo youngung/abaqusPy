@@ -209,11 +209,13 @@ def TensileOneElement(
 
     ## Modify output request
     # Field output
-    myModel.fieldOutputRequests['F-Output-1'].setValues(
-        variables=('E','U','S','EE','PE'))
-    # History output
-    # myModel.historyOutputRequests['H-Output-1'].setValues(
-    # variables=('E11',),region=myAssembly.sets['MidSpan'])
+
+    if type(umatFN)==type(None):
+        myModel.fieldOutputRequests['F-Output-1'].setValues(
+            variables=('E','U','S','EE','PE'))
+    else:
+        myModel.fieldOutputRequests['F-Output-1'].setValues(
+            variables=('E','U','S','SDV'))
 
     ## Apply BC
     c0=datOri.pointOn
@@ -252,8 +254,8 @@ def TensileOneElement(
     myModel.HistoryOutputRequest(
         name='StressStrain',rebar=EXCLUDE,
         createStepName='TensionContinue',variables=(
-            'S11','E11','E22','PE11','PE22','EE11','EE22'),
-        region=myAssembly.sets['ORIGIN'],sectionPoints=DEFAULT)
+            'S11','E11','SDV'),region=myAssembly.sets['ORIGIN'],
+        sectionPoints=DEFAULT)
     myAssembly.regenerate()
 
     ## Create Job
@@ -323,7 +325,7 @@ if __name__=='main':
 umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
 
 ## Job testing methods
-runSingle(umatFN=umatFN,iwait=True,isub=True,totalStrain=0.01)
+runSingle(umatFN=umatFN,iwait=False,isub=False,totalStrain=0.01)
 
 ## testing at various angles
 #runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False)
