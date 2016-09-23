@@ -12,7 +12,7 @@ c     to test various yield functions
 
 c     Uniaxial tensin stress state referred in the lab axes
       s6lab(:)=0.
-      s6lab(1)=1.
+      s6lab(1)=5.d0
       call voigt2(s6lab,s33lab)
 
 c-----------------------------------------------------------------------
@@ -57,8 +57,8 @@ c$$$
          call voigt1(s33mat,s6mat)
 c        yield stress is written in the material axes
 
-         call vm_gen(    s6mat,phim,dphim,d2phim)
-c         call hill48_gen(s6mat,phim,dphim,d2phim,yldp_hill)
+c         call vm_gen(    s6mat,phim,dphim,d2phim)
+         call hill48_gen(s6mat,phim,dphim,d2phim,yldp_hill)
 
 !        shear strains: =1/2.shear
          call voigt4(dphim,dphi33m)

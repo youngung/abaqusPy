@@ -58,7 +58,7 @@ c     predictor stress
 
 c$$$  yld function parameters
       integer nyldp,nyldc
-      parameter(nyldp=1,nyldc=1) ! this depends on iyld_law...
+      parameter(nyldp=1,nyldc=4) ! this depends on iyld_law...
       dimension yldp_ns(0:1,nyldp),yldc(nyldc)
       real*8 yldp_ns,yldc,deq_pr,deq
 
@@ -67,7 +67,14 @@ c***  hardwired material parameters
 c-----------------------------------------------------------------------
 c**   material constitutive laws
       ihrd_law=0                ! Voce isotropic hardening
-      iyld_law=0                ! von Mises (shell)
+
+c      iyld_law=0                ! Generic von Mises (shell)
+      iyld_law=1                ! Generic Hill48 (shell)
+      yldc(1)=0.5
+      yldc(2)=0.5
+      yldc(3)=0.5
+      yldc(4)=1.5
+
 c**   hardening parameters
       hrdc(1) = 479.0d0
       hrdc(2) = 339.7d0
@@ -83,9 +90,8 @@ c-----------------------------------------------------------------------
 
       stress_ns(0,:) = stress(:)
 
-      idiaw=.false.
+      idiaw=.true.
 !cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
-      call print_head(0)
       if (idiaw) then
          fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
          if (idia.ne.0) then

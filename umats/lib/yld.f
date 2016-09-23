@@ -16,7 +16,7 @@ c     intent(in) iyld_law,yldp,yldc,nyldp,nyldc
 c     intent(out) phi,dphi,d2phi
 c-----------------------------------------------------------------------
       implicit none
-      integer iyld_law,nyldp,nyldc,ntens
+      integer iyld_law,nyldp,nyldc,ntens,i
       dimension yldp(nyldp),yldc(nyldc),dphi(ntens),d2phi(ntens,ntens)
       real*8 yldp,yldc,phi,dphi,d2phi
 
@@ -26,7 +26,9 @@ c***  Local variables for better readibility
 
 c***  Define phi,dphi,d2phi
       if (iyld_law.eq.0) then
-         call vm_shell(stress,phi,dphi,d2phi)
+         call vm_shell(    stress,phi,dphi,d2phi)
+      elseif (iyld_law.eq.1) then
+         call hill48_shell(stress,phi,dphi,d2phi,yldc)
       else
          write(*,*)'unexpected iyld_law given'
          stop -1
@@ -54,6 +56,8 @@ c        that defines the yield surface 'size'
 
 c        Actually, this may be abundant for von Mises isotropic yield function
 c        stress will be sufficient to determine the yield surface...
+         yldp_ns(1,1) = deeq + yldp_ns(0,1)
+      elseif (iyld_law.eq.1) then
          yldp_ns(1,1) = deeq + yldp_ns(0,1)
       else
          write(*,*)'Unexpected iyld_law given in update_yldp'
