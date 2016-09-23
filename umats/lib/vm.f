@@ -76,12 +76,9 @@ c     1st derivatives
 c     dphi_i = round(phi) / round(sig_i)
 c     dphi_i = round(phi)/ round (H) x  round(H)/round(s_i)
       dff     = 1.d0 / (2.d0*phi)
-      dphi(1) =  dff * dh(1)
-      dphi(2) =  dff * dh(2)
-      dphi(3) =  dff * dh(3)
-      dphi(4) =  dff * dh(4)
-      dphi(5) =  dff * dh(5)
-      dphi(6) =  dff * dh(6)
+      do 5 i=1,6
+         dphi(i) =  dff * dh(i)
+ 5    continue
 
 c     2nd derivatives
 c     dphi_i/round(s_j) = round(round(phi)/ round (H) x  round(H)/round(s_i))/round(s_j)
@@ -91,8 +88,6 @@ c                         round(round(phi)/ round (H) x
       do 10 j=1,6
          d2phi(i,j) = 1.d0/8.d0 * phi**(-5.d0/2.d0)*dh(j)*dh(i) +
      $                1.d0/2.d0 * phi**(-1.d0/2.d0)*d2h(i,j)
-c$$$         d2phi(i,j) = d2phi(i,j) + 1.d0/4.d0 * phi**(-3.d0)*
-c$$$     $        dh(j) * dh(i) + dff * d2h(i,j)
  10   continue
       return
       end subroutine vm_gen

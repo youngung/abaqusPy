@@ -1,6 +1,6 @@
 c-----------------------------------------------------------------------
-      subroutine yld(iyld_law,yldp,yldc,nyldp,nyldc,
-     $     stress,phi,dphi,d2phi,ntens)
+      subroutine yld(iyld_law,yldp,yldc,nyldp,nyldc,stress,phi,dphi,
+     $     d2phi,ntens)
 c-----------------------------------------------------------------------
 c***  Arguments
 c     iyld_law  : choice of yield function
@@ -40,6 +40,8 @@ c     yldp_ns  : yield parameters stored for two separate steps
 c     nyldp    : len of yield parameters for each separate step
 c     deeq     : incremental equivalent plastic strain
 c-----------------------------------------------------------------------
+c     intent(in) iyld_law,yldp_ns,nyldp,deeq
+c-----------------------------------------------------------------------
       implicit none
       integer iyld_law,nyldp,nyldc
       dimension yldp_ns(0:1,nyldp)
@@ -57,7 +59,10 @@ c        stress will be sufficient to determine the yield surface...
          write(*,*)'Unexpected iyld_law given in update_yldp'
          stop -1
       endif
+      return
       end subroutine update_yldp
 c-----------------------------------------------------------------------
 c     Von Mises
       include "/home/younguj/repo/abaqusPy/umats/lib/vm.f"
+c     Hill48
+      include "/home/younguj/repo/abaqusPy/umats/lib/hill48.f"
