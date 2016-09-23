@@ -297,6 +297,6 @@ c     return_mapping.f
 c     is.f - testing subroutines/functions (e.g., is_inf)
       include "/home/younguj/repo/abaqusPy/umats/lib/is.f"
 c     yld.f - yield function associated calculations
-      include "/home/younguj/repo/abaqusPy/umats/lib/yld.f"
+      include "/home/younguj/repo/abaqusPy/umats/yld/yld.f"
 c     restore_state.f - save/read from statev
       include "/home/younguj/repo/abaqusPy/umats/lib/restore_statev.f"

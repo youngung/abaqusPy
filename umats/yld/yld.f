@@ -67,6 +67,6 @@ c        stress will be sufficient to determine the yield surface...
       end subroutine update_yldp
 c-----------------------------------------------------------------------
 c     Von Mises
-      include "/home/younguj/repo/abaqusPy/umats/lib/vm.f"
+      include "/home/younguj/repo/abaqusPy/umats/yld/vm.f"
 c     Hill48
-      include "/home/younguj/repo/abaqusPy/umats/lib/hill48.f"
+      include "/home/younguj/repo/abaqusPy/umats/yld/hill48.f"
