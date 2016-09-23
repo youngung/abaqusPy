@@ -116,3 +116,30 @@ c     2nd derivatives
  30   continue
       return
       end subroutine hill48_gen
+c----------------------------------------------------------------------
+c     Calculate Hill48 parameters using three r-values
+c     Eq 3 in Dasappa et al. IJSS, vol 49, (2012)
+      subroutine tuneH48(rvs,hp)
+c     Arguments
+c     rvs
+c     hp
+c----------------------------------------------------------------------
+      implicit none
+      dimension rvs(3),hp(4)
+      real*8 rvs,hp,r0,r45,r90
+      real*8 hh,hg,hf,hn
+      r0 =rvs(1)
+      r45=rvs(2)
+      r90=rvs(3)
+c-----------------------------------------------------------------------
+      hh = r0/(r0+1d0)
+      hg = 1d0-hh
+      hf = hg * r0/r90
+      hn = (r45+0.5d0)*(r0/r90+1d0)*hg
+c-----------------------------------------------------------------------
+      hp(1)=hh
+      hp(2)=hg
+      hp(3)=hf
+      hp(4)=hn
+      return
+      end subroutine tuneH48
