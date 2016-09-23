@@ -15,12 +15,14 @@ Python Examples
  Running one element test is as easy as running below in the command line:
 
 $> abaqus cae noGUI=one.py -- -umat <your user mat file name> -iumat -mxe 0.05 -nth 3
+
 The above will use your UMAT (e.g., epl.f as included in this package) and run for
 0.05 strain for 0,45, and 90 degrees from RD.
 
 
 The above will generate a number of "*.odb" files.
 Below command is used to extract some useful data to text files
+
 $> abaqus cae noGUI=onePP.py
 
 
