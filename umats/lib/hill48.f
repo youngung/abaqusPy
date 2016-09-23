@@ -1,0 +1,101 @@
+c-----------------------------------------------------------------------
+      subroutine hill48_shell(cauchy,phi,dphi,d2phi,yldp4)
+      implicit none
+      dimension cauchy(3),yldp4(4),dphi(3),d2phi(3,3),cauchy6(6),
+     $     dphi6(6),d2phi66(6,6),yldp6(6)
+      real*8 cauchy, phi,dphi,d2phi,yldp4,dphi6,d2phi66,cauchy6,yldp6
+      integer i,j,ii,jj
+!     Inflate cauchy3 to cauchy6
+      cauchy6(:) = 0.d0
+      cauchy6(1) = cauchy(1)
+      cauchy6(2) = cauchy(2)
+      cauchy6(6) = cauchy(3)
+!     Inflate yldp4 to yldp6
+      yldp6(1) = yldp4(1)
+      yldp6(2) = yldp4(2)
+      yldp6(3) = yldp4(3)
+      yldp6(4) = 0.5
+      yldp6(5) = 0.5
+      yldp6(6) = yldp4(4)
+      call hill48_gen(cauchy6,phi,dphi6,d2phi66,yldp6)
+      dphi(:)=0.d0
+      dphi(1)=dphi6(1)
+      dphi(2)=dphi6(2)
+      dphi(3)=dphi6(6)
+      d2phi(:,:)=0.d0
+      do 10 i=1,3
+      do 10 j=1,3
+         if (i.eq.3) ii=6
+         if (i.lt.3) ii=i
+         if (j.eq.3) jj=6
+         if (j.lt.3) jj=j
+         d2phi(i,j) = d2phi66(ii,jj)
+ 10   continue
+      return
+      end subroutine hill48_shell
+c-----------------------------------------------------------------------
+      subroutine hill48_gen(cauchy,phi,dphi,d2phi,yldp)
+      implicit none
+      dimension cauchy(6),dphi(6),d2phi(6,6),dh(6),d2h(6,6),
+     $     yldp(6),s(6)
+      real*8 cauchy,s,dphi,d2phi,phi,dh,d2h,psi,yldp,dff
+      real*8 hh,hf,hg,hl,hm,hn ! hill parameters for quadratic hill yield function
+      integer i,j
+
+      hh=yldp(1)
+      hf=yldp(2)
+      hg=yldp(3)
+      hl=yldp(4)
+      hm=yldp(5)
+      hn=yldp(6)
+
+c     psi: homogeneous function
+c-----------------------------------------------------------------------
+      psi =  hH * (cauchy(1) - cauchy(2))**2 +
+     $       hF * (cauchy(2) - cauchy(3))**2 +
+     $       hG * (cauchy(3) - cauchy(1))**2 +
+     $   2d0*hL * cauchy(4)**2 +
+     $   2d0*hM * cauchy(5)**2 +
+     $   2d0*hN * cauchy(6)**2
+      phi = psi**5d-1
+      s(:) = cauchy(:)/phi
+
+      dh(1) = 2d0*hG*s(1) - 2d0*hG*s(3) + 2d0*hH*s(1) - 2d0*hH*s(2)
+      dh(2) = 2d0*hF*s(2) - 2d0*hF*s(3) + 2d0*hH*s(2) - 2d0*hH*s(1)
+      dh(3) = 2d0*hF*s(3) - 2d0*hF*s(2) + 2d0*hG*s(3) - 2d0*hG*s(1)
+      dh(4) = 4d0*hL *  s(4) /2.
+      dh(5) = 4d0*hM *  s(5) /2.
+      dh(6) = 4d0*hG *  s(6) /2.
+
+      d2h(:,:) = 0d0
+      d2h(1,1) = 2d0*hh + 2d0*hg
+      d2h(1,2) =    -hh
+      d2h(1,3) =    -hg
+
+      d2h(2,1) =    -hh
+      d2h(2,2) = 2d0*hh + 2d0*hf
+      d2h(2,3) =    -hf
+
+      d2h(3,1) =    -hg
+      d2h(3,2) =    -hf
+      d2h(3,3) = 2d0*hf + 2d0*hg
+
+      d2h(4,4) = 4d0*hl
+      d2h(5,5) = 4d0*hm
+      d2h(6,6) = 4d0*hn
+
+c     1st derivatives
+      dff     = 1d0 / (2d0*phi)
+      do 10 i=1,6
+         dphi(i) =  dff * dh(i)
+10    continue
+
+c     2nd derivatives
+      do 30 i=1,6
+      do 30 j=1,6
+         d2phi(i,j) = d2phi(i,j)
+     $        - 1d0/4d0 * psi**(-3d0/2d0) * dh(i) * dh(j)
+     $        + 1d0/2d0 * psi**(-1d0/2d0) * d2h(i,j)
+ 30   continue
+      return
+      end subroutine hill48_gen
