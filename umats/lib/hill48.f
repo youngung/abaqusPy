@@ -143,3 +143,15 @@ c-----------------------------------------------------------------------
       hp(4)=hn
       return
       end subroutine tuneH48
+c-----------------------------------------------------------------------
+c$$$      program test
+c$$$      dimension rvs(3),hp(4)
+c$$$      real*8 rvs,hp,r0,r45,r90
+c$$$      real*8 hh,hg,hf,hn
+c$$$      rvs(1)=0.9
+c$$$      rvs(2)=1.5
+c$$$      rvs(3)=0.7
+c$$$      call tuneH48(rvs,hp)
+c$$$      write(*,*)'hp:',hp
+c$$$      return
+c$$$      end program test

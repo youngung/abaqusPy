@@ -62,6 +62,11 @@ c$$$  yld function parameters
       dimension yldp_ns(0:1,nyldp),yldc(nyldc)
       real*8 yldp_ns,yldc,deq_pr,deq
 
+
+c$$$  Material data
+      dimension rvs(4)
+      real*8 rvs
+
 c-----------------------------------------------------------------------
 c***  hardwired material parameters
 c-----------------------------------------------------------------------
@@ -70,11 +75,12 @@ c**   material constitutive laws
 
 c      iyld_law=0                ! Generic von Mises (shell)
       iyld_law=1                ! Generic Hill48 (shell)
-      yldc(1)=0.5
-      yldc(2)=0.3
-      yldc(3)=0.4
-      yldc(4)=1.5
 
+      rvs(1)=1.0d0
+      rvs(2)=2.2d0
+      rvs(3)=1.4d0
+      call tuneH48(rvs,yldc)
+c-----------------------------------------------------------------------
 c**   hardening parameters
       hrdc(1) = 479.0d0
       hrdc(2) = 339.7d0
@@ -90,7 +96,7 @@ c-----------------------------------------------------------------------
 
       stress_ns(0,:) = stress(:)
 
-      idiaw=.true.
+      idiaw=.false.
 !cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
       if (idiaw) then
          fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
@@ -129,7 +135,11 @@ c     the updated yld parameters for step n+1 later...
          call w_dim(idia,stran_pl_ns(0,:),ntens,1d0,.true.)
          call w_chr(idia,'* dstran')
          call w_dim(idia,dstran,ntens,1d0,.true.)
+         call w_chr(idia,'* DROT')
+         call w_mdim(idia,drot,3,1d0)
       endif
+
+      !call stop_debug(0)        ! debug
 
 c     Moduluar pseudo code for stress integration
 c-----------------------------------------------------------------------
