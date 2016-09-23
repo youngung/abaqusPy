@@ -79,7 +79,10 @@ def TensileOneElement(
     else:
         label='%s_MatF_%s'%(label,myMatFunc.__name__)
 
-    myModel = mdb.Model(name='OneEL_%s'%label)
+    ## Model name
+    myModelName='OneEL_%s'%label
+
+    myModel = mdb.Model(name=myModelName)
 
     ### MySketch
     mySketch = myModel.ConstrainedSketch(name='Square_Sketch',
@@ -94,7 +97,8 @@ def TensileOneElement(
         mySketch.Line(point1=p1,point2=p2)
 
     ### Part module
-    myPart = myModel.Part(name='oneElement',
+    myPartName='oneElement'
+    myPart = myModel.Part(name=myPartName,
                           dimensionality=THREE_D,
                           type=DEFORMABLE_BODY)
     ### Features
@@ -158,8 +162,18 @@ def TensileOneElement(
         k11=200.*gpa,k22=200.*gpa,k12=120.*gpa)
 
 
-    ### Assign material orientation
-    myPart.MaterialOrientation(localCsys=cSysMat,axis=AXIS_3)
+    # print '** Material orientation specification **'
+    # region = regionToolset.Region(faces=myPart.faces[:])
+    # myPart.MaterialOrientation(
+    #     region=region,
+    #     orientationType=SYSTEM,
+    #     axis=AXIS_3,
+    #     localCsys=cSysMat,
+    #     fieldName='',
+    #     additionalRotationType=ROTATION_NONE,
+    #     angle=0,
+    #     additionRotationField='')
+    # print '**                                    **'
 
     ### Assign section to plate
     region=regionToolset.Region(faces=myPart.faces[:])
@@ -173,6 +187,16 @@ def TensileOneElement(
     ## Instance the part E8
     myAssembly.Instance(name='MySpecimen', part=myPart, dependent=ON)
     myInstance=myAssembly.instances['MySpecimen']
+
+
+    ### Assign material orientation
+    region = regionToolset.Region(faces=myPart.faces[:])
+    orientation = mdb.models[myModelName].parts[myPartName].datums[12]
+    mdb.models[myModelName].parts[myPartName].MaterialOrientation(
+    region=region, orientationType=SYSTEM, axis=AXIS_3, localCsys=orientation,
+    fieldName='', additionalRotationType=ROTATION_NONE, angle=0.0,
+    additionalRotationField='')
+
 
     ### Create a static general step
     #myModel.StaticStep(
@@ -316,21 +340,56 @@ def runVarMats(**kwargs):
         runSingle(myMatFunc=myMatFuncs[imat],**kwargs)
 
 if __name__=='main':
-    print
+    import argparse
+    parser.add_argument('-iopt',type=str,help='Options')
+    parser.add_argument(
+        '-umat',type=str,help='Options',
+        default='/home/younguj/repo/abaqusPy/umats/epl/epl.f')
+    parser.add_argument(
+        '-iumat',action='store_true',
+        help='whether or not use the umat')
+    parser.add_argument(
+        '-iwait',action='store_true',
+        help='iwait')
+    parser.add_argument(
+        '-mxe',type=float,help='Maximum strain to be imposed',
+        default=0.01)
+    parser.add_argument(
+        '-nth',type=float,help='Number of thetas',
+        default=3)
+
+    args = parser.parse_args()
 
 
-## controlling job conditions
-#umatFN=None
-#umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
+    if args.iopt==0:
+        if args.iumat: umatFN=args.umat
+        else: umatFN=None
+        runSingle(umatFN=umatFN,
+                  iwait=args.iwait,
+                  isub=args.isub,
+                  totalStrain=args.mxe)
+    elif args.iopt==1:
+        if args.iumat: umatFN=args.umat
+        else: umatFN=None
+        runTensions(umatFN=umatFN,
+                    iwait=args.iwait,
+                    isub=args.isub,
+                    nth=args.nth,
+                    totalStrain=args.mxe)
+
+
+# ## controlling job conditions
+# #umatFN=None
+# #umatFN='/home/younguj/repo/abaqusPy/umats/el/iso.f'
 umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
 
-## Job testing methods
-runSingle(umatFN=umatFN,iwait=False,isub=False,totalStrain=0.01)
+# ## Job testing methods
+# runSingle(umatFN=umatFN,iwait=False,isub=False,totalStrain=0.01)
 
-## testing at various angles
-#runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False)
+# ## testing at various angles
+runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False,totalStrain=0.05)
 
-#runVarMats(umatFN=None,    isub=True)
-#runVarMats(umatFN=umatFN,  isub=True)
+# #runVarMats(umatFN=None,    isub=True)
+# #runVarMats(umatFN=umatFN,  isub=True)
 
 os.sys.path=orig_path[::]
