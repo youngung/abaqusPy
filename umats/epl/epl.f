@@ -4,7 +4,7 @@ c     individual constitutitve components to allow easy modifications
 c     using new material models.
 c
 c
-c     Youngung Jeong@Clemson
+c     Youngung Jeong, Clemson University
 c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
 c$$$  ABAQUS UMAT Interface.
@@ -71,8 +71,8 @@ c**   material constitutive laws
 c      iyld_law=0                ! Generic von Mises (shell)
       iyld_law=1                ! Generic Hill48 (shell)
       yldc(1)=0.5
-      yldc(2)=0.5
-      yldc(3)=0.5
+      yldc(2)=0.3
+      yldc(3)=0.4
       yldc(4)=1.5
 
 c**   hardening parameters

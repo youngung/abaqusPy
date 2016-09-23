@@ -1,10 +1,19 @@
 c-----------------------------------------------------------------------
       subroutine hill48_shell(cauchy,phi,dphi,d2phi,yldc4)
+c-----------------------------------------------------------------------
+c     Arguments
+c     cauchy : cauchy stress
+c     phi    : yield surface
+c     dphi   : yield surface 1st derivative
+c     d2phi  : yield surface 2nd derivative
+c     yldc4  : Hill parameters
+c-----------------------------------------------------------------------
       implicit none
       dimension cauchy(3),yldc4(4),dphi(3),d2phi(3,3),cauchy6(6),
      $     dphi6(6),d2phi66(6,6),yldc6(6)
       real*8 cauchy, phi,dphi,d2phi,yldc4,dphi6,d2phi66,cauchy6,yldc6
       integer i,j,ii,jj
+c-----------------------------------------------------------------------
 !     Inflate cauchy3 to cauchy6
       cauchy6(:) = 0.d0
       cauchy6(1) = cauchy(1)
@@ -35,20 +44,27 @@ c-----------------------------------------------------------------------
       end subroutine hill48_shell
 c-----------------------------------------------------------------------
       subroutine hill48_gen(cauchy,phi,dphi,d2phi,yldc)
+c-----------------------------------------------------------------------
+c     Arguments
+c     cauchy : cauchy stress
+c     phi    : yield surface
+c     dphi   : yield surface 1st derivative
+c     d2phi  : yield surface 2nd derivative
+c     yldc   : Hill surface parameters
+c-----------------------------------------------------------------------
       implicit none
       dimension cauchy(6),dphi(6),d2phi(6,6),dh(6),d2h(6,6),
      $     yldc(6),s(6)
       real*8 cauchy,s,dphi,d2phi,phi,dh,d2h,psi,yldc,dff
-      real*8 hh,hf,hg,hl,hm,hn ! hill parameters for quadratic hill yield function
+      real*8 hh,hf,hg,hl,hm,hn
       integer i,j
-
+c     Local Hill parameters
       hh=yldc(1)
       hf=yldc(2)
       hg=yldc(3)
       hl=yldc(4)
       hm=yldc(5)
       hn=yldc(6)
-
 c     psi: homogeneous function
 c-----------------------------------------------------------------------
       psi =  hH * (cauchy(1) - cauchy(2))**2 +
