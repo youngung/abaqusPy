@@ -79,7 +79,7 @@ c     str: the subjected character with any arbitrary size
       integer nc
       logical is_inf
       nc = len(str)
-      write(ncc,'(i)') nc
+      write(ncc,'(i80)') nc
       ncc = adjustl(ncc)
       get_fmt_str='(a'//trim(ncc)//',x)'
       return
@@ -94,10 +94,10 @@ c     ival: integer value
       integer ival,nc
       character*80 ncc
       character*20 nc_no
-      write(ncc,'(i)')ival
+      write(ncc,'(i10)')ival
       ncc = adjustl(ncc)
       nc=len(trim(ncc)) ! number of character for this integer value
-      write(nc_no,'(i)') nc
+      write(nc_no,'(i10)') nc
       get_fmt_int='(i'//trim(adjustl(nc_no))//',x)'
       return
       end function get_fmt_int
@@ -114,7 +114,7 @@ c     v   : the value
       real*8 v
       fmt = get_fmt(v)
       nc = len(str)
-      write(ncc,'(i)') nc
+      write(ncc,'(i80)') nc
       ncc=adjustl(ncc)
       fmt = trim('(a')//trim(ncc)//',x,'//trim(fmt)//')'
       if (iunit.eq.0) then
@@ -137,7 +137,7 @@ c     iv  : the integer value
       integer iv
       fmt = get_fmt_int(iv)
       nc = len(str)
-      write(ncc,'(i)') nc
+      write(ncc,'(i10)') nc
       ncc=adjustl(ncc)
       fmt = trim('(a')//trim(ncc)//',x,'//trim(fmt)//')'
       if (iunit.eq.0) then
@@ -179,6 +179,39 @@ c     fact: multiplicative factor to scale the elements in the array
       endif
       return
       end subroutine w_mdim
+c-----------------------------------------------------------------------
+c     print out a 2nd order non-square matrix array
+      subroutine w_mndim(iunit,array,ndi,nci,fact)
+c     iunit: file ID
+c     array: 2-Dimensional array
+c     ndi: size of the (ndi x ndi) array
+c     fact: multiplicative factor to scale the elements in the array
+      implicit none
+      character*80 fmt,clen,get_fmt
+      integer ndi,nci,iunit,i,j
+      dimension array(ndi,nci),brray(ndi,nci)
+      real*8 array,brray,get_mmx,mxv,fact
+      do 10 i=1,ndi
+      do 10 j=1,nci
+         brray(i,j) = array(i,j) * fact
+ 10   continue
+      mxv = get_mmx(brray,ndi,nci)
+      fmt = get_fmt(mxv) ! common filter
+
+      write(clen,"(i2)") nci
+      fmt = '('//trim(clen)//trim(fmt)//')'
+
+      if (iunit.ne.0) then
+         do 15 i=1,ndi
+            write(iunit,fmt) (brray(i,j),j=1,nci)
+ 15      continue
+      else
+         do 20 i=1,ndi
+            write(*   ,fmt) (brray(i,j),j=1,nci)
+ 20      continue
+      endif
+      return
+      end subroutine w_mndim
 c-----------------------------------------------------------------------
       subroutine w_dim(iunit,array,ndi,fact,ibr)
 c     iunit: file ID

@@ -27,4 +27,4 @@ core.*
 *.jnl
 *.cae
 *.odb_?
-
+a.out

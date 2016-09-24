@@ -53,6 +53,24 @@ c     intent(out) ci
       return
       end subroutine mult_array
 c-----------------------------------------------------------------------
+c     Apply tensor inner dot for 2nd x 2nd
+c     cij = aik x bkj
+      subroutine mult_array2(aik,bkj,ntens,cij)
+c     intent(int) aik,bkj,ntens
+c     intent(out) cij
+      implicit none
+      integer i,j,k,ntens
+      real*8 aik(ntens,ntens),bkj(ntens,ntens),cij(ntens,ntens)
+      cij(:,:) = 0.d0
+      do 10 i=1,ntens
+      do 10 j=1,ntens
+      do 10 k=1,ntens
+         cij(i,j) = cij(i,j) + aik(i,k) * bkj(k,j)
+ 10   continue
+      return
+      end subroutine mult_array2
+c-----------------------------------------------------------------------
+
 c     Apply incremental update on array
 c     ai = ai + d_ai
       subroutine add_array(ai,d_ai,ntens)
@@ -64,9 +82,9 @@ c     ntens: len
       implicit none
       integer ntens, i
       real*8 ai(ntens),d_ai(ntens)
-      do i=1,ntens
+      do 10 i=1,ntens
          ai(i) = ai(i) + d_ai(i)
-      enddo
+ 10   continue
       return
       end subroutine add_array
 c-----------------------------------------------------------------------
@@ -82,8 +100,18 @@ c     ntens: len
       implicit none
       integer ntens, i
       real*8 ai(ntens),d_ai(ntens),ci(ntens)
-      do i=1,ntens
+      do 10 i=1,ntens
          ci(i) = ai(i) + d_ai(i)
-      enddo
+ 10   continue
       return
       end subroutine add_array2
+c-----------------------------------------------------------------------
+      subroutine get_idx(n,a)
+      dimension a(n,n)
+      integer n,i
+      real*8 a
+      a(:,:) = 0d0
+      do 10 i=1,n
+         a(i,i) = 1d0
+ 10   continue
+      end subroutine get_idx
