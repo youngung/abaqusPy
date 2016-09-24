@@ -3,16 +3,17 @@ c     to test various yield functions
       program test_yld
       implicit none
       integer nth,i,j,ii,jj
-      parameter(nth=5)
-      real*8 th,s33(3,3),e33(3,3),s6(6),pi,s6lab(6),s6mat(6),
+      parameter(nth=10)
+      real*8 th,s33(3,3),e33(3,3),s6(6),pi,s6lab(6),s6mat(6),s3mat(3),
      $     s33lab(3,3),s33mat(3,3),phim,dphim(6),d2phim(6,6),phil,
      $     dphil(6),d2phil(6,6),dphi33m(3,3),dphi33l(3,3),
-     $     dphi33ld(3,3),yldp_hill(6),yldp_yld2000(9)
+     $     dphi33ld(3,3),yldp_hill(6),yldp_yld2000(9),aux33(3,3),
+     $     aux3(3),bux3(3)
       pi=4.d0*datan(1.d0)
 
 c     Uniaxial tensin stress state referred in the lab axes
       s6lab(:)=0.
-      s6lab(1)=5.d0
+      s6lab(1)=1.d0
       call voigt2(s6lab,s33lab)
 
 c-----------------------------------------------------------------------
@@ -69,7 +70,10 @@ c        yield stress is written in the material axes
 
 c         call vm_gen(    s6mat,phim,dphim,d2phim)
 c         call hill48_gen(s6mat,phim,dphim,d2phim,yldp_hill)
-         call yld2000_2d(s6mat,phim,dphim,d2phim,yldp_hill)
+
+         call reduce_6to3(s6mat,s3mat)
+         call yld2000_2d(s3mat,phim,aux3,aux33,yldp_yld2000)
+         call reduce_3to6(aux3,dphim)
 
 !        shear strains: =1/2.shear
          call voigt4(dphim,dphi33m)
@@ -88,11 +92,32 @@ c$$$
       return
       end program
 c-----------------------------------------------------------------------
+      subroutine reduce_6to3(a6,a3)
+      dimension a6(6),a3(3)
+      real*8 a6,a3
+      a3(1) = a6(1)
+      a3(2) = a6(2)
+      a3(3) = a6(6)
+      return
+      end subroutine reduce_6to3
+c-----------------------------------------------------------------------
+      subroutine reduce_3to6(a3,a6)
+      dimension a6(6),a3(3)
+      real*8 a6,a3
+      a6(1) = a3(1)
+      a6(2) = a3(2)
+      a6(6) = a3(3)
+      return
+      end subroutine reduce_3to6
+c-----------------------------------------------------------------------
 c$$$!     pal
-c$$$      include "/home/younguj/repo/abaqusPy/umats/yld/vm.f"
-c$$$      include "/home/younguj/repo/abaqusPy/umats/yld/hill48.f"
-c$$$      include "/home/younguj/repo/abaqusPy/umats/yld/yld2000_2d.f"
-!     mac
-      include "/Users/yj/repo/abaqusPy/umats/yld/vm.f"
-      include "/Users/yj/repo/abaqusPy/umats/yld/hill48.f"
-      include "/Users/yj/repo/abaqusPy/umats/yld/yld2000_2d.f"
+      include "/home/younguj/repo/abaqusPy/umats/yld/vm.f"
+      include "/home/younguj/repo/abaqusPy/umats/yld/hill48.f"
+      include "/home/younguj/repo/abaqusPy/umats/yld/yld2000_2d.f"
+      include "/home/younguj/repo/abaqusPy/umats/lib/lib_write.f"
+      include "/home/younguj/repo/abaqusPy/umats/lib/is.f"
+      include "/home/younguj/repo/abaqusPy/umats/lib/lib.f"
+c$$$!     mac
+c$$$      include "/Users/yj/repo/abaqusPy/umats/yld/vm.f"
+c$$$      include "/Users/yj/repo/abaqusPy/umats/yld/hill48.f"
+c$$$      include "/Users/yj/repo/abaqusPy/umats/yld/yld2000_2d.f"

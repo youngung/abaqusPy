@@ -16,14 +16,11 @@ c     yldc  : yield surface components
       real*8 cauchy,dpsi,d2psi,psi,c,x1,x2,pp,ppp,h,l1,l2,a,dh,
      $     time0,time1,hershey1,hershey2,phis,dphis,yldc,alpha,l2c
       integer i
-
       alpha(:) = yldc(1:8)
       a        = yldc(9)        ! yield surface exponent
-
 c$$$      call w_chr(0,'alpha')
 c$$$      call w_dim(0,alpha,8,1d0,.true.)
 c$$$      call w_val(0,'exponent:',a)
-
       dphis(:,:)=0d0
       call alpha2lc(alpha,c,l2c)
 c$$$      call fill_line(0,'*',52)
@@ -31,11 +28,8 @@ c$$$      call w_chr(0,'c1')
 c$$$      call w_mdim(0,c(1,:,:),3,1d0)
 c$$$      call w_chr(0,'c2')
 c$$$      call w_mdim(0,c(2,:,:),3,1d0)
-
       call calc_x(cauchy,c(1,:,:),x1) ! x1: linearly transformed stress (prime)
       call calc_x(cauchy,c(2,:,:),x2) ! x2: linearly transformed stress (double prime)
-
-
       call hershey(x1,x2,a,phis(1),phis(2))
       psi = (0.5d0*(phis(1)+phis(2)))**(1d0/a)
 c$$$      call w_chr(0,'phis:')
@@ -46,13 +40,13 @@ c$$$      call fill_line(0,'*',52)
 c      call fill_line(0,'-',52)
       call calc_dphi_dcauchy(cauchy,c(2,:,:),a,dphis(2,:),1)
 c      call fill_line(0,'*',52)
-
       dpsi(:) = 0d0
       do 5 i=1,ntens
          dpsi(i) = 1d0/2d0/a * ((phis(1)+phis(2))/2d0)**(1d0/a-1d0) *
      $        (dphis(1,i) + dphis(2,i))
  5    continue
-      call w_dim(0,dpsi,3,1d0,.true.)
+      dpsi(3)=dpsi(3)
+c      call w_dim(0,dpsi,3,1d0,.true.)
       return
       end subroutine yld2000_2d
 c-----------------------------------------------------------------------
@@ -247,6 +241,7 @@ c$$$     $     hershey1,hershey2,a,time0,time1,yldc
 c$$$
 c$$$      cauchy(:)=0d0
 c$$$      cauchy(1)=5d0
+c$$$      cauchy(2)=5d0
 c$$$      dphi(:)=0d0
 c$$$      d2phi(:,:)=0d0
 c$$$      call w_chr(0,'cauchy stress')
@@ -406,13 +401,13 @@ c     c``
       end subroutine alpha2c
 c-----------------------------------------------------------------------
 c     Palmetto
-!     include '/home/younguj/repo/abaqusPy/umats/lib/algb.f'
-c     include '/home/younguj/repo/abaqusPy/umats/lib/lib_write.f'
-c     include '/home/younguj/repo/abaqusPy/umats/lib/lib.f'
-c     include '/home/younguj/repo/abaqusPy/umats/lib/is.f'
+c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/algb.f'
+c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/lib_write.f'
+c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/lib.f'
+c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/is.f'
 
 c     Mac
-      include '/Users/yj/repo/abaqusPy/umats/lib/algb.f'
-      include '/Users/yj/repo/abaqusPy/umats/lib/lib_write.f'
-      include '/Users/yj/repo/abaqusPy/umats/lib/lib.f'
-      include '/Users/yj/repo/abaqusPy/umats/lib/is.f'
+c$$$      include '/Users/yj/repo/abaqusPy/umats/lib/algb.f'
+c$$$      include '/Users/yj/repo/abaqusPy/umats/lib/lib_write.f'
+c$$$      include '/Users/yj/repo/abaqusPy/umats/lib/lib.f'
+c$$$      include '/Users/yj/repo/abaqusPy/umats/lib/is.f'
