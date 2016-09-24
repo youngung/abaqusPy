@@ -7,7 +7,7 @@ c     to test various yield functions
       real*8 th,s33(3,3),e33(3,3),s6(6),pi,s6lab(6),s6mat(6),
      $     s33lab(3,3),s33mat(3,3),phim,dphim(6),d2phim(6,6),phil,
      $     dphil(6),d2phil(6,6),dphi33m(3,3),dphi33l(3,3),
-     $     dphi33ld(3,3),yldp_hill(6)
+     $     dphi33ld(3,3),yldp_hill(6),yldp_yld2000(9)
       pi=4.d0*datan(1.d0)
 
 c     Uniaxial tensin stress state referred in the lab axes
@@ -22,6 +22,16 @@ c-----------------------------------------------------------------------
       yldp_hill(4)=1.5d0
       yldp_hill(5)=1.5d0
       yldp_hill(6)=1.5d0
+
+      yldp_yld2000(1)=1d0
+      yldp_yld2000(2)=1d0
+      yldp_yld2000(3)=1d0
+      yldp_yld2000(4)=1d0
+      yldp_yld2000(5)=1d0
+      yldp_yld2000(6)=1d0
+      yldp_yld2000(7)=1d0
+      yldp_yld2000(8)=1d0
+      yldp_yld2000(9)=8d0
 
       write(*,'(a7,5(4a7,x,a1,x))')'th',
      $     's11_l','s22_l','s33_l','s12_l','|',
@@ -58,7 +68,8 @@ c$$$
 c        yield stress is written in the material axes
 
 c         call vm_gen(    s6mat,phim,dphim,d2phim)
-         call hill48_gen(s6mat,phim,dphim,d2phim,yldp_hill)
+c         call hill48_gen(s6mat,phim,dphim,d2phim,yldp_hill)
+         call yld2000_2d(s6mat,phim,dphim,d2phim,yldp_hill)
 
 !        shear strains: =1/2.shear
          call voigt4(dphim,dphi33m)
@@ -78,7 +89,10 @@ c$$$
       end program
 c-----------------------------------------------------------------------
 c$$$!     pal
-      include "/home/younguj/repo/abaqusPy/umats/lib/vm.f"
-      include "/home/younguj/repo/abaqusPy/umats/lib/hill48.f"
+c$$$      include "/home/younguj/repo/abaqusPy/umats/yld/vm.f"
+c$$$      include "/home/younguj/repo/abaqusPy/umats/yld/hill48.f"
+c$$$      include "/home/younguj/repo/abaqusPy/umats/yld/yld2000_2d.f"
 !     mac
-c      include "/Users/yj/repo/abaqusPy/umats/lib/vm.f"
+      include "/Users/yj/repo/abaqusPy/umats/yld/vm.f"
+      include "/Users/yj/repo/abaqusPy/umats/yld/hill48.f"
+      include "/Users/yj/repo/abaqusPy/umats/yld/yld2000_2d.f"
