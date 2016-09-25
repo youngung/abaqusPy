@@ -82,7 +82,7 @@ c$$$      rvs(1)=1.0d0
 c$$$      rvs(2)=2.2d0
 c$$$      rvs(3)=1.4d0
 c$$$      call tuneH48(rvs,yldc)
-      iyld_law=2
+      iyld_law=2                ! yld2000-2d
       call read_alpha(
      $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
 c      yldc(1:8)=1d0
@@ -261,7 +261,6 @@ c        Return mapping subroutine updates stress/statev
          endif
 
          !call stop_debug(0)     ! debug
-
 c-----------------------------------------------------------------------
 c     v. Exit from iv. means
 c        s   _(n+1) is obtained.
@@ -276,13 +275,14 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
 c     vi. Caculate jacobian (ddsdde - done in return mapping or elastic update)
 c-----------------------------------------------------------------------
-c     Plastic energy dissipation
+c     Plastic energy dissipation/elastic energy
+      spd=0d0
+      sse=0d0
       do i=1,ntens
-         spd = spd + dstress(i) * dstran_pl(i)
-         sse = sse + dstress(i) * dstran_el(i)
+         spd = spd + (stress_ns(0,:)+0.5d0*dstress(i)) * dstran_pl(i)
+         sse = sse + (stress_ns(0,:)+0.5d0*dstress(i)) * dstran_el(i)
       enddo
 c-----------------------------------------------------------------------
-
 c     Write statev
       if (noel.eq.1 .and. dtime.gt.0 .and. npt.eq.1.and.idiaw) then
          call restore_statev(statev,nstatv,eeq_ns(1),
@@ -314,3 +314,5 @@ c     yld.f - yield function associated calculations
       include "/home/younguj/repo/abaqusPy/umats/yld/yld.f"
 c     restore_state.f - save/read from statev
       include "/home/younguj/repo/abaqusPy/umats/lib/restore_statev.f"
+c     uvarm
+      include "/home/younguj/repo/abaqusPy/umats/lib/uvarm.f"

@@ -27,7 +27,15 @@ c     b33
       real*8 psi,a33(3,3),b33(3,3),rot(3,3)
       integer i,j,k,l
       call inplane_rot_matrix(psi,rot)
-      b33(:,:)=0.d0
+      call rot_tensor(a33,rot,b33)
+      return
+      end subroutine
+c-----------------------------------------------------------------------
+      subroutine rot_tensor(a33,rot,bij)
+      implicit none
+      dimension a33(3,3),bij(3,3),rot(3,3)
+      integer i,j,k,l
+      b33(:,:) = 0d0
       do 10 i=1,3
       do 10 j=1,3
       do 10 k=1,3
@@ -35,7 +43,7 @@ c     b33
          b33(i,j) = b33(i,j) + rot(i,k) * a33(k,l) * rot(j,l)
  10   continue
       return
-      end subroutine
+      end subroutine rot_tensor
 c-----------------------------------------------------------------------
 c     Apply tensor inner dot
 c     ci = aij x bj

@@ -2,6 +2,20 @@ c-----------------------------------------------------------------------
 c     various converting routines
 c-----------------------------------------------------------------------
 c     33 bases "stress" tensor to 6 bases stress tensor
+c-----------------------------------------------------------------------
+      subroutine tens33_trans(a33,b33)
+      implicit none
+      dimension a33(3,3),b33(3,3)
+      real*8 a33,b33
+      integer i,j
+      do 10 i=1,3
+      do 10 j=1,3
+         b(i,j) = a(j,i)
+ 10   continue
+      end subroutine
+c-----------------------------------------------------------------------
+c     33 bases "stress" tensor to 6 bases "stress" tensor
+c-----------------------------------------------------------------------
       subroutine voigt1(a33,a6)
       implicit none
       real*8 a33(3,3), a6(6)
@@ -17,6 +31,7 @@ c     33 bases "stress" tensor to 6 bases stress tensor
       end subroutine voigt1
 c-----------------------------------------------------------------------
 c     6 bases "stress" tensor to 33 bases stress tensor
+c-----------------------------------------------------------------------
       subroutine voigt2(a6,a33)
       implicit none
       real*8 a33(3,3), a6(6)
@@ -50,7 +65,7 @@ c     the shear strains are multiplied by 2 to follow Abaqus convention
       return
       end subroutine voigt3
 c-----------------------------------------------------------------------
-c     6 bases "strain" tensor to 33 bases stress tensor
+c     6 bases "strain" tensor to 33 bases strain tensor
 c-----------------------------------------------------------------------
 c     !! Caution, strain tensor is converted such that
 c     the shear strains are multiplied by 1/2. to follow Abaqus convention
