@@ -279,8 +279,8 @@ c     Plastic energy dissipation/elastic energy
       spd=0d0
       sse=0d0
       do i=1,ntens
-         spd = spd + (stress_ns(0,:)+0.5d0*dstress(i)) * dstran_pl(i)
-         sse = sse + (stress_ns(0,:)+0.5d0*dstress(i)) * dstran_el(i)
+         spd = spd + (stress_ns(0,i)+0.5d0*dstress(i)) * dstran_pl(i)
+         sse = sse + (stress_ns(0,i)+0.5d0*dstress(i)) * dstran_el(i)
       enddo
 c-----------------------------------------------------------------------
 c     Write statev
@@ -293,6 +293,7 @@ c     Write statev
 
       if (idia.ne.0.and.idiaw) close(idia)
       if (idiaw) call print_foot(idia)
+
       return
       end subroutine umat
 c-----------------------------------------------------------------------
@@ -314,5 +315,83 @@ c     yld.f - yield function associated calculations
       include "/home/younguj/repo/abaqusPy/umats/yld/yld.f"
 c     restore_state.f - save/read from statev
       include "/home/younguj/repo/abaqusPy/umats/lib/restore_statev.f"
-c     uvarm
-      include "/home/younguj/repo/abaqusPy/umats/lib/uvarm.f"
+c     cnv.f
+c      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
+c-----------------------------------------------------------------------
+      SUBROUTINE UVARM(UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
+     1 NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
+     2 JMAC,JMATYP,MATLAYO,LACCFLA)
+      INCLUDE 'ABA_PARAM.INC'
+c      implicit none
+C
+      CHARACTER*80 CMNAME,ORNAME
+      CHARACTER*3 FLGRAY(15)
+      integer nuvarm
+      DIMENSION UVAR(12),DIRECT(3,3),T(3,3),TIME(2)
+      DIMENSION ARRAY(15),JARRAY(15),JMAC(*),JMATYP(*),COORD(*)
+
+C     The dimensions of the variables FLGRAY, ARRAY and JARRAY
+C     must be set equal to or greater than 15.
+
+c     given arrays
+      real*8 uvar,direct,t,time,array,coord,dtime
+      integer matlayo,laccfla,jarray,jmac,jmatyp,jerror
+      integer noel,npt,layer,kspt,kstep,kinc,ndi,nshr
+c     Arguments
+c     direct : material orientation in terms of global coordinates
+c     t      : material orientation w.r.t. element basis
+c     time   : time stamps at steps n and n+1
+c     dtime  : time increment
+c     cmname : UMAT name
+c     coord  : coordinates at this material point
+c     jmac   : variable that must be passed into the GETVRM utility
+c             routine to access an output variable.
+c     jmatyp : Variable that must be passed into the GETVRM utility
+c             routine to access an output variable.
+c
+c     local variables
+      dimension aux33(3,3),bux33(3,3),aux6(6),directt(3,3)
+      integer jrcd,aux33,aux6,directt,bux33
+
+c      write(*,*) 'You are in uvarm'
+      ! call stop_debug(0)        ! debug
+
+c     user coding to define UVAR
+c-----------------------------------------------------------------------
+      call tens33_trans(direct,directt)
+c      write(*,*) '0'
+c-----------------------------------------------------------------------
+c     Getting stress tensor transformed to global coordinates
+c-----------------------------------------------------------------------
+      call getvrm('S',array,jarray,flgray,jrcd,jmac,jmatyp,
+     $     matlayo,laccfla)
+      jerror = jerror + jrcd
+      call reduce_3to6(array(1:3),aux6)
+      call voigt2(aux6,aux33)
+      call rot_tensor(aux33,directt,bux33)
+      call voigt1(bux33,aux6)
+      call reduce_6to3(aux6,uvar(1:3))
+c-----------------------------------------------------------------------
+c     Getting strain tensor transformed to global coordinates
+c-----------------------------------------------------------------------
+      call getvrm('E',array,jarray,flgray,jrcd,jmac,jmatyp,
+     $     matlayo,laccfla)
+      jerror = jerror + jrcd
+      call reduce_3to6(array(1:3),aux6)
+      call voigt4(aux6,aux33)
+      call rot_tensor(aux33,directt,bux33)
+      call voigt3(bux33,aux6)
+      call reduce_6to3(aux6,uvar(4:6))
+c-----------------------------------------------------------------------
+c     Getting solution dependent state variables
+c-----------------------------------------------------------------------
+c$$$      call getvrm('SDV',array,jarray,flgray,jrcd,jmac,jmatyp,
+c$$$     $     matlayo,laccfla)
+c$$$      jerror = jerror + jrcd
+
+      if(jerror.ne.0)then
+        write(6,*) 'request error in uvarm for element number ',
+     1      noel,'integration point number ',npt
+      endif
+      return
+      end subroutine uvarm

@@ -89,29 +89,9 @@ c$$$
      $        (dphi33l(i,i),i=1,3),dphi33l(1,2),'|',rv,phim
          write(*,*)
 
-
  10   continue
       return
       end program
-c-----------------------------------------------------------------------
-      subroutine reduce_6to3(a6,a3)
-      dimension a6(6),a3(3)
-      real*8 a6,a3
-      a3(1) = a6(1)
-      a3(2) = a6(2)
-      a3(3) = a6(6)
-      return
-      end subroutine reduce_6to3
-c-----------------------------------------------------------------------
-      subroutine reduce_3to6(a3,a6)
-      dimension a6(6),a3(3)
-      real*8 a6,a3
-      a6(1) = a3(1)
-      a6(2) = a3(2)
-      a6(6) = a3(3)
-      return
-      end subroutine reduce_3to6
-c-----------------------------------------------------------------------
 c$$$!     pal
       include "/home/younguj/repo/abaqusPy/umats/yld/vm.f"
       include "/home/younguj/repo/abaqusPy/umats/yld/hill48.f"
@@ -119,6 +99,7 @@ c$$$!     pal
       include "/home/younguj/repo/abaqusPy/umats/lib/lib_write.f"
       include "/home/younguj/repo/abaqusPy/umats/lib/is.f"
       include "/home/younguj/repo/abaqusPy/umats/lib/lib.f"
+      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
 c$$$!     mac
 c$$$      include "/Users/yj/repo/abaqusPy/umats/yld/vm.f"
 c$$$      include "/Users/yj/repo/abaqusPy/umats/yld/hill48.f"

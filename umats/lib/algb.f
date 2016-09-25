@@ -31,9 +31,10 @@ c     b33
       return
       end subroutine
 c-----------------------------------------------------------------------
-      subroutine rot_tensor(a33,rot,bij)
+      subroutine rot_tensor(a33,rot,b33)
       implicit none
-      dimension a33(3,3),bij(3,3),rot(3,3)
+      dimension a33(3,3),b33(3,3),rot(3,3)
+      real*8 a33,b33,rot
       integer i,j,k,l
       b33(:,:) = 0d0
       do 10 i=1,3

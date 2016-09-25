@@ -10,7 +10,7 @@ c-----------------------------------------------------------------------
       integer i,j
       do 10 i=1,3
       do 10 j=1,3
-         b(i,j) = a(j,i)
+         b33(i,j) = a33(j,i)
  10   continue
       end subroutine
 c-----------------------------------------------------------------------
@@ -85,3 +85,22 @@ c     the shear strains are multiplied by 1/2. to follow Abaqus convention
  5    continue
       return
       end subroutine voigt4
+c-----------------------------------------------------------------------
+      subroutine reduce_6to3(a6,a3)
+      dimension a6(6),a3(3)
+      real*8 a6,a3
+      a3(1) = a6(1)
+      a3(2) = a6(2)
+      a3(3) = a6(6)
+      return
+      end subroutine reduce_6to3
+c-----------------------------------------------------------------------
+      subroutine reduce_3to6(a3,a6)
+      dimension a6(6),a3(3)
+      real*8 a6,a3
+      a6(1) = a3(1)
+      a6(2) = a3(2)
+      a6(6) = a3(3)
+      return
+      end subroutine reduce_3to6
+c-----------------------------------------------------------------------

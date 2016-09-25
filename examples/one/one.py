@@ -180,6 +180,7 @@ def TensileOneElement(
     ## Use abaquspy.mats.ifsteel module to retrieve material
     ## characteristics of the IF steel
 
+
     if type(umatFN)==type(None):
         myMat = myModel.Material('IFsteel') ## modules:
         if type(myMatFunc)==type(None):
@@ -190,6 +191,8 @@ def TensileOneElement(
         myMat = myModel.Material('myUMAT')
         myMat.UserMaterial(mechanicalConstants=(200e9,0.3))
         myMat.Depvar(n=20) ## Number of state variables
+        myMat.UserOutputVariables(n=20)
+
 
     ### Create Shell Section!
     thickness = 1e-3 ## 1 mm thickness
@@ -259,7 +262,7 @@ def TensileOneElement(
             variables=('E','U','S','EE','PE'),directions=OFF)
     else:
         myModel.fieldOutputRequests['F-Output-1'].setValues(
-            variables=('E','U','S','SDV'),directions=OFF)
+            variables=('E','U','S','SDV','UVARM'),directions=OFF)
 
     ## Apply BC
     ## Encastre
@@ -445,7 +448,7 @@ umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
 # runSingle(umatFN=umatFN,iwait=False,isub=False,totalStrain=0.01)
 
 ### testing at various angles
-runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False,totalStrain=0.05)
+runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False,totalStrain=0.01)
 
 ##runVarMats(umatFN=None,    isub=True)
 ##runVarMats(umatFN=umatFN,  isub=True)
