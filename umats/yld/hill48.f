@@ -1,4 +1,9 @@
 c-----------------------------------------------------------------------
+c     Hill quadratic yield surface
+
+c     Youngung Jeong, Clemson University
+c     youngung.jeong@gmail.com
+c-----------------------------------------------------------------------
       subroutine hill48_shell(cauchy,phi,dphi,d2phi,yldc4)
 c-----------------------------------------------------------------------
 c     Arguments

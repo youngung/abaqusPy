@@ -8,7 +8,7 @@ c     to test various yield functions
      $     s33lab(3,3),s33mat(3,3),phim,dphim(6),d2phim(6,6),phil,
      $     dphil(6),d2phil(6,6),dphi33m(3,3),dphi33l(3,3),
      $     dphi33ld(3,3),yldp_hill(6),yldp_yld2000(9),aux33(3,3),
-     $     aux3(3),bux3(3)
+     $     aux3(3),bux3(3),rv
       pi=4.d0*datan(1.d0)
 
 c     Uniaxial tensin stress state referred in the lab axes
@@ -24,15 +24,15 @@ c-----------------------------------------------------------------------
       yldp_hill(5)=1.5d0
       yldp_hill(6)=1.5d0
 
-      yldp_yld2000(1)=1d0
-      yldp_yld2000(2)=1d0
-      yldp_yld2000(3)=1d0
-      yldp_yld2000(4)=1d0
-      yldp_yld2000(5)=1d0
-      yldp_yld2000(6)=1d0
-      yldp_yld2000(7)=1d0
-      yldp_yld2000(8)=1d0
-      yldp_yld2000(9)=8d0
+      yldp_yld2000(1)=0.4865
+      yldp_yld2000(2)=1.3783
+      yldp_yld2000(3)=0.7536
+      yldp_yld2000(4)=1.0246
+      yldp_yld2000(5)=1.0363
+      yldp_yld2000(6)=0.9036
+      yldp_yld2000(7)=1.2321
+      yldp_yld2000(8)=1.4858
+      yldp_yld2000(9)=8.0000
 
       write(*,'(a7,5(4a7,x,a1,x))')'th',
      $     's11_l','s22_l','s33_l','s12_l','|',
@@ -84,9 +84,11 @@ c$$$
 c$$$  ei_lab - strain in the lab space
 c$$$
          call inplane_rot(th*(-1.d0),dphi33m,dphi33l)
-         write(*,'(4f7.2,x,a1,x)',advance='no')
-     $        (dphi33l(i,i),i=1,3),dphi33l(1,2),'|'
+         rv =-dphi33l(2,2)/(dphi33l(1,1)+dphi33l(2,2))
+         write(*,'(4f7.2,x,a1,x,2f7.2)',advance='no')
+     $        (dphi33l(i,i),i=1,3),dphi33l(1,2),'|',rv,phim
          write(*,*)
+
 
  10   continue
       return

@@ -1,4 +1,9 @@
 c-----------------------------------------------------------------------
+c     Return mapping subroutine
+c
+c     Youngung Jeong, Clemson University
+c     youngung.jeong@gmail.com
+c-----------------------------------------------------------------------
 c     Return mapping subroutine to find stress at n-1 step
 c     and integrate all state variables during the given incremental
 c     step defined by dstran (rate-independent ... yet?)

@@ -445,7 +445,7 @@ umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
 # runSingle(umatFN=umatFN,iwait=False,isub=False,totalStrain=0.01)
 
 ### testing at various angles
-runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False,totalStrain=0.30)
+runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False,totalStrain=0.05)
 
 ##runVarMats(umatFN=None,    isub=True)
 ##runVarMats(umatFN=umatFN,  isub=True)

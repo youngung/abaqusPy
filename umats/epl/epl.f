@@ -3,7 +3,6 @@ c     General USER MAT subroutine that is highly modulized for each
 c     individual constitutitve components to allow easy modifications
 c     using new material models.
 c
-c
 c     Youngung Jeong, Clemson University
 c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
@@ -58,10 +57,9 @@ c     predictor stress
 
 c$$$  yld function parameters
       integer nyldp,nyldc
-      parameter(nyldp=1,nyldc=4) ! this depends on iyld_law...
+      parameter(nyldp=1,nyldc=9) ! this depends on iyld_law...
       dimension yldp_ns(0:1,nyldp),yldc(nyldc)
       real*8 yldp_ns,yldc,deq_pr,deq
-
 
 c$$$  Material data
       dimension rvs(4)
@@ -72,20 +70,24 @@ c***  hardwired material parameters
 c-----------------------------------------------------------------------
 c**   material constitutive laws
       ihrd_law=0                ! Voce isotropic hardening
-
-c      iyld_law=0                ! Generic von Mises (shell)
-      iyld_law=1                ! Generic Hill48 (shell)
-
-      rvs(1)=1.0d0
-      rvs(2)=2.2d0
-      rvs(3)=1.4d0
-      call tuneH48(rvs,yldc)
-c-----------------------------------------------------------------------
 c**   hardening parameters
       hrdc(1) = 479.0d0
       hrdc(2) = 339.7d0
       hrdc(3) = 7.784d0
       hrdc(4) = 70.87d0
+c-----------------------------------------------------------------------
+c$$$      iyld_law=0                ! Generic von Mises (shell)
+c$$$      iyld_law=1                ! Generic Hill48 (shell)
+c$$$      rvs(1)=1.0d0
+c$$$      rvs(2)=2.2d0
+c$$$      rvs(3)=1.4d0
+c$$$      call tuneH48(rvs,yldc)
+      iyld_law=2
+      call read_alpha(
+     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
+c      yldc(1:8)=1d0
+c      yldc(9)=2d0
+c-----------------------------------------------------------------------
 c**   elastic constants
       e = 210d0*gpa
       enu=0.3d0
@@ -93,7 +95,6 @@ c-----------------------------------------------------------------------
       imsg=7
       idia=315 ! 0 (in case stdo is preferred)
       istv=425 ! reserved for state variable output file
-
       stress_ns(0,:) = stress(:)
 
       idiaw=.false.

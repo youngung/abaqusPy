@@ -1,4 +1,10 @@
 c-----------------------------------------------------------------------
+c     Yld2000-2d model for the case of planar stress condition where
+c     sig_xx,sig_yy,sig_xy are non-zeros.
+c
+c     Youngung Jeong, Clemson University
+c     youngung.jeong@gmail.com
+c-----------------------------------------------------------------------
       subroutine yld2000_2d(cauchy,psi,dpsi,d2psi,yldc)
 c     Arguments
 c     cauchy: cauchy stress
@@ -237,32 +243,40 @@ c$$$      implicit none
 c$$$      dimension cauchy(3),dphi(3),d2phi(3,3),c(2,3,3),
 c$$$     $     x1(3),x2(3),yldc(9)
 c$$$      real*8 cauchy,dphi,d2phi,phi,c,x1,x2,pp,ppp,
-c$$$     $     hershey1,hershey2,a,time0,time1,yldc
+c$$$     $     hershey1,hershey2,a,yldc
+c$$$      real time0,time1
 c$$$
 c$$$      cauchy(:)=0d0
-c$$$      cauchy(1)=5d0
-c$$$      cauchy(2)=5d0
+c$$$      cauchy(1)=1d0
 c$$$      dphi(:)=0d0
 c$$$      d2phi(:,:)=0d0
 c$$$      call w_chr(0,'cauchy stress')
 c$$$      call w_dim(0,cauchy,3,1d0,.true.)
-c$$$
-c$$$      yldc(1:8)=1d0
-c$$$      yldc(9)  =2d0
+c$$$c$$$      yldc(1:8)=1d0
+c$$$c$$$      yldc(9)  =2d0
+c$$$      call read_alpha('alfas.txt',yldc)
 c$$$
 c$$$      call cpu_time(time0)
 c$$$      call yld2000_2d(cauchy,phi,dphi,d2phi,yldc)
+c$$$      call sleep(2)
 c$$$      call cpu_time(time1)
+c$$$      write(*,*) time0,time1
 c$$$
 c$$$      call w_val(0,'phi:',phi)
 c$$$      call w_chr(0,'dphi:')
 c$$$      call w_dim(0,dphi,3,1d0,.true.)
-c$$$      call w_chr(0,'d2phi:')
-c$$$      call w_mdim(0,d2phi,3,1d0)
+c$$$c$$$      call w_chr(0,'d2phi:')
+c$$$c$$$      call w_mdim(0,d2phi,3,1d0)
 c$$$
 c$$$      call w_empty_lines(0,3)
+c$$$      write(*,'(a,e11.2,a)')'Elapsed time:',
+c$$$     $     (time1-time0),'  seconds'
 c$$$      write(*,'(a,f7.2,a)')'Elapsed time:',
-c$$$     $     (time1-time0)/1d-3,'mu seconds'
+c$$$     $     (time1-time0)/1d-3,' milli seconds'
+c$$$      write(*,'(a,f7.2,a)')'Elapsed time:',
+c$$$     $     (time1-time0)/1d-6,' micro seconds'
+c$$$      write(*,'(a,f7.2,a)')'Elapsed time:',
+c$$$     $     (time1-time0)/1d-9,' nano seconds'
 c$$$      end program
 c-----------------------------------------------------------------------
       subroutine cauchy2sdev(c,s)
@@ -369,6 +383,24 @@ c     l : l matrix in the dimension of (2,3,3)
       return
       end subroutine alpha2l
 c-----------------------------------------------------------------------
+      subroutine read_alpha(fn,alpha)
+      implicit none
+      character (len=*) fn
+      character (len=288) prosa
+      dimension alpha(9)
+      integer iunit,i,k
+      parameter(iunit=333)
+      real*8 alpha
+      open(iunit,file=fn,status='unknown')
+      read(iunit,'(a)') prosa
+      read(iunit,*) alpha(9)
+      read(iunit,'(i3)') k
+      read(iunit,'(a)') prosa
+      read(iunit,'(a)') prosa
+      read(iunit,*) (alpha(i),i=1,8)
+      close(iunit)
+      end subroutine read_alpha
+c-----------------------------------------------------------------------
       subroutine alpha2c(a,c)
 c     Arguments
 c     a : the 8 parameters (alpha)
@@ -400,7 +432,7 @@ c     c``
       return
       end subroutine alpha2c
 c-----------------------------------------------------------------------
-c     Palmetto
+c$$$c     Palmetto
 c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/algb.f'
 c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/lib_write.f'
 c$$$      include '/home/younguj/repo/abaqusPy/umats/lib/lib.f'

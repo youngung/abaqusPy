@@ -29,6 +29,8 @@ c***  Define phi,dphi,d2phi
          call vm_shell(    stress,phi,dphi,d2phi)
       elseif (iyld_law.eq.1) then
          call hill48_shell(stress,phi,dphi,d2phi,yldc)
+      elseif (iyld_law.eq.2) then
+         call yld2000_2d(stress,phi,dphi,d2phi,yldc)
       else
          write(*,*)'unexpected iyld_law given'
          stop -1
@@ -59,6 +61,8 @@ c        stress will be sufficient to determine the yield surface...
          yldp_ns(1,1) = deeq + yldp_ns(0,1)
       elseif (iyld_law.eq.1) then
          yldp_ns(1,1) = deeq + yldp_ns(0,1)
+      elseif (iyld_law.eq.2) then
+         yldp_ns(1,1) = deeq + yldp_ns(0,1)
       else
          write(*,*)'Unexpected iyld_law given in update_yldp'
          stop -1
@@ -70,3 +74,5 @@ c     Von Mises
       include "/home/younguj/repo/abaqusPy/umats/yld/vm.f"
 c     Hill48
       include "/home/younguj/repo/abaqusPy/umats/yld/hill48.f"
+c     yld2000-2d
+      include "/home/younguj/repo/abaqusPy/umats/yld/yld2000_2d.f"

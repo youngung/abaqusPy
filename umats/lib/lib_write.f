@@ -267,11 +267,16 @@ c     i: file unit (use std if 0, use imsg elsewhere)
       if (i.eq.0) then ! USE std
          write(*,*) '*------------------*'
          write(*,*) '|       UMAT       |'
+         write(*,*) '|                  |'
          write(*,*) '*------------------*'
+         write(*,*) 'Youngung Jeong'
+         write(*,*) 'youngung.jeong@gmail.com'
       else
          write(i,*) '*------------------*'
          write(i,*) '|       UMAT       |'
          write(i,*) '*------------------*'
+         write(i,*) 'Youngung Jeong'
+         write(i,*) 'youngung.jeong@gmail.com'
       endif
       call w_empty_lines(i,1)
       return
