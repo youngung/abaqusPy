@@ -366,32 +366,56 @@ c-----------------------------------------------------------------------
       call getvrm('S',array,jarray,flgray,jrcd,jmac,jmatyp,
      $     matlayo,laccfla)
       jerror = jerror + jrcd
-      call reduce_3to6(array(1:3),aux6)
-      call voigt2(aux6,aux33)
-      call rot_tensor(aux33,directt,bux33)
-      call voigt1(bux33,aux6)
-      call reduce_6to3(aux6,uvar(1:3))
+      call rot_tensor_shell(array(1:4),directt,uvar(1:4),0)
 c-----------------------------------------------------------------------
 c     Getting strain tensor transformed to global coordinates
 c-----------------------------------------------------------------------
       call getvrm('E',array,jarray,flgray,jrcd,jmac,jmatyp,
      $     matlayo,laccfla)
       jerror = jerror + jrcd
-      call reduce_3to6(array(1:3),aux6)
-      call voigt4(aux6,aux33)
-      call rot_tensor(aux33,directt,bux33)
-      call voigt3(bux33,aux6)
-      call reduce_6to3(aux6,uvar(4:6))
+      call rot_tensor_shell(array(1:4),directt,uvar(5:8),1)
 c-----------------------------------------------------------------------
 c     Getting solution dependent state variables
 c-----------------------------------------------------------------------
-c$$$      call getvrm('SDV',array,jarray,flgray,jrcd,jmac,jmatyp,
-c$$$     $     matlayo,laccfla)
-c$$$      jerror = jerror + jrcd
-
+      call getvrm('SDV',array,jarray,flgray,jrcd,jmac,jmatyp,
+     $     matlayo,laccfla)
+      jerror = jerror + jrcd
       if(jerror.ne.0)then
         write(6,*) 'request error in uvarm for element number ',
      1      noel,'integration point number ',npt
       endif
       return
       end subroutine uvarm
+c-----------------------------------------------------------------------
+      subroutine rot_tensor_shell(a4,rot,b4,iopt)
+c     Convert 4 dimensional plane-stress tensor
+c     - convention:
+c      vec  ij component
+c        1:      11
+c        2:      22
+c        3:      33
+c        4:      12
+c     Arguments
+c     a3  : a3 tensor
+c     rot : rotation matrix (3,3)
+c     b3  : b3 (rotated tensor)
+c     iopt: 0; stress, 1: strain
+      implicit none
+      dimension a4(3),b4(3),rot(3,3),aux6(6),aux33(3,3),bux33(3,3)
+      real*8 a4,b4,rot,aux6,aux33,bux33
+      integer iopt
+      call reduce_4to6(a4,aux6)
+      if (iopt.eq.0) then
+         call voigt2(aux6,aux33)
+      elseif (iopt.eq.1) then
+         call voigt4(aux6,aux33)
+      endif
+      call rot_tensor(aux33,rot,bux33)
+      if (iopt.eq.0) then
+         call voigt1(bux33,aux6)
+      elseif(iopt.eq.1) then
+         call voigt3(bux33,aux6)
+      endif
+      call reduce_6to4(aux6,b4)
+      return
+      end subroutine rot_tensor_shell

@@ -104,3 +104,31 @@ c-----------------------------------------------------------------------
       return
       end subroutine reduce_3to6
 c-----------------------------------------------------------------------
+c     Convert 4 dimensional plane-stress tensor
+c     - convention:
+c      vec  ij component
+c        1:      11
+c        2:      22
+c        3:      33
+c        4:      12
+      subroutine reduce_6to4(a6,a4)
+      dimension a6(6),a4(3)
+      real*8 a6,a4
+      a4(1) = a6(1)
+      a4(2) = a6(2)
+      a4(3) = 0d0
+      a4(4) = a6(6)
+      return
+      end subroutine reduce_6to4
+      subroutine reduce_4to6(a4,a6)
+      dimension a6(6),a4(3)
+      real*8 a6,a4
+      a6(1) = a4(1)
+      a6(2) = a4(2)
+      a6(3) = 0d0
+      a6(4) = 0d0
+      a6(5) = 0d0
+      a6(6) = a4(4)
+      return
+      end subroutine reduce_4to6
+c-----------------------------------------------------------------------
