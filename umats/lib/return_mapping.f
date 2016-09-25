@@ -12,7 +12,10 @@ c     step defined by dstran (rate-independent ... yet?)
      $     ihard_law,iyld_law,yldc,nyldc,yldp_ns,nyldp,
 
 c          variables to be updated.
-     $     spd,snew,statev,nstatv,ddsdde,failnr,kinc,noel,npt,time
+     $     snew,deeq,dstran_pl,dstran_el,statev,nstatv,ddsdde,failnr,
+
+c          variables to tell about the current integration point and time
+     $     kinc,noel,npt,time
      $     )
 c-----------------------------------------------------------------------
 c***  Arguments
@@ -33,6 +36,22 @@ c     hrdc    : hardening constants (invariable)
 c     nhrdp   : Len of hrdp
 c     nhrdc   : Len of hrdc
 c     ihard_law: hardening law (refer to uhard.f for more details)
+c     iyld_law : yield surface choice
+c     yldc     : yield surface constants
+c     yldp_ns  : yield surface state parameters
+c     nyldp    : The number of yield surface state parameters
+c     snew     : stress at step n+1 estimated by return_mapping method
+c     deeq     : delta equivalent plastic strain
+c     dstran_pl: delta plastic strain between steps n and n+1
+c     dstran_el: delta elastic strain between steps n and n+1
+c     statev   : state variables
+c     nstatv   : the number of state variables
+c     ddsdde   : Jacobian matrix for step n -> step n+1
+c     failnr   : flag to tell if return mapping method fails
+c     kinc     : increment number
+c     noel     : element number
+c     npt      : integration point number
+c     time     : time staps at steps n and n+1
 c-----------------------------------------------------------------------
 c***  Intents of Arguments
 c     intent(in) Cel, spr, phi_n, eeq_n, dphi_n, dstran, stran_el,
@@ -68,8 +87,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       real*8 Cel,spr,dphi_n,dstran,stran_el,dstran_el,dstran_el_ks
      $     ,stran_el_k,stran_el_ks,stran_pl,dstran_pl,dstran_pl_ks,
-     $     stran_pl_k,stran_pl_ks,yldc,yldp_ns,statev,snew,ddsdde,
-     $     spd,time
+     $     stran_pl_k,stran_pl_ks,yldc,yldp_ns,statev,snew,deeq,ddsdde,
+     $     time
 
       real*8 spr_ks       ! eq stress at nr-step k, stress predic at nr-step k
       real*8 fo_ks,fp_ks        ! Fobjective, Jacobian for NR
@@ -247,8 +266,12 @@ c***  update state variables
      $     spr_ks(k+1,:))
 c***  new stress
       snew(:)=spr_ks(k,:)
-c$$$  plastic dissipation
-c$$$      spd = spd +
+c***  Equivalent plastic strain increment
+      deeq = dlamb_ks(k)
+c***  Plastic strain increment
+      dstran_pl(:) =dstran_pl_ks(k,:)
+c***  Elastic strain increment
+      dstran_el(:) =dstran_el_ks(k,:)
 c***  new jacobian
       call calc_epl_jacob(Cel,dphi_ks(k,:),dh_ks(k),ntens,ddsdde,
      $     idia,idiaw)

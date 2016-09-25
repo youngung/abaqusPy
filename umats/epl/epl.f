@@ -39,8 +39,8 @@ c$$$  local arrays
      $     d2phi_n(ntens,ntens),stran_el_ns(0:1,ntens),
      $     stran_pl_ns(0:1,ntens),dstran_el(ntens),dstran_pl(ntens),
      $     spr(ntens),epr(ntens),hrdc(nhrdc),hrdp(nhrdp),
-     $     stress_ns(0:1,ntens)
-      real*8 e,enu,G,eK,Cel
+     $     stress_ns(0:1,ntens),dstress(ntens)
+      real*8 e,enu,G,eK,Cel,dstress,deeq
 c     predictor stress
       real*8 spr,epr,stress_ns
       real*8 hrdc,hrdp
@@ -98,8 +98,9 @@ c-----------------------------------------------------------------------
       stress_ns(0,:) = stress(:)
 
       idiaw=.false.
-!cc   if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
-      if (idiaw) then
+      if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
+         idiaw=.true.
+c      if (idiaw) then
          fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
          if (idia.ne.0) then
             open(idia,position='append',file=fndia)
@@ -122,21 +123,21 @@ c     the updated yld parameters for step n+1 later...
          call w_ival(idia,'* npt  :', npt)
          call w_ival(idia,'* kspt :', kspt)
          call w_ival(idia,'* layer:', layer)
-         call w_val(idia,'* dtime:',dtime)
-         call w_val(idia,'* time1:',time(1))
-         call w_val(idia,'* time2:',time(2))
-         call w_chr(idia,'* JSTEP:')
-         call w_dim(idia,jstep,4,1d0,.true.)
-         call w_chr(idia,'** state variable restored **')
-         call w_chr(idia,'* stran at step n')
-         call w_dim(idia,stran,ntens,1d0,.true.)
-         call w_chr(idia,'* stran_el at step n')
-         call w_dim(idia,stran_el_ns(0,:),ntens,1d0,.true.)
-         call w_chr(idia,'* stran_pl at step n')
-         call w_dim(idia,stran_pl_ns(0,:),ntens,1d0,.true.)
-         call w_chr(idia,'* dstran')
-         call w_dim(idia,dstran,ntens,1d0,.true.)
-         call w_chr(idia,'* DROT')
+         call w_val( idia,'* dtime:',dtime)
+         call w_val( idia,'* time1:',time(1))
+         call w_val( idia,'* time2:',time(2))
+         call w_chr( idia,'* JSTEP:')
+         call w_dim( idia,jstep,4,1d0,.true.)
+         call w_chr( idia,'** state variable restored **')
+         call w_chr( idia,'* stran at step n')
+         call w_dim( idia,stran,ntens,1d0,.true.)
+         call w_chr( idia,'* stran_el at step n')
+         call w_dim( idia,stran_el_ns(0,:),ntens,1d0,.true.)
+         call w_chr( idia,'* stran_pl at step n')
+         call w_dim( idia,stran_pl_ns(0,:),ntens,1d0,.true.)
+         call w_chr( idia,'* dstran')
+         call w_dim( idia,dstran,ntens,1d0,.true.)
+         call w_chr( idia,'* DROT')
          call w_mdim(idia,drot,3,1d0)
       endif
 
@@ -192,6 +193,9 @@ c-----------------------------------------------------------------------
          call update_elastic(idia,idiaw,iyld_law,ntens,nyldp,nstatv,
      $        ddsdde,cel,stran,stran_el_ns,stran_pl_ns,dstran,stress,
      $        eeq_ns,deq,yldp_ns,statev,kinc)
+         dstran_pl(:) = 0d0
+         dstran_el(:) = dstran(:)
+         dstress(:) = stress(:) - stress_ns(0,:)
       else !! plastic
          if (idiaw) then
             call w_chr(idia,'PLASTIC')
@@ -212,7 +216,11 @@ c        Return mapping subroutine updates stress/statev
      $        dphi_n,dstran,stran_el_ns(0,:),stran_pl_ns(0,:),
      $        ntens,idiaw,idia,hrdp,nhrdp,hrdc,nhrdc,ihrd_law,
      $        iyld_law,yldc,nyldc,yldp_ns,nyldp,
-     $        spd,stress,statev,nstatv,ddsdde,failnr,kinc)
+     $        stress,deeq,dstran_pl,dstran_el,statev,nstatv,ddsdde,
+     $        failnr,kinc,noel,npt,time)
+!     new stress and stress increment
+         stress_ns(1,:) = stress(:)
+         dstress(:) = stress(:) - stress_ns(0,:)
          if (idiaw) call w_chr(idia,'** Exit return-mapping **')
          if (failnr) then
             ! reduce time step?
@@ -224,8 +232,6 @@ c        Return mapping subroutine updates stress/statev
             endif
             return ! out of umat
          endif
-
-         stress_ns(1,:) = stress(:)
 
          if (idiaw) then
             call w_chr(idia,'** inquiry for state variable after RM')
@@ -266,12 +272,19 @@ c       de^el_(n+1) is obtained.
 c
 c       Update all state variables. (yldp included.)
 c-----------------------------------------------------------------------
-c     vi. Caculate jacobian (ddsdde)
-c       C^el - [ C^el:m_(n+1) cross C^el:m_(n+1) ]   /  [ m_(n+1):C^el:m_(n+1) + h(depl_ij_(n+1)) ]
       endif
+c-----------------------------------------------------------------------
+c     vi. Caculate jacobian (ddsdde - done in return mapping or elastic update)
+c-----------------------------------------------------------------------
+c     Plastic energy dissipation
+      do i=1,ntens
+         spd = spd + dstress(i) * dstran_pl(i)
+         sse = sse + dstress(i) * dstran_el(i)
+      enddo
+c-----------------------------------------------------------------------
 
 c     Write statev
-      if (noel.eq.1 .and. dtime.gt.0 .and. npt.eq.1) then
+      if (noel.eq.1 .and. dtime.gt.0 .and. npt.eq.1.and.idiaw) then
          call restore_statev(statev,nstatv,eeq_ns(1),
      $        stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
      $        nyldp,0,.false.,idia,
