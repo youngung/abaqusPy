@@ -226,9 +226,6 @@ def TensileOneElement(
         localCsys=orientation,fieldName='',
         additionalRotationType=ROTATION_NONE, angle=0.0,
         additionalRotationField='')
-    ## user defined orientation
-
-
 
     ### Define boundary conditions...
     epsRate=1e-3 #0.001/sec
@@ -262,7 +259,7 @@ def TensileOneElement(
             variables=('E','U','S','EE','PE'),directions=OFF)
     else:
         myModel.fieldOutputRequests['F-Output-1'].setValues(
-            variables=('E','U','S','SDV','UVARM'),directions=OFF)
+            variables=('E','U','S','UVARM'),directions=OFF)
 
     ## Apply BC
     ## Encastre
@@ -339,7 +336,7 @@ def TensileOneElement(
     myModel.HistoryOutputRequest(
         name='StressStrain',rebar=EXCLUDE,
         createStepName='TensionContinue',variables=(
-            'S11','E11','SDV'),region=myAssembly.sets['ORIGIN'],
+            'S11','E11','UVARM'),region=myAssembly.sets['ORIGIN'],
         sectionPoints=DEFAULT)
     myAssembly.regenerate()
 
@@ -412,6 +409,8 @@ if __name__=='main':
     parser.add_argument(
         '-iwait',action='store_true',help='iwait')
     parser.add_argument(
+        '-isub',action='store_true',help='isub')
+    parser.add_argument(
         '-mxe',type=float,help='Maximum strain to be imposed',
         default=0.01)
     parser.add_argument(
@@ -445,12 +444,12 @@ if __name__=='main':
 umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
 
 ### Job testing methods
-# runSingle(umatFN=umatFN,iwait=False,isub=False,totalStrain=0.01)
+# runSingle(umatFN=umatFN,iwait=True,isub=True,totalStrain=0.01)
 
 ### testing at various angles
-runTensions(nth=3,umatFN=umatFN,isub=False,iwait=False,totalStrain=0.01)
+runTensions(nth=3,umatFN=umatFN,isub=True,iwait=True,totalStrain=0.01)
 
 ##runVarMats(umatFN=None,    isub=True)
 ##runVarMats(umatFN=umatFN,  isub=True)
 
-os.sys.path=orig_path[::]
+# os.sys.path=orig_path[::]

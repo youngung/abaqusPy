@@ -33,8 +33,8 @@ c     b33
 c-----------------------------------------------------------------------
       subroutine rot_tensor(a33,rot,b33)
       implicit none
-      dimension a33(3,3),b33(3,3),rot(3,3)
-      real*8 a33,b33,rot
+      dimension a33(3,3),rot(3,3),b33(3,3)
+      real*8 a33,rot,b33
       integer i,j,k,l
       b33(:,:) = 0d0
       do 10 i=1,3

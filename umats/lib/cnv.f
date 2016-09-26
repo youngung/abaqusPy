@@ -8,6 +8,7 @@ c-----------------------------------------------------------------------
       dimension a33(3,3),b33(3,3)
       real*8 a33,b33
       integer i,j
+      b33(:,:) = 0d0
       do 10 i=1,3
       do 10 j=1,3
          b33(i,j) = a33(j,i)
@@ -18,7 +19,8 @@ c     33 bases "stress" tensor to 6 bases "stress" tensor
 c-----------------------------------------------------------------------
       subroutine voigt1(a33,a6)
       implicit none
-      real*8 a33(3,3), a6(6)
+      dimension a33(3,3),a6(6)
+      real*8 a33, a6
       integer i
       a6(:) = 0.d0
       do 5 i=1,3
@@ -34,7 +36,8 @@ c     6 bases "stress" tensor to 33 bases stress tensor
 c-----------------------------------------------------------------------
       subroutine voigt2(a6,a33)
       implicit none
-      real*8 a33(3,3), a6(6)
+      dimension a33(3,3),a6(6)
+      real*8 a33, a6
       integer i,j,k,ijv(6,2),n,m
       data ((ijv(n,m),m=1,2),n=1,6)/1,1,2,2,3,3,2,3,1,3,1,2/
       a33(:,:) = 0.d0
@@ -53,7 +56,8 @@ c     !! Caution, strain tensor is converted such that
 c     the shear strains are multiplied by 2 to follow Abaqus convention
       subroutine voigt3(a33,a6)
       implicit none
-      real*8 a33(3,3), a6(6)
+      dimension a33(3,3),a6(6)
+      real*8 a33, a6
       integer i
       a6(:) = 0.d0
       do 5 i=1,3
@@ -71,7 +75,8 @@ c     !! Caution, strain tensor is converted such that
 c     the shear strains are multiplied by 1/2. to follow Abaqus convention
       subroutine voigt4(a6,a33)
       implicit none
-      real*8 a33(3,3), a6(6), fact
+      dimension a33(3,3), a6(6)
+      real*8 a33, a6, fact
       integer i,j,k,ijv(6,2),n,m
       data ((ijv(n,m),m=1,2),n=1,6)/1,1,2,2,3,3,2,3,1,3,1,2/
       a33(:,:) = 0.d0

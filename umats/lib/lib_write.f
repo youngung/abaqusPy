@@ -156,10 +156,10 @@ c     ndi: size of the (ndi x ndi) array
 c     fact: multiplicative factor to scale the elements in the array
       implicit none
       character*80 fmt,clen,get_fmt
-      integer ndi,iunit, i, j
+      integer ndi,iunit,i,j
       real*8 array(ndi,ndi),brray(ndi,ndi),get_mmx,mxv,fact
       do 10 i=1,ndi
-      do 10 j=1, ndi
+      do 10 j=1,ndi
          brray(i,j) = array(i,j) * fact
  10   continue
       mxv = get_mmx(brray,ndi,ndi)
