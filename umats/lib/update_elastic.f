@@ -40,9 +40,7 @@ c     call w_dim( idia,stran,ntens,1d0/empa,.true.)
          call w_dim( idia,stran_el_ns(1,:),ntens,1d0,.true.)
       endif
 
-      if (idiaw) call w_chr(idia,'5')
 c$$$  4. Update all other state varaiables
-
       eeq_ns(1)        = eeq_ns(0) + deq
       stran_pl_ns(1,:) = stran_pl_ns(0,:)
       call update_yldp(iyld_law,yldp_ns,nyldp,deq)
@@ -51,7 +49,5 @@ c$$   5. Store updated state variables to statev
       call restore_statev(statev,nstatv,eeq_ns(1),stran_el_ns(1,:),
      $     stran_pl_ns(1,:),ntens,yldp_ns(1,:),nyldp,1,.false.,idia,
      $     .false.,-1,-1,-1,-1d0,stress)
-
-      if (idiaw) call w_chr(idia,'6')
       return
       end subroutine update_elastic

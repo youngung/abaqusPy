@@ -32,7 +32,7 @@ fetch_input(modelName_reference)
 model_reference = mdb.ModelFromInputFile(name=modelName_reference,inputFileName='%s.inp'%modelName_reference)
 
 
-# New model file by copying the reference file to
+## New model file by copying the reference file to
 modelName='%s_umat'%modelName_reference
 myModel = mdb.Model(name=modelName,
                    objectToCopy=model_reference)
@@ -40,8 +40,7 @@ myModel = mdb.Model(name=modelName,
 
 myModel.fieldOutputRequests['F-Output-1'].setValues(frequency=1)
 myModel.fieldOutputRequests['F-Output-2'].setValues(frequency=1)
-myModel.fieldOutputRequests['F-Output-2'].setValues(
-    variables=('S', 'PE', 'PEEQ', 'LE', 'UVARM'))
+myModel.fieldOutputRequests['F-Output-2'].setValues(variables=('S', 'E','UVARM'))
 
 myPart=myModel.parts['PART-1']
 
@@ -63,6 +62,7 @@ myMat.Depvar(n=20)
 myMat.UserOutputVariables(n=20) ## UVARM
 
 gpa=1e9
+mpa=1e6
 
 myAssembly.regenerate()
 myModel.sections['Section-1-BLANK'].setValues(
@@ -70,7 +70,7 @@ myModel.sections['Section-1-BLANK'].setValues(
     thickness=0.00078, thicknessField='', idealization=NO_IDEALIZATION,
     integrationRule=SIMPSON, numIntPts=5)
 myModel.sections['Section-1-BLANK'].TransverseShearShell(
-    k11=200.*gpa,k22=200.*gpa,k12=120.*gpa)
+    k11=2.*mpa,k22=2.*mpa,k12=1.2*mpa)
 myAssembly.regenerate()
 
 jobName='springback_std_both_umat'
@@ -89,5 +89,5 @@ myJob_ref = mdb.jobs[jobName_ref]
 print 'User material has been specified.'
 umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
 myJob.setValues(userSubroutine=umatFN)
-# myJob.submit(consistencyChecking=OFF)
-# myJob.waitForCompletion()
+myJob.submit(consistencyChecking=OFF)
+myJob.waitForCompletion()

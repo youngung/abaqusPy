@@ -263,22 +263,20 @@ c     print header
       subroutine print_head(i)
 c     i: file unit (use std if 0, use imsg elsewhere)
       integer i
-      call w_empty_lines(i,2)
       if (i.eq.0) then ! USE std
+         call w_empty_lines(0,2)
          write(*,*) '*------------------*'
          write(*,*) '|       UMAT       |'
-         write(*,*) '|                  |'
          write(*,*) '*------------------*'
-         write(*,*) 'Youngung Jeong'
-         write(*,*) 'youngung.jeong@gmail.com'
+         call w_empty_lines(0,1)
       else
+         call w_empty_lines(i,2)
          write(i,*) '*------------------*'
          write(i,*) '|       UMAT       |'
          write(i,*) '*------------------*'
-         write(i,*) 'Youngung Jeong'
-         write(i,*) 'youngung.jeong@gmail.com'
+         call w_empty_lines(i,1)
       endif
-      call w_empty_lines(i,1)
+
       return
       end subroutine print_head
 c-----------------------------------------------------------------------
@@ -286,28 +284,30 @@ c     print footer
       subroutine print_foot(i)
 c     i: file unit (use std if 0, use imsg elsewhere)
       integer i
-      call w_empty_lines(i,2)
+
       if (i.eq.0) then ! USE std
+         call w_empty_lines(0,2)
          write(*,*) '*------------------*'
          write(*,*) '|       END        |'
          write(*,*) '*------------------*'
+         call w_empty_lines(0,1)
       else
+         call w_empty_lines(i,2)
          write(i,*) '*------------------*'
          write(i,*) '|       END        |'
          write(i,*) '*------------------*'
+         call w_empty_lines(i,1)
       endif
-      call w_empty_lines(i,1)
+
       return
       end subroutine print_foot
 c-----------------------------------------------------------------------
       subroutine stop_debug(iunit)
       implicit none
       integer iunit
-      call w_empty_lines(iunit,3)
       call fill_line(iunit,'*',52)
       call w_chr(iunit, '--  Reached safely at debugging the point  --')
       call fill_line(iunit,'*',52)
-      call w_empty_lines(iunit,3)
       stop -1
       end subroutine
 c-----------------------------------------------------------------------

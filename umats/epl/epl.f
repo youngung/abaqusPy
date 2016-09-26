@@ -93,14 +93,15 @@ c**   elastic constants
       enu=0.3d0
 c-----------------------------------------------------------------------
       imsg=7
-      idia=315 ! 0 (in case stdo is preferred)
+      idia=0                    ! 0 (in case stdo is preferred)
       istv=425 ! reserved for state variable output file
       stress_ns(0,:) = stress(:)
 
       idiaw=.false.
-      if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
-         idiaw=.true.
-c      if (idiaw) then
+c      idiaw=.true.
+c$$$      if (kspt.eq.1 .and. noel.eq.1 .and. npt.eq.1.) then
+c$$$         idiaw=.true.
+      if (idiaw) then
          fndia='/home/younguj/repo/abaqusPy/examples/one/diagnose.txt'
          if (idia.ne.0) then
             open(idia,position='append',file=fndia)

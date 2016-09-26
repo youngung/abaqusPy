@@ -89,11 +89,9 @@ c$$$         call w_mndim(0,dphi_dp,2,3,1d0)
  5       continue
       else
          if     (iopt.eq.0) then
-            write(*,*)
 !        eq A1.6
             dphi_dx(:) = 0d0
          elseif (iopt.eq.1) then
-            write(*,*)
 !        eq A1.10
             dphi_dx(1) = dphi_dp(1)
             dphi_dx(2) = dphi_dp(2)

@@ -1,3 +1,4 @@
+c-----------------------------------------------------------------------
       SUBROUTINE UVARM(UVAR,DIRECT,T,TIME,DTIME,CMNAME,ORNAME,
      1 NUVARM,NOEL,NPT,LAYER,KSPT,KSTEP,KINC,NDI,NSHR,COORD,
      2 JMAC,JMATYP,MATLAYO,LACCFLA)
@@ -28,7 +29,7 @@ c     jmac   : variable that must be passed into the GETVRM utility
 c             routine to access an output variable.
 c     jmatyp : Variable that must be passed into the GETVRM utility
 c             routine to access an output variable.
-c
+c-----------------------------------------------------------------------
 c     local variables
       dimension aux33(3,3),bux33(3,3),aux6(6),directt(3,3),aux4(4),
      $     aux3(3),bux3(3)
@@ -36,12 +37,11 @@ c     local variables
       integer jrcd,idia
       logical idiaw
 
-c      idiaw=.false.
-      idiaw=.true.
+      idiaw=.false.
+c      idiaw=.true.
 c$$$      if (kinc.eq.30 .and. npt.eq.1 .and. noel.eq.1 .and.dtime.ne.0) then
 c$$$         idiaw=.true.
 c$$$      endif
-
       idia=0
       empa = 1d6
 
@@ -68,10 +68,12 @@ c-----------------------------------------------------------------------
      $     matlayo,laccfla)
       idia=0
       jerror = jerror + jrcd
-      call w_chr(idia,'array(1:3); elastic strain')
-      call w_dim(idia,array(1:3),3,1d0,.true.)
-      call w_chr(idia,'array(4:6): plastic strain')
-      call w_dim(idia,array(1:3),3,1d0,.true.)
+      if (idiaw) then
+         call w_chr(idia,'array(1:3); elastic strain')
+         call w_dim(idia,array(1:3),3,1d0,.true.)
+         call w_chr(idia,'array(4:6): plastic strain')
+         call w_dim(idia,array(1:3),3,1d0,.true.)
+      endif
       aux3(:) = array(1:3)
       call rot_tensor_shell2(aux3,directt,bux3,1) ! elastic strain
       uvar(1:3)=bux3(:)
@@ -109,7 +111,7 @@ c-----------------------------------------------------------------------
       uvar(11)=aux4(2)
       uvar(12)=aux4(4)
 c      if (idiaw) then
-      if (.true.) then
+      if (idiaw) then
          call w_chr(idia,'Elastic strain in global coordinates')
          call w_dim(idia,uvar(1:3),3,1d0,.true.)
          call w_chr(idia,'Plastic strain in global coordinates')
@@ -124,6 +126,9 @@ c-----------------------------------------------------------------------
         write(6,*) 'request error in uvarm for element number ',
      1      noel,'integration point number ',npt
       endif
+
+      call stop_debug(0)
+      
       return
       end subroutine uvarm
 c-----------------------------------------------------------------------
@@ -207,7 +212,6 @@ c      call w_mdim(0,aux33,3,1d0)
 c      call w_chr(0,'bux33')
 c      call w_mdim(0,bux33,3,1d0)
 c      call w_chr(0,'** bux33 **')
-      write(*,*) bux33
       if (iopt.eq.0) then
          call voigt1(bux33,aux6)
       elseif(iopt.eq.1) then

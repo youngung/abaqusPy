@@ -47,7 +47,7 @@ c     initialization
          enddo
       enddo
 
-      write(imsg,*) 'after initialization c matrix'
+c      write(imsg,*) 'after initialization c matrix'
 c
 c     construct elastic tensor (6x6) with assuming that
 c     \gamma_ij = 2\varepsilon_ij is the engineering shear strain
@@ -64,7 +64,7 @@ c     off-diagonal terms
          c(i,i) = (1.-nu)*x     !! overwrite the diganogal term
          c(i+3,i+3) = (1.-2.*nu)/2. * x
       enddo
-      write(imsg,*) 'just before returning'
+c      write(imsg,*) 'just before returning'
       return
       end subroutine emod_iso
 c----------------------------------------------------------------------c
