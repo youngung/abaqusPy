@@ -262,7 +262,7 @@ c-----------------------------------------------------------------------
 c***  update state variables
       call restore_statev(statev,nstatv,eeq_n+dlamb_ks(k),
      $     stran_el_ks(k,:),stran_pl_ks(k,:),ntens,yldp_ns(1,:),
-     $     nyldp,1,.true.,idia,.false.,kinc,noel,npt,time(0),
+     $     nyldp,1,.false.,idia,.false.,kinc,noel,npt,time(0),
      $     spr_ks(k+1,:))
 c***  new stress
       snew(:)=spr_ks(k,:)

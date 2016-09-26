@@ -284,13 +284,13 @@ c     Plastic energy dissipation/elastic energy
          sse = sse + (stress_ns(0,i)+0.5d0*dstress(i)) * dstran_el(i)
       enddo
 c-----------------------------------------------------------------------
-c     Write statev
-      if (noel.eq.1 .and. dtime.gt.0 .and. npt.eq.1.and.idiaw) then
-         call restore_statev(statev,nstatv,eeq_ns(1),
-     $        stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
-     $        nyldp,0,.false.,idia,
-     $        .true.,kinc,noel,npt,time(1),stress)
-      endif
+c     stream out statev
+c$$$      if (noel.eq.1 .and. dtime.gt.0 .and. npt.eq.1.and.idiaw) then
+c$$$         call restore_statev(statev,nstatv,eeq_ns(1),
+c$$$     $        stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
+c$$$     $        nyldp,0,.false.,idia,
+c$$$     $        .true.,kinc,noel,npt,time(1),stress)
+c$$$      endif
 
       if (idia.ne.0.and.idiaw) close(idia)
       if (idiaw) call print_foot(idia)

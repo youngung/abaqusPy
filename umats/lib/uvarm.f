@@ -126,9 +126,6 @@ c-----------------------------------------------------------------------
         write(6,*) 'request error in uvarm for element number ',
      1      noel,'integration point number ',npt
       endif
-
-      call stop_debug(0)
-      
       return
       end subroutine uvarm
 c-----------------------------------------------------------------------
