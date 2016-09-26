@@ -6,6 +6,11 @@ This package is under development, will add more material constitutive models.
 
 Libraries
 ---------
+* return_mapping
+  forward euler return-mapping subroutine
+* yld2000-2d
+* hill48
+
 
 
 Python Examples
@@ -14,16 +19,19 @@ Python Examples
 
  Running one element test is as easy as running below in the command line:
 
-$> abaqus cae noGUI=one.py -- -umat <your user mat file name> -iumat -mxe 0.05 -nth 3
+$> abaqus cae noGUI=one.py
+
 
 The above will use your UMAT (e.g., epl.f as included in this package) and run for
 0.05 strain for 0,45, and 90 degrees from RD.
-
 
 The above will generate a number of "*.odb" files.
 Below command is used to extract some useful data to text files
 
 $> abaqus cae noGUI=onePP.py
+
+which will read any '*.odb' file in the cwd. Then it will extract UVARM and save some data to
+ASCII file which can be visualized by <oneElementPlotter.ipynb>
 
 
 * Full size E8 element tensile tests.
@@ -33,6 +41,22 @@ User Materials
 --------------
 epl.f : UMAT based on elasto-plastic constitutitve model
 
+epl.f runs currently for shell element and accepts material orientations.
+The standard field varibles will be written in reference to each
+material orientation pertaining to element. Field variables in reference to
+global coordinates are calculated in UVARM, which gives
+
+UVARM1 : ee11
+UVARM2 : ee22
+UVARM3 : ee12
+
+UVARM4 : pe11
+UVARM5 : pe22
+UVARM6 : pe12
+
+UVARM7 : s11
+UVARM8 : s22
+UVARM9 : s12
 
 Youngung Jeong
 youngung.jeong@gmail.com

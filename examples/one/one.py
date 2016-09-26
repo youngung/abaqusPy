@@ -451,5 +451,4 @@ runTensions(nth=3,umatFN=umatFN,isub=True,iwait=True,totalStrain=0.01)
 
 ##runVarMats(umatFN=None,    isub=True)
 ##runVarMats(umatFN=umatFN,  isub=True)
-
-# os.sys.path=orig_path[::]
+os.sys.path=orig_path[::]
