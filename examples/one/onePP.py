@@ -17,7 +17,7 @@ def main(fnout='strstr.txt',fnOdb=None,iumat=False):
     fnout    : output filename
     iumat    : False (flag to determine if user material is used.
     """
-    # fnOdb=os.path.join(os.getcwd(),'OneElement.odb')
+    ## fnOdb=os.path.join(os.getcwd(),'OneElement.odb')
     print 'fnOdb:',fnOdb
     odb = openOdb(fnOdb)
 
@@ -74,46 +74,53 @@ def main(fnout='strstr.txt',fnOdb=None,iumat=False):
     myInstancName = odb.rootAssembly.instances.keys()[0]
     mySectionName = odb.sections.keys()[0]
 
+    hRegion='Element MYSPECIMEN.1 Int Point 1 Section Point 1'
 
-    ## Commonly available variables
-    e11=odb.steps['TensionContinue'].historyRegions[
-        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
-        historyOutputs['E11'].data
-    s11=odb.steps['TensionContinue'].historyRegions[
-        'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
-        historyOutputs['S11'].data
+
 
     ## In case intrinsic material feature in abaqus is used.
     if not(iumat):
-        ee11=odb.steps['TensionContinue'].historyRegions[
-            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+        ## Commonly available variables
+        e11=odb.steps['TensionContinue'].historyRegions[hRegion].\
+            historyOutputs['E11'].data
+        s11=odb.steps['TensionContinue'].historyRegions[hRegion].\
+            historyOutputs['S11'].data
+        ee11=odb.steps['TensionContinue'].historyRegions[hRegion].\
             historyOutputs['EE11'].data
-        ee22=odb.steps['TensionContinue'].historyRegions[
-            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+        ee22=odb.steps['TensionContinue'].historyRegions[hRegion].\
             historyOutputs['EE22'].data
-        pe11=odb.steps['TensionContinue'].historyRegions[
-            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+        pe11=odb.steps['TensionContinue'].historyRegions[hRegion].\
             historyOutputs['PE11'].data
-        pe22=odb.steps['TensionContinue'].historyRegions[
-            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
+        pe22=odb.steps['TensionContinue'].historyRegions[hRegion].\
             historyOutputs['PE22'].data
     elif (iumat):
-        ee11=odb.steps['TensionContinue'].historyRegions[
-            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
-            historyOutputs['SDV1'].data
-        ee22=odb.steps['TensionContinue'].historyRegions[
-            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
-            historyOutputs['SDV2'].data
-        pe11=odb.steps['TensionContinue'].historyRegions[
-            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
-            historyOutputs['SDV4'].data
-        pe22=odb.steps['TensionContinue'].historyRegions[
-            'Element MYSPECIMEN.1 Int Point 1 Section Point 1'].\
-            historyOutputs['SDV5'].data
+        # ee11=odb.steps['TensionContinue'].historyRegions[hRegion].\
+        #     historyOutputs['SDV1'].data
+        # ee22=odb.steps['TensionContinue'].historyRegions[hRegion].\
+        #     historyOutputs['SDV2'].data
+        # pe11=odb.steps['TensionContinue'].historyRegions[hRegion].\
+        #     historyOutputs['SDV4'].data
+        # pe22=odb.steps['TensionContinue'].historyRegions[hRegion].\
+        #     historyOutputs['SDV5'].data
+        ee11=odb.steps['TensionContinue'].historyRegions[hRegion].\
+            historyOutputs['UVARM1'].data
+        ee22=odb.steps['TensionContinue'].historyRegions[hRegion].\
+            historyOutputs['UVARM2'].data
+        pe11=odb.steps['TensionContinue'].historyRegions[hRegion].\
+            historyOutputs['UVARM4'].data
+        pe22=odb.steps['TensionContinue'].historyRegions[hRegion].\
+            historyOutputs['UVARM5'].data
+        s11=odb.steps['TensionContinue'].historyRegions[hRegion].\
+            historyOutputs['UVARM7'].data
+        ee11=np.array(ee11)
+        ee22=np.array(ee22)
+        pe11=np.array(pe11)
+        pe22=np.array(pe22)
+        e11=ee11+pe11
+        e22=ee22+pe22
     else:
         print 'Unexpected iumat given:',iumat
     ## In case intrinsic material feature in abaqus is used.
-
 
 
     e11=np.array(e11);    s11=np.array(s11)
