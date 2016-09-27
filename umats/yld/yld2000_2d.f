@@ -20,7 +20,7 @@ c     yldc  : yield surface components
      $     l2(ntens,ntens),l2c(2,ntens,ntens),dh(2,ntens),phis(2),
      $     dphis(2,ntens),yldc(9),alpha(8)
       real*8 cauchy,dpsi,d2psi,psi,c,x1,x2,pp,ppp,h,l1,l2,a,dh,
-     $     time0,time1,hershey1,hershey2,phis,dphis,yldc,alpha,l2c
+     $     hershey1,hershey2,phis,dphis,yldc,alpha,l2c
       integer i
       alpha(:) = yldc(1:8)
       a        = yldc(9)        ! yield surface exponent
