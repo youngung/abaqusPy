@@ -12,7 +12,6 @@ Libraries
 * hill48
 
 
-
 Python Examples
 ---------------
 * One element example
@@ -36,6 +35,16 @@ ASCII file which can be visualized by <oneElementPlotter.ipynb>
 
 * Full size E8 element tensile tests.
  Multi element tests using a full-size E8 standard uniaxial tensile bar.
+
+ $> abaqus cae noGUI=uni.py
+
+* 2D draw-bending / springback simulation using epl.f - with yld2000-2d
+
+ $> abaqus cae noGUI=spring.py
+
+ This will fetch springback_std_both.inp and copy it and modify it to use
+ yld2000-2d as the constitutive model.
+
 
 User Materials
 --------------

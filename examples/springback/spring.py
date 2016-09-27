@@ -1,3 +1,21 @@
+"""
+Fetch the Abaqus benchmark job file for springback and
+use it for the base model for custom studies.
+
+
+--------------------------------------------------
+ Springback standard both forming and springback
+ 'EPL' user subroutine
+--------------------------------------------------
+
+
+Youngung Jeong
+youngung.jeong@gmail.com
+"""
+
+print __doc__
+
+
 ## add the site-package of my own...
 import os
 import numpy as np
@@ -37,10 +55,18 @@ modelName='%s_umat'%modelName_reference
 myModel = mdb.Model(name=modelName,
                    objectToCopy=model_reference)
 
-
 myModel.fieldOutputRequests['F-Output-1'].setValues(frequency=1)
 myModel.fieldOutputRequests['F-Output-2'].setValues(frequency=1)
 myModel.fieldOutputRequests['F-Output-2'].setValues(variables=('S', 'E','UVARM'))
+
+# write restart
+for i in xrange(len(myModel.steps.keys())-1):
+    s=myModel.steps.keys()[i+1]
+    myModel.steps[s].Restart(frequency=10,numberIntervals=0,overlay=OFF,timeMarks=OFF)
+
+myModel.steps['Step-3'].setValues(maxNumInc=2000)
+myModel.steps['Step-4'].setValues(maxNumInc=1000, initialInc=0.01, minInc=0.0001)
+
 
 myPart=myModel.parts['PART-1']
 
@@ -86,8 +112,9 @@ mdb.saveAs(model_reference.name)
 myJob_ref = mdb.jobs[jobName_ref]
 
 ## Flag to use a User Material subroutine
-print 'User material has been specified.'
+
 umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
 myJob.setValues(userSubroutine=umatFN)
+print 'User material has been specified: %s'%umatFN
 myJob.submit(consistencyChecking=OFF)
 myJob.waitForCompletion()

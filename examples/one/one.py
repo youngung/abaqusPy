@@ -271,7 +271,7 @@ def TensileOneElement(
                         region=myInstance.sets['leftEnd'])
         myModel.ZsymmBC(name='FixRightEndZ',createStepName='Initial',
                         region=myInstance.sets['rightEnd'])
-        ## Velocity
+ ## Velocity
         myModel.VelocityBC(name='StretchX', createStepName='Initial',
                            region=myInstance.sets['rightEnd'])
         myModel.boundaryConditions['StretchX'].setValuesInStep(

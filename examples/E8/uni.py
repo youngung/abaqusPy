@@ -287,7 +287,7 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
     myModel.StaticStep(
         name='TensionContinue',previous='Tension',
         description='Uniaxial Tension',timePeriod=deltaTime,
-        adiabatic=OFF,maxNumInc=500,stabilization=None,
+        adiabatic=OFF,maxNumInc=1000,stabilization=None,
         timeIncrementationMethod=AUTOMATIC,initialInc=minTimeInc,
         minInc=minTimeInc,maxInc=maxTimeInc,matrixSolver=SOLVER_DEFAULT,
         extrapolation=DEFAULT)
@@ -297,7 +297,11 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
 
     ## Modify output request
     # Field output
-    myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('E','U','S','PE'))
+    if type(umatFN)==type(None):
+        myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('E','U','S','PE'))
+    else:
+        myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('E','U','S','UVARM'))
+
     # History output
     myModel.historyOutputRequests['H-Output-1'].setValues(
         variables=('E11',),region=myAssembly.sets['MidSpan'])

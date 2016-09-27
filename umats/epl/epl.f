@@ -5,6 +5,9 @@ c     using new material models.
 c
 c     Youngung Jeong, Clemson University
 c     youngung.jeong@gmail.com
+c
+c     Compiled with intel fortran 12.0
+c     Abaqus 6.14
 c-----------------------------------------------------------------------
 c$$$  ABAQUS UMAT Interface.
       SUBROUTINE UMAT(STRESS,STATEV,DDSDDE,SSE,SPD,SCD,RPL,DDSDDT,DRPLDE
