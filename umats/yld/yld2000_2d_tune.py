@@ -10,7 +10,7 @@ def virtual_test(alphas,exponent):
     alphas
     exponent
     """
-    from yld2000_2d import yld2000_2d, inplane_rot, voigt1,voigt2,\
+    from yld2000 import yld2000_2d, inplane_rot, voigt1,voigt2,\
         voigt4,reduce_6to3, reduce_3to6
 
     ## alphas and exponent
