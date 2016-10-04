@@ -16,12 +16,16 @@ c     yldc  : yield surface components
       integer ntens
       parameter(ntens=3)
       dimension cauchy(ntens),dpsi(ntens),d2psi(ntens,ntens),
-     $     c(2,ntens,ntens),x1(ntens),x2(ntens),l1(ntens,ntens),
-     $     l2(ntens,ntens),l2c(2,ntens,ntens),dh(2,ntens),phis(2),
+     $     c(2,ntens,ntens),x1(ntens),x2(ntens),
+     $     l2c(2,ntens,ntens),phis(2),
      $     dphis(2,ntens),yldc(9),alpha(8)
-      real*8 cauchy,dpsi,d2psi,psi,c,x1,x2,pp,ppp,h,l1,l2,a,dh,
-     $     hershey1,hershey2,phis,dphis,yldc,alpha,l2c
+      real*8 cauchy,dpsi,d2psi,psi,c,x1,x2,a,
+     $     phis,dphis,yldc,alpha,l2c
       integer i
+c-----------------------------------------------------------------------
+cf2py intent(in)  cauchy,yldc
+cf2py intent(out) psi,dpsi,d2psi
+c-----------------------------------------------------------------------
       alpha(:) = yldc(1:8)
       a        = yldc(9)        ! yield surface exponent
 c$$$      call w_chr(0,'alpha')
@@ -53,6 +57,10 @@ c      call fill_line(0,'*',52)
  5    continue
       dpsi(3)=dpsi(3)
 c      call w_dim(0,dpsi,3,1d0,.true.)
+
+c     2nd derivatives
+      d2psi(:,:) = 0d0
+
       return
       end subroutine yld2000_2d
 c-----------------------------------------------------------------------
@@ -187,7 +195,6 @@ c     delta: to be calculated (intent: out)
       implicit none
       dimension x(3)
       real*8 x,delta
-      integer i
       delta = (x(1)-x(2))**2+4d0*x(3)**2d0
       return
       end subroutine calc_delta
@@ -212,7 +219,7 @@ c     s: stress tensor in the in-plane strss space (sxx,syy,sxy)
 c     xp: the two principal components
       implicit none
       dimension xp(2),s(3)
-      real*8 xx,yy,xy,f,x,s,xp
+      real*8 xx,yy,xy,f,s,xp
       xx=s(1)
       yy=s(2)
       xy=s(3)
@@ -313,8 +320,8 @@ c     alpha : the 8 parameters
 c     C     : C matrix
 c     L     : L matrix
       implicit none
-      dimension alpha(8),c(2,3,3),l(2,3,3),aux266(2,6,6),aux66(6,6)
-      real*8 alpha,c,l,aux266,aux66
+      dimension alpha(8),c(2,3,3),l(2,3,3),aux266(2,6,6)
+      real*8 alpha,c,l,aux266
       call alpha2l(alpha,aux266)
       call reduce_basis(aux266(1,:,:),l(1,:,:))
       call reduce_basis(aux266(2,:,:),l(2,:,:))

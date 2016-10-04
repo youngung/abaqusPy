@@ -18,14 +18,13 @@ c     intent(out) r
 c-----------------------------------------------------------------------
 c     Apply in-plane rotation on array b33
       subroutine inplane_rot(psi,a33,b33)
-c     intent(in)  psi, a33
-c     intent(out) b33
 c     psi
 c     a33
 c     b33
       implicit none
       real*8 psi,a33(3,3),b33(3,3),rot(3,3)
-      integer i,j,k,l
+cf2py intent(in)  psi, a33
+cf2py intent(out) b33
       call inplane_rot_matrix(psi,rot)
       call rot_tensor(a33,rot,b33)
       return

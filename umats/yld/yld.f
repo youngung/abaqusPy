@@ -12,18 +12,16 @@ c     phi       : yield surface
 c     dphi      : 1st derivative of yield surface w.r.t. stress
 c     d2phi     : 2nd derivative of yield surface w.r.t. stress
 c-----------------------------------------------------------------------
-c     intent(in) iyld_law,yldp,yldc,nyldp,nyldc
-c     intent(out) phi,dphi,d2phi
-c-----------------------------------------------------------------------
       implicit none
       integer iyld_law,nyldp,nyldc,ntens,i
       dimension yldp(nyldp),yldc(nyldc),dphi(ntens),d2phi(ntens,ntens)
       real*8 yldp,yldc,phi,dphi,d2phi
-
 c***  Local variables for better readibility
       dimension stress(ntens),strain(ntens)
       real*8 stress,strain
-
+c-----------------------------------------------------------------------
+cf2py intent(in) iyld_law,yldp,yldc,nyldp,nyldc,stress,ntens
+cf2py intent(out) phi,dphi,d2phi
 c***  Define phi,dphi,d2phi
       if (iyld_law.eq.0) then
          call vm_shell(    stress,phi,dphi,d2phi)

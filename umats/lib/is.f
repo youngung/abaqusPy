@@ -23,7 +23,6 @@ c-----------------------------------------------------------------------
       implicit none
       integer i,ndim
       real*8 array(ndim)
-      logical iexit
       isnan_in_arr=.false.
       do 5 i=1,ndim
          if (isnan(array(i))) then

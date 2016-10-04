@@ -77,7 +77,6 @@ c     str: the subjected character with any arbitrary size
       character(len=*) str
       character*80 ncc
       integer nc
-      logical is_inf
       nc = len(str)
       write(ncc,'(i80)') nc
       ncc = adjustl(ncc)
@@ -222,8 +221,8 @@ c     ibr: flag to insert line-breaker
       implicit none
       character*80 fmt,clen,get_fmt
       dimension array(ndi),brray(ndi)
-      integer ndi,iunit,i,j
-      real*8 array,fact,mxval,get_mx,mxv,brray
+      integer ndi,iunit,i
+      real*8 array,fact,get_mx,mxv,brray
       logical ibr
       do 10 i=1,ndi
          brray(i) = array(i) * fact
@@ -247,8 +246,8 @@ c-----------------------------------------------------------------------
 c     iunit: file ID
 c     chr : chracter
       implicit none
-      integer iunit,nc
-      character*80 fmt,get_fmt_str,ncc
+      integer iunit
+      character*80 fmt,get_fmt_str
       character(len=*) str
       fmt = get_fmt_str(str)
       if (iunit.eq.0) then
