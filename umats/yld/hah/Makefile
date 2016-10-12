@@ -1,5 +1,4 @@
 ## make file to compile hah
-
 ## global variables
 OBJDIR=objs
 
@@ -10,12 +9,15 @@ FLAGS=-g -std=gnu -fcheck=all -fstack-arrays
 
 # targets below
 
+objects=hah_test.o bauschinger_lib.o hah_lib.o\
+	bauschinger.o hah.o hah_yieldsurface.o
+
 
 ######################################################################
 # executables
 
-hah_test: hah_test.o bauschinger_lib.o hah_lib.o bauschinger.o hah.o hah_yieldsurface.o
-	$(CMP) $(FLAGS) hah_test.o bauschinger_lib.o hah_lib.o bauschinger.o hah.o hah_yieldsurface.o -o hah_test
+hah_test: $(objects) 
+	$(CMP) $(FLAGS) $(objects) -o hah_test
 
 ######################################################################
 # object files
@@ -43,4 +45,4 @@ hah_yieldsurface.o: hah_yieldsurface.f
 
 .PHONY : clean
 clean :
-	-rm *.o
+	-rm hah_test $(objects)
