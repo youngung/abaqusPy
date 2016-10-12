@@ -26,16 +26,15 @@ c     ntens       - Len of stress tensor
       real*8 yldc,yldp,stress,phi,dphi,d2phi
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
       real*8 phi_chi,dphi_chi,d2phi_chi
-      integer iyld_choice,i,j
-c**   iyld_choice=2             ! yld2000-2d
-c     dummy alphas for testing purpose
+      integer iyld_choice,i,j,imsg
+      imsg=0
 
       dphi_chi(:)=0d0
       d2phi_chi(:,:)=0d0
 
 c$$$      call read_alpha(
 c$$$     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
-      write(*,*) 'you are in hah.' 
+      call w_chr(imsg,'In hah.f')
 
       if (iyld_choice.eq.2) then
 c**      phi_chi, dphi_chi, d2phi_chi

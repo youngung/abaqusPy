@@ -8,7 +8,7 @@ FLAGS=-g -std=gnu ## -fcheck=all ## -fstack-arrays
 objects_hah_test=hah_test.o bauschinger_lib.o \
 	hah_lib.o bauschinger.o hah.o \
 	hah_yieldsurface.o yld.o vm.o cnv.o hill48.o yld2000_2d.o\
-	hah_update.o algb.o dev.o
+	hah_update.o algb.o dev.o lib_write.o is.o lib.o
 objects_yld_test=yld.o yld_test.o yld2000_2d.o \
 	hah.o hah_update.o dev.o algb.o cnv.o vm.o hill48.o \
 	hah_yieldsurface.o hah_lib.o
@@ -67,6 +67,15 @@ hah_lib.o: umats/yld/hah/hah_lib.f
 	$(CMP) $(FLAGS) -c umats/yld/hah/hah_lib.f
 hah_yieldsurface.o: umats/yld/hah/hah_yieldsurface.f
 	$(CMP) $(FLAGS) -c umats/yld/hah/hah_yieldsurface.f
+
+lib_write.o: umats/lib/lib_write.f
+	$(CMP) $(FLAGS) -c umats/lib/lib_write.f
+
+is.o: umats/lib/is.f
+	$(CMP) $(FLAGS) -c umats/lib/is.f
+
+lib.o: umats/lib/lib.f
+	$(CMP) $(FLAGS) -c umats/lib/lib.f
 
 
 .PHONY: all clean
