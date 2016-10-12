@@ -109,7 +109,7 @@ c***  Eqs 14&15 in Ref. [1]
       return
       end subroutine calc_bau
 c------------------------------------------------------------------------
-      include "bauschinger_lib.f"
+c$$$      include "bauschinger_lib.f"
 
 c$$$      subroutine bauschinger(k1,k2)
 c$$$      implicit none

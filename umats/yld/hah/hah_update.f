@@ -13,5 +13,12 @@ c     deeq          : incremental value of equivalent plastic strain
       dimension yldp_ns(0:1,nyldp)
       real*8 yldp_ns,deeq
       integer iyld_choice
+
+
+
+c**   to suppress -wnused-dummy-argument
+      write(*,*) deeq,iyld_choice,yldp_ns
+
+
       return
       end subroutine hah_update
