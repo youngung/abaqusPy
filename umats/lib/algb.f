@@ -77,8 +77,7 @@ c     intent(out) cij
  10   continue
       return
       end subroutine mult_array2
-c-----------------------------------------------------------------------
-
+c------------------------------------------------------------------------
 c     Apply incremental update on array
 c     ai = ai + d_ai
       subroutine add_array(ai,d_ai,ntens)

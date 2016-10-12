@@ -9,8 +9,9 @@ c     nyldp         : len of 2nd axis of yldp_ns
 c     deeq          : incremental value of equivalent plastic strain
 
       implicit none
+      integer nyldp
       dimension yldp_ns(0:1,nyldp)
       real*8 yldp_ns,deeq
-      integer iyld_choice,nyldp
+      integer iyld_choice
       return
       end subroutine hah_update

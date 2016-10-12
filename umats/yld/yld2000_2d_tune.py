@@ -106,10 +106,10 @@ def tune1(*yldc):
 
     x0=np.ones(9)
     x0[-1]=2
-    
+
     xport = scipy.optimize.fmin(
         func=func,x0=x0)
-    print xport
+    return xport
 
 def tune2(exponent=8,*yldc):
     import scipy.optimize
@@ -117,4 +117,4 @@ def tune2(exponent=8,*yldc):
     x0=np.ones(8)
     xport = scipy.optimize.fmin(
         func=func,x0=x0)
-    print xport
+    return xport

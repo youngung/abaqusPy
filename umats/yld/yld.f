@@ -30,7 +30,7 @@ c***  Define phi,dphi,d2phi
       elseif (iyld_law.eq.2) then
          call yld2000_2d(stress,phi,dphi,d2phi,yldc)
       elseif (iyld_law.eq.3) then ! yld2000-2d + HAH
-         call hah(0,stress,phi,dphi,d2phi,yldc,yldp,nyldc,nyldp,ntens)
+         call hah(2,stress,phi,dphi,d2phi,yldc,yldp,nyldc,nyldp,ntens)
       else
          write(*,*)'Unexpected iyld_law given'
          stop -1
