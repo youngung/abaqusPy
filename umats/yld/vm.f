@@ -141,9 +141,9 @@ c$$$      write(*,*)
 c-----------------------------------------------------------------------
 
 c$$$c     - On PAL
-      include "/home/younguj/repo/abaqusPy/umats/lib/dev.f"
-      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
-      include "/home/younguj/repo/abaqusPy/umats/lib/algb.f"
+c      include "/home/younguj/repo/abaqusPy/umats/lib/dev.f"
+c      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
+c      include "/home/younguj/repo/abaqusPy/umats/lib/algb.f"
 
 c     - on Mac
 c$$$      include "/Users/yj/repo/abaqusPy/umats/lib/dev.f"

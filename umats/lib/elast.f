@@ -77,7 +77,7 @@ c     intent(out): ddsdde
       real*8 e, nu, hard, syield, predictor
       real*8 mu, k              !! elastic constants (shear modulus and bulk modulus)
       integer i,j,ndi,ntens
-      real*8 mustar, lamstar, fact1,fact2,fact3
+      real*8 mustar, lamstar, fact1,fact2,fact3,c
       call emod_iso(e,nu,c)
       k=e/(three*(one-two*nu))
       mu=e/(  two*(one+    nu))

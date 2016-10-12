@@ -90,15 +90,15 @@ c------------------------------
 c     Not sure if below would be okay since it seems like a recursive call
 c     if that's the case, use yld2000_2d or vm_shell, hill48_shell directly
 c------------------------------
-c$$$      call yld(iyld_choice,yldp,yldc,nyldp,nyldc,sdp,
-c$$$     $     phi_lat,dphi_lat,d2phi_lat,ntens)
-c$$$
-c$$$c------------------------------
-c$$$c     Cross load hardening
-c$$$c------------------------------
-c$$$      sp(:) = 4d0*(1d0-gS)*so(:)
-c$$$      call yld(iyld_choice,yldp,yldc,nyldp,nyldc,sp,
-c$$$     $     phi_x,dphi_x,d2phi_x,ntens)
+      call yld(iyld_choice,yldp,yldc,nyldp,nyldc,sdp,
+     $     phi_lat,dphi_lat,d2phi_lat,ntens)
+
+c------------------------------
+c     Cross load hardening
+c------------------------------
+      sp(:) = 4d0*(1d0-gS)*so(:)
+      call yld(iyld_choice,yldp,yldc,nyldp,nyldc,sp,
+     $     phi_x,dphi_x,d2phi_x,ntens)
       phi_omega = (phi_chi**2+phi_x**2)**(0.5d0)
       return
       end subroutine hah_yieldsurface

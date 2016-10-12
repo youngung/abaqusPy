@@ -1,4 +1,4 @@
-      program test
+      program main
       call w_val(0,'str',-3.d-6)
       call w_val(0,'str',-3.d-5)
       call w_val(0,'str',-3.d-4)
@@ -19,4 +19,4 @@
       call w_val(0,'str',-3.d11)
       call w_val(0,'str',-3.d12)
       end program
-      include '/home/younguj/abaqusPy/umats/lib/lib.f'
+c      include '/home/younguj/abaqusPy/umats/lib/lib.f'
