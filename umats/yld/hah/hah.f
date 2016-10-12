@@ -98,7 +98,7 @@ c     local-latent
 c     local-cross
       dimension dphi_x(ntens),d2phi_x(ntens,ntens)
       real*8 phi_x,dphi_x,d2phi_x,phi_omega
-      
+
 
 cf2py intent(in) yldp,nylpd,stress,phi_chi,dphi_chi,d2phi_chi,ntens
 cf2py intent(out) phi,dphi,d2phi
@@ -134,8 +134,6 @@ c------------------------------
      $     phi_lat,dphi_lat,d2phi_lat,ntens)
 
 
-
-
 c------------------------------
 c     Cross load hardening
 c------------------------------
@@ -144,7 +142,6 @@ c------------------------------
      $     phi_x,dphi_x,d2phi_x,ntens)
 
       phi_omega = (phi_chi**2+phi_x**2)**(0.5d0)
-
 
       return
       end subroutine hah_yieldsurface
@@ -181,7 +178,6 @@ c              if 1, state variables -> yldp
       integer iopt,nyldp
       dimension yldp(nyldp)
       real*8 yldp
-
 
 c     local - microstructure deviator
       dimension emic(6)
