@@ -20,10 +20,10 @@ c     ntens       - Len of stress tensor
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
       real*8 phi_chi,dphi_chi,d2phi_chi
       integer iyld_choice
-c**   iyld_choice=2             ! yld2000-2d
+      iyld_choice=2             ! yld2000-2d
 
-      call read_alpha(
-     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
+c$$$      call read_alpha(
+c$$$     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
 
       call hah(iyld_choice,stress,phi,dphi,d2phi,yldc,yldp,nyldc,
      $     nyldp,ntens)
