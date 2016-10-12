@@ -223,20 +223,3 @@ c     yield surface constants
       return
       end subroutine hah_io
 c-----------------------------------------------------------------------
-      subroutine read_alpha(fn,alpha)
-      implicit none
-      character (len=*) fn
-      character (len=288) prosa
-      dimension alpha(9)
-      integer iunit,i,k
-      parameter(iunit=333)
-      real*8 alpha
-      open(iunit,file=fn,status='unknown')
-      read(iunit,'(a)') prosa
-      read(iunit,*) alpha(9)
-      read(iunit,'(i3)') k
-      read(iunit,'(a)') prosa
-      read(iunit,'(a)') prosa
-      read(iunit,*) (alpha(i),i=1,8)
-      close(iunit)
-      end subroutine read_alpha

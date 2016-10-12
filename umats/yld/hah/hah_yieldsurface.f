@@ -77,6 +77,7 @@ c     calculate yield surface
 
 
 c     decompose stress
+      write(*,*)'calling to hah_decompose'
       call hah_decompose(stress,ntens,emic,sc,so)
 
 c------------------------------
@@ -90,6 +91,7 @@ c------------------------------
 c     Not sure if below would be okay since it seems like a recursive call
 c     if that's the case, use yld2000_2d or vm_shell, hill48_shell directly
 c------------------------------
+      write(*,*)  'calling yld'
       call yld(iyld_choice,yldp,yldc,nyldp,nyldc,sdp,
      $     phi_lat,dphi_lat,d2phi_lat,ntens)
 
@@ -97,6 +99,7 @@ c------------------------------
 c     Cross load hardening
 c------------------------------
       sp(:) = 4d0*(1d0-gS)*so(:)
+      write(*,*)  'calling yld'
       call yld(iyld_choice,yldp,yldc,nyldp,nyldc,sp,
      $     phi_x,dphi_x,d2phi_x,ntens)
       phi_omega = (phi_chi**2+phi_x**2)**(0.5d0)

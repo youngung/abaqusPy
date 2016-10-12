@@ -13,7 +13,7 @@ c     nyldp       - Len of yldp
 c     ntens       - Len of stress tensor
       implicit none
       integer ntens,nyldc,nyldp
-      parameter(ntens=6,nyldc=20,nyldp=20)
+      parameter(ntens=6,nyldc=20,nyldp=30)
       dimension yldc(nyldc),yldp(nyldp),stress(ntens)
       dimension dphi(ntens),d2phi(ntens,ntens)
       real*8 yldc,yldp,stress,phi,dphi,d2phi
@@ -22,15 +22,22 @@ c     ntens       - Len of stress tensor
       integer iyld_choice
       iyld_choice=2             ! yld2000-2d
 
-c$$$      call read_alpha(
-c$$$     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
+      call read_alpha(
+     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
+
+      stress(:)=0d0
+      stress(1)=1d0
 
       call hah(iyld_choice,stress,phi,dphi,d2phi,yldc,yldp,nyldc,
      $     nyldp,ntens)
 
 
 c**   to suppress -wnused-dummy-argument
-      write(*,*) iyld_choice,yldp,d2phi_chi,
-     $     dphi_chi,phi_chi,d2phi_chi
+
+      write(*,*)'iyld_choice:',iyld_choice
+      write(*,*)'phi_chi:',phi_chi
+      
+c$$$      write(*,*) iyld_choice,yldp,d2phi_chi,
+c$$$     $     dphi_chi,phi_chi,d2phi_chi
 
       end program test
