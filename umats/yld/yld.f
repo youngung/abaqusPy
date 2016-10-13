@@ -23,8 +23,14 @@ c-----------------------------------------------------------------------
 cf2py intent(in) iyld_law,yldp,yldc,nyldp,nyldc,stress,ntens
 cf2py intent(out) phi,dphi,d2phi
 c***  Define phi,dphi,d2phi
+
+
+      call w_ival(0,'iyld_law',iyld_law)
+      call w_dim(0,stress,ntens,1d0,.false.)
+      call exit(-1)
+
       if (iyld_law.eq.0) then
-         call vm_shell(    stress,phi,dphi,d2phi)
+         call vm_shell(stress,phi,dphi,d2phi)
       elseif (iyld_law.eq.1) then
          call hill48_shell(stress,phi,dphi,d2phi,yldc)
       elseif (iyld_law.eq.2) then
@@ -33,8 +39,12 @@ c***  Define phi,dphi,d2phi
          call hah(2,stress,phi,dphi,d2phi,yldc,yldp,nyldc,nyldp,ntens)
       else
          write(*,*)'Unexpected iyld_law given'
-         stop -1
+         call exit(-1)
       endif
+
+
+      call w_val(0,'** phi in yld.f **',phi)
+
       end subroutine yld
 c-----------------------------------------------------------------------
       subroutine update_yldp(iyld_law,yldp_ns,nyldp,deeq)

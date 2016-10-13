@@ -21,7 +21,7 @@ c     yldc  : yield surface components
      $     dphis(2,ntens),yldc(9),alpha(8)
       real*8 cauchy,dpsi,d2psi,psi,c,x1,x2,a,
      $     phis,dphis,yldc,alpha,l2c
-      integer i
+ 0    integer i
 c-----------------------------------------------------------------------
 cf2py intent(in)  cauchy,yldc
 cf2py intent(out) psi,dpsi,d2psi
@@ -42,21 +42,21 @@ c$$$      call w_mdim(0,c(2,:,:),3,1d0)
       call calc_x(cauchy,c(2,:,:),x2) ! x2: linearly transformed stress (double prime)
       call hershey(x1,x2,a,phis(1),phis(2))
       psi = (0.5d0*(phis(1)+phis(2)))**(1d0/a)
-c$$$      call w_chr(0,'phis:')
-c$$$      call w_dim(0,phis,2,1d0,.true.)
-c$$$      call w_val(0,'psi :',psi)
-c$$$      call fill_line(0,'*',52)
+      call w_chr(0,'phis:')
+      call w_dim(0,phis,2,1d0,.true.)
+      call w_val(0,'psi :',psi)
+      call fill_line(0,'*',52)
       call calc_dphi_dcauchy(cauchy,c(1,:,:),a,dphis(1,:),0)
-c      call fill_line(0,'-',52)
+      call fill_line(0,'-',52)
       call calc_dphi_dcauchy(cauchy,c(2,:,:),a,dphis(2,:),1)
-c      call fill_line(0,'*',52)
+      call fill_line(0,'*',52)
       dpsi(:) = 0d0
       do 5 i=1,ntens
          dpsi(i) = 1d0/2d0/a * ((phis(1)+phis(2))/2d0)**(1d0/a-1d0) *
      $        (dphis(1,i) + dphis(2,i))
  5    continue
       dpsi(3)=dpsi(3)
-c      call w_dim(0,dpsi,3,1d0,.true.)
+      call w_dim(0,dpsi,3,1d0,.true.)
 
 c     2nd derivatives
       d2psi(:,:) = 0d0

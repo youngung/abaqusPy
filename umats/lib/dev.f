@@ -1,4 +1,15 @@
 c     Given stress s, calculate deviator and hydrostatic pressure
+c-----------------------------------------------------------------------
+      subroutine deviat(cauchy,ntens,sdev)
+      implicit none
+      integer ntens
+      dimension cauchy(ntens),sdev(ntens)
+      real*8 cauchy,sdev,p
+      if (ntens.eq.3) then
+         call deviat3(cauchy,sdev,p)
+      endif
+      end subroutine deviat
+c-----------------------------------------------------------------------
       subroutine deviat6(s,sd,p)
       implicit none
       real*8 s(6),sd(6),p
@@ -11,6 +22,7 @@ c     Given stress s, calculate deviator and hydrostatic pressure
       sd(6) = s(6)
       return
       end subroutine deviat6
+c-----------------------------------------------------------------------
 c     Given stress s3; plane stress condition with s(3) = 0.
       subroutine deviat3(s,sd,p)
       implicit none
@@ -21,6 +33,7 @@ c     Given stress s3; plane stress condition with s(3) = 0.
       sd(3) = s(3)              !! shear component s12
       return
       end subroutine deviat3
+c-----------------------------------------------------------------------
 c     Given array a33, find deviatoric part and its trace
       subroutine deviat33(a,ad,amean)
       implicit none
