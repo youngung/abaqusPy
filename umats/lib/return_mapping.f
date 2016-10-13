@@ -107,7 +107,7 @@ c-----------------------------------------------------------------------
          write(*,*)'ntens:',ntens
          write(*,*)'Err: unexpected dimension of tensor given',ntens
          call fill_line(0,'*',72)
-         stop -1
+         call exit(-1)
       endif
 
       empa=1d6

@@ -98,7 +98,7 @@ c***  Eqs 14&15 in Ref. [1]
          dgs(2) = e_ks(2) * (e_ks(3) * ys_iso/ys_hah - gs(2))
          dgs(3) = e_ks(5) * (e_ks(4) - gs(3))
       else
-         stop -1
+         call exit(-1)
       endif
       do 10 i=1,4
          gs_new(i) = gs(i) + dgs(i) * debar

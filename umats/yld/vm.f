@@ -116,7 +116,7 @@ c        Assuming plane-stress of (s11,s22,s12)
          call deviat3(stress,devi,shydro)
       else
          write(*,*) 'Unexpected case in VM'
-         stop -1
+         call exit(-1)
       endif
       do i=1,ntens
          flow(i) = dphi(i)

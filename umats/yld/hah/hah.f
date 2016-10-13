@@ -21,25 +21,40 @@ c     nyldp       - Len of yldp
 c     ntens       - Len of stress tensor
       implicit none
       integer ntens,nyldc,nyldp
-      dimension yldc(nyldc),yldp(nyldp),cauchy(ntens)
+      dimension yldc(nyldc),yldp(nyldp),cauchy(ntens),cauchy_ref(ntens),
+     $     cauchy_test(ntens),sdev(ntens),sdev_test(ntens),
+     $     sdev_ref(ntens)
       dimension dphi(ntens),d2phi(ntens,ntens)
-      real*8 yldc,yldp,cauchy,phi,dphi,d2phi
+      real*8 yldc,yldp,cauchy,phi,dphi,d2phi,cauchy_ref,cauchy_test,
+     $     sdev,sdev_test,sdev_ref
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
       real*8 phi_chi,dphi_chi,d2phi_chi
-      integer iyld_choice,i,j,imsg
+      integer iyld_choice,i,j
+
+      real*8 ref,q,hydro
+c     local controls
+      integer imsg
+      logical idiaw
+      idiaw=.false.
       imsg=0
+
+c     HAH yield surface depends only on the deviatoric stress
+      call deviat(ntens,cauchy,sdev,hydro)
 
       dphi_chi(:)=0d0
       d2phi_chi(:,:)=0d0
 
-      call w_chr(imsg,'cauchy stress passed to subroutine hah')
-      call w_dim(imsg,cauchy,ntens,1d0,.false.)
-c      call exit(-1)
-
+      if (idiaw) then
+         call w_chr(imsg,'cauchy stress passed to subroutine hah')
+         call w_dim(imsg,cauchy,ntens,1d0,.false.)
+c        call exit(-1)
+      endif
 c$$$      call read_alpha(
 c$$$     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
-      call w_chr(imsg,'In hah.f')
-      call w_ival(imsg,'iyld_choice:',iyld_choice)
+      if (idiaw) then
+         call w_chr(imsg,'In hah.f')
+         call w_ival(imsg,'iyld_choice:',iyld_choice)
+      endif
 
       if (iyld_choice.eq.2) then ! plane-stress condition
          if (ntens.ne.3) then
@@ -48,19 +63,48 @@ c$$$     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
             call exit(-1)
          endif
 c**      phi_chi, dphi_chi, d2phi_chi
+
+         cauchy_test(:)=0d0
+         cauchy_test(1)=1d0
+c        cauchy_test(2)=1d0
+         call yld2000_2d(cauchy_test,ref,dphi_chi,d2phi_chi,yldc)
          call yld2000_2d(cauchy,phi_chi,dphi_chi,d2phi_chi,yldc)
+
       else
          write(*,*) 'unexpected iyld_choice'
-         stop -1
+         call exit(-1)
       endif
 
-      call w_chr(imsg,'hah.f')
-      call w_chr(imsg,'cauchy')
-      call w_dim(imsg,cauchy,ntens,1.,.false.)
-      call w_chr(imsg,'Just before hah_yieldsurface')
-      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,cauchy,
-     $     phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
-      call w_chr(imsg,'right after hah_yieldsurface')
+      if (idiaw) then
+         call w_chr(imsg,'hah.f')
+         call w_chr(imsg,'cauchy')
+         call w_dim(imsg,cauchy,ntens,1.,.false.)
+         call w_chr(imsg,'Just before hah_yieldsurface')
+      endif
+
+c$$$      !call deviat(cauchy_test,ntens,sdev_test)
+c$$$      call deviat(ntens,cauchy_test,ntens,sdev_test)
+c$$$
+c$$$c     idiaw=.true.
+c$$$
+c$$$      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
+c$$$     $     sdev_test,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
+c$$$
+c$$$      q   = yldp(9)
+c$$$      ref = (1d0/phi)**(1d0/q)
+c$$$      if (idiaw) then
+c$$$         call w_val(imsg,'ref:',ref)
+c$$$      endif
+c$$$      do i=1,ntens
+c$$$         sdev_ref(i) = sdev(i)/ref
+c$$$      enddo
+c$$$      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
+c$$$     $     sdev_ref,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
+c$$$      if (idiaw) then
+c$$$         call w_val(imsg,'phi:',phi)
+c$$$         call w_chr(imsg,'right after hah_yieldsurface')
+c$$$      endif
+
 c      call exit(-1)
       return
       end subroutine hah

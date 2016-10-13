@@ -8,9 +8,11 @@ c     yldp      : state variables associated with yield function
 c     yldc      : constants for yield function
 c     nyldp     : Len of yldp
 c     nyldc     : Len of yldc
+c     stress    : stress tensor (cauchy stress is generally expected)
 c     phi       : yield surface
 c     dphi      : 1st derivative of yield surface w.r.t. stress
 c     d2phi     : 2nd derivative of yield surface w.r.t. stress
+c     ntens     : Len of stress
 c-----------------------------------------------------------------------
       implicit none
       integer iyld_law,nyldp,nyldc,ntens
@@ -19,13 +21,24 @@ c-----------------------------------------------------------------------
 c***  Local variables for better readibility
       dimension stress(ntens)
       real*8 stress
+c***  Local - control
+      integer imsg
+      logical idiaw
 c-----------------------------------------------------------------------
 cf2py intent(in) iyld_law,yldp,yldc,nyldp,nyldc,stress,ntens
 cf2py intent(out) phi,dphi,d2phi
+cf2py depend(nyldp) yldp
+cf2py depend(nyldc) yldc
+cf2py depend(ntens) stress,dphi,d2phi
 c***  Define phi,dphi,d2phi
 
-      call w_ival(0,'iyld_law',iyld_law)
-      call w_dim(0,stress,ntens,1d0,.false.)
+      idiaw=.false.
+      imsg=0
+
+      if (idiaw) then
+         call w_ival(imsg,'iyld_law',iyld_law)
+         call w_dim(imsg,stress,ntens,1d0,.false.)
+      endif
 c      call exit(-1)
 
       if (iyld_law.eq.0) then
@@ -41,7 +54,7 @@ c      call exit(-1)
          call exit(-1)
       endif
 
-      call w_val(0,'** phi in yld.f **',phi)
+      if (idiaw) call w_val(0,'** phi in yld.f **',phi)
 
       end subroutine yld
 c-----------------------------------------------------------------------
@@ -78,7 +91,7 @@ c        generic yld2000-2d + HAH
          call hah_update(0,yldp_ns,nyldp,deeq)
       else
          write(*,*)'Unexpected iyld_law given in update_yldp'
-         stop -1
+         call exit(-1)
       endif
       return
       end subroutine update_yldp

@@ -1,13 +1,36 @@
 c-----------------------------------------------------------------------
 c     Yld2000-2d model for the case of planar stress condition where
 c     sig_xx,sig_yy,sig_xy are non-zeros.
+
+c     Ref : Barlat et al., IJP 19, 2003, p1297-1319
 c
 c     Youngung Jeong, Clemson University
 c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
       subroutine yld2000_2d(cauchy,psi,dpsi,d2psi,yldc)
+      implicit none
 c     Arguments
 c     cauchy: cauchy stress
+c     psi   : yield surface
+c     dpsi  : yield surface 1st derivative w.r.t cauchy stress
+c     d2psi : 2nd derivative - (not included yet)
+c     yldc  : yield surface components
+      integer ntens
+      parameter(ntens=3)
+      dimension cauchy(ntens),sdev(ntens),dpsi(ntens),d2psi(ntens,ntens)
+     $     ,yldc(9)
+      real*8 cauchy,psi,dpsi,d2psi,yldc,hydro
+c     locals controlling
+      integer imsg
+      logical idiaw
+      call deviat(ntens,cauchy,sdev,hydro)
+      call yld2000_2d_dev(sdev,psi,dpsi,d2psi,yldc)
+      return
+      end subroutine yld2000_2d
+c-----------------------------------------------------------------------
+      subroutine yld2000_2d_dev(sdev,psi,dpsi,d2psi,yldc)
+c     Arguments
+c     sdev  : deviatoric stress
 c     psi   : yield surface
 c     dpsi  : yield surface 1st derivative w.r.t cauchy stress
 c     d2psi : 2nd derivative - (not included yet)
@@ -15,54 +38,69 @@ c     yldc  : yield surface components
       implicit none
       integer ntens
       parameter(ntens=3)
-      dimension cauchy(ntens),dpsi(ntens),d2psi(ntens,ntens),
-     $     c(2,ntens,ntens),x1(ntens),x2(ntens),
-     $     l2c(2,ntens,ntens),phis(2),
-     $     dphis(2,ntens),yldc(9),alpha(8)
-      real*8 cauchy,dpsi,d2psi,psi,c,x1,x2,a,
-     $     phis,dphis,yldc,alpha,l2c
+      dimension sdev(ntens),dpsi(ntens),d2psi(ntens,ntens),
+     $     c(2,ntens,ntens),x1(ntens),x2(ntens),l2c(2,ntens,ntens),
+     $     phis(2),dphis(2,ntens),yldc(9),alpha(8)
+      real*8 sdev,psi,dpsi,d2psi,c,x1,x2,a,phis,dphis,yldc,alpha,l2c
       integer i
+c     locals controlling
+      integer imsg
+      logical idiaw
 c-----------------------------------------------------------------------
 cf2py intent(in)  cauchy,yldc
 cf2py intent(out) psi,dpsi,d2psi
 c-----------------------------------------------------------------------
+      imsg = 0
+      idiaw = .false.
+
       alpha(:) = yldc(1:8)
       a        = yldc(9)        ! yield surface exponent
-c$$$      call w_chr(0,'alpha')
-c$$$      call w_dim(0,alpha,8,1d0,.true.)
-c$$$      call w_val(0,'exponent:',a)
+      if (idiaw) then
+         call w_chr(imsg,'alpha')
+         call w_dim(imsg,alpha,8,1d0,.true.)
+         call w_val(imsg,'exponent:',a)
+      endif
       dphis(:,:)=0d0
       call alpha2lc(alpha,c,l2c)
-c$$$      call fill_line(0,'*',52)
-c$$$      call w_chr(0,'c1')
-c$$$      call w_mdim(0,c(1,:,:),3,1d0)
-c$$$      call w_chr(0,'c2')
-c$$$      call w_mdim(0,c(2,:,:),3,1d0)
-      call calc_x(cauchy,c(1,:,:),x1) ! x1: linearly transformed stress (prime)
-      call calc_x(cauchy,c(2,:,:),x2) ! x2: linearly transformed stress (double prime)
+      if (idiaw) then
+         call fill_line(imsg,'*',52)
+         call w_chr(imsg,'c1')
+         call w_mdim(imsg,c(1,:,:),3,1d0)
+         call w_chr(imsg,'c2')
+         call w_mdim(imsg,c(2,:,:),3,1d0)
+      endif
+
+      call calc_x_dev(sdev,c(1,:,:),x1) ! x1: linearly transformed stress (prime)
+      call calc_x_dev(sdev,c(2,:,:),x2) ! x2: linearly transformed stress (double prime)
+c$$$      call calc_x(cauchy,c(1,:,:),x1) ! x1: linearly transformed stress (prime)
+c$$$      call calc_x(cauchy,c(2,:,:),x2) ! x2: linearly transformed stress (double prime)
       call hershey(x1,x2,a,phis(1),phis(2))
       psi = (0.5d0*(phis(1)+phis(2)))**(1d0/a)
-      call w_chr(0,'phis:')
-      call w_dim(0,phis,2,1d0,.true.)
-      call w_val(0,'psi :',psi)
-      call fill_line(0,'*',52)
-      call calc_dphi_dcauchy(cauchy,c(1,:,:),a,dphis(1,:),0)
-      call fill_line(0,'-',52)
-      call calc_dphi_dcauchy(cauchy,c(2,:,:),a,dphis(2,:),1)
-      call fill_line(0,'*',52)
+      if (idiaw) then
+         call w_chr(0,'phis:')
+         call w_dim(0,phis,2,1d0,.true.)
+         call w_val(0,'psi :',psi)
+         call fill_line(0,'*',52)
+      endif
+c$$$      call calc_dphi_dcauchy(cauchy,c(1,:,:),a,dphis(1,:),0)
+      call calc_dphi_dev(sdev,c(1,:,:),a,dphis(1,:),0)
+      if (idiaw) call fill_line(0,'-',52)
+c$$$      call calc_dphi_dcauchy(cauchy,c(2,:,:),a,dphis(2,:),1)
+      call calc_dphi_dev(sdev,c(2,:,:),a,dphis(2,:),1)
+      if (idiaw) call fill_line(0,'*',52)
       dpsi(:) = 0d0
       do 5 i=1,ntens
          dpsi(i) = 1d0/2d0/a * ((phis(1)+phis(2))/2d0)**(1d0/a-1d0) *
      $        (dphis(1,i) + dphis(2,i))
  5    continue
       dpsi(3)=dpsi(3)
-      call w_dim(0,dpsi,3,1d0,.true.)
+      if (idiaw) call w_dim(0,dpsi,3,1d0,.true.)
 
 c     2nd derivatives
       d2psi(:,:) = 0d0
 
       return
-      end subroutine yld2000_2d
+      end subroutine yld2000_2d_dev
 c-----------------------------------------------------------------------
       subroutine calc_dphi_dcauchy(cauchy,c,a,dphi,iopt)
 c     Arguments
@@ -72,12 +110,27 @@ c     a     : yield exponent
 c     dphi  : dphi  (dphi` or dphi``)
 c     iopt  : iopt (0: dphi`; 1: dphi``)
       implicit none
-      dimension cauchy(3),c(3,3),dphi(3),x(3),xp(2),dphi_dp(2),
+      dimension cauchy(3),c(3,3),dphi(3),sdev(3)
+      real*8 cauchy,c,a,dphi,sdev
+      integer iopt
+      call calc_dphi_dev(sdev,c,a,dphi,iopt)
+      return
+      end subroutine calc_dphi_dcauchy
+c-----------------------------------------------------------------------
+      subroutine calc_dphi_dev(sdev,c,a,dphi,iopt)
+c     Arguments
+c     sdev  : deviatoric stress
+c     c     : c matrix
+c     a     : yield exponent
+c     dphi  : dphi  (dphi` or dphi``)
+c     iopt  : iopt (0: dphi`; 1: dphi``)
+      implicit none
+      dimension sdev(3),c(3,3),dphi(3),x(3),xp(2),dphi_dp(2),
      $     dp_dx(2,3),dphi_dx(3),l(3,3)
-      real*8 cauchy,c,delta,x,dphi,xp,dp_dx,dphi_dp,a,dphi_dx,l
+      real*8 c,delta,x,dphi,xp,dp_dx,dphi_dp,a,dphi_dx,l,sdev
       integer iopt,i,j
 
-      call calc_x(cauchy,c,x)
+      call calc_x_dev(sdev,c,x)
       call calc_delta(x,delta)
       call calc_princ(x,xp)
       dphi_dx(:) = 0d0
@@ -118,7 +171,7 @@ c$$$      call w_mdim(0,l,3,1d0)
 c$$$      call w_chr(0,'dphi')
 c$$$      call w_dim(0,dphi,3,1d0,.true.)
       return
-      end subroutine calc_dphi_dcauchy
+      end subroutine calc_dphi_dev
 c-----------------------------------------------------------------------
       subroutine calc_a15(x,delta,dp_dx)
 c     Arguments
@@ -239,9 +292,22 @@ c     x      : x tensor
       dimension cauchy(3),c(3,3),x(3),sdev(3)
       real*8 cauchy,c,x,sdev
       call cauchy2sdev(cauchy,sdev)
-      call mult_array(c,sdev,3,x)
+      call calc_x_dev(sdev,c,x)
       return
       end subroutine calc_x
+c-----------------------------------------------------------------------
+c     Convert deviatoric stress to linearly transformed X (eq 14 )
+      subroutine calc_x_dev(sdev,c,x)
+c     Arguments
+c     sdev : deviatoric stress
+c     c    : c matrix
+c     x    : x tensor
+      implicit none
+      dimension sdev(3),c(3,3),x(3)
+      real*8 c,x,sdev
+      call mult_array(c,sdev,3,x)
+      return
+      end subroutine calc_x_dev
 c-----------------------------------------------------------------------
 c$$$      program test
 c$$$      implicit none

@@ -18,31 +18,37 @@ c     tensor_ortho : orthogonal component of <tensor>
       dimension emic(ntens)
       real*8 tensor,tensor_colin,tensor_ortho,dot_prod,H,dd,emic
       integer i,imsg
+      logical idiaw
 cf2py intent(in) tensor, ntens, emic
 cf2py intent(out) tensor_colin, tensor_ortho
 
+      idiaw=.false.
       imsg = 0
-      call w_empty_lines(imsg,2)
-      call fill_line(imsg,'#',52)
-      call w_chr(imsg,'Enter HAH_DEDCOMPOSE')
-      call w_chr(imsg,'Given <tensor>')
-      call w_dim(imsg,tensor,ntens,1d0,.false.)
-      call w_chr(imsg,'Given microstructure deviator <emic>')
-      call w_dim(imsg,emic,ntens,1d0,.false.)
+      if (idiaw) then
+         call w_empty_lines(imsg,2)
+         call fill_line(imsg,'#',52)
+         call w_chr(imsg,'Enter HAH_DEDCOMPOSE')
+         call w_chr(imsg,'Given <tensor>')
+         call w_dim(imsg,tensor,ntens,1d0,.false.)
+         call w_chr(imsg,'Given microstructure deviator <emic>')
+         call w_dim(imsg,emic,ntens,1d0,.false.)
+      endif
 
       H = 8d0/3d0
 
       dd = dot_prod(tensor,emic,ntens)
 
-      call w_val(imsg,'dd',dd)
+      if (idiaw) call w_val(imsg,'dd',dd)
 
 c     Eqs 4&5 in Ref [1]
       tensor_colin(:) = H * dd * emic(:)
       tensor_ortho(:) = tensor(:) - tensor_colin(:)
 
-      call w_chr(imsg,'Exit HAH_DEDCOMPOSE')
-      call fill_line(imsg,'#',52)
-      call w_empty_lines(imsg,1)
+      if (idiaw) then
+         call w_chr(imsg,'Exit HAH_DEDCOMPOSE')
+         call fill_line(imsg,'#',52)
+         call w_empty_lines(imsg,1)
+      endif
 
       return
       end subroutine hah_decompose
@@ -115,25 +121,6 @@ c     n   : Len of a and b
  10   continue
       end function dot_prod
 c------------------------------------------------------------------------
-c$$$      subroutine deviat(s,sd,sm)
-c$$$c     Arguments
-c$$$c     s : tensor
-c$$$c     sd: deviator of <s>
-c$$$c     sm: hydrostatic pressure
-c$$$      implicit none
-c$$$      real*8 s(6),sd(6),sm
-c$$$cf2py intent(in) s
-c$$$cf2py intent(out) sd,sm
-c$$$      sm = (s(1)+s(2)+s(3))/3.
-c$$$      sd(1) = s(1)-sm
-c$$$      sd(2) = s(2)-sm
-c$$$      sd(3) = s(3)-sm
-c$$$      sd(4) = s(4)
-c$$$      sd(5) = s(5)
-c$$$      sd(6) = s(6)
-c$$$      return
-c$$$      end subroutine deviat
-c------------------------------------------------------------------------
       subroutine pi_proj(sd,s1,s2)
 c     Arguments
 c     sd : Deviatoric stress
@@ -149,54 +136,35 @@ cf2py intent(out) s1,s2
       end subroutine pi_proj
 c-----------------------------------------------------------------------
 c     subroutine that converts back and forth
-      subroutine hah_io(yldp,nyldp,
-
-     $     eeq,
-
-     $     ntens,
-
-     $     emic,
-
-     $     gk,e_ks,f_ks,
-
-     $     gL,ekL,eL,
-
-     $     gS,c_ks,ss,
-
-     $     iopt)
+c     Used to convert/restore yldp of HAH case.
+c     When yldp is used for HAH model, this subroutine must be used.
+      subroutine hah_io(iopt,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
+     $     gL,ekL,eL,gS,c_ks,ss)
 c     Arguments
-c     yldp  : yield surface state variables
-c     nyldp : Len of yldp
-c     eeq   : equivalent plastic strain
-c     emic  : microstructure deviator
-c     gk    : gk parameters
-c     gL    : gL
-c     ekL   : kL
-c     eL    : L parameters
-c     gS    : gS parameter
-c     c_ks  : ks parameter
-c     ss    : S parameter
 c     iopt  :  if 0, state variables <- yldp
 c              if 1, state variables -> yldp
+c     nyldp : Len of yldp
+c     ntens : Len of stress tensor and <emic>
+c     yldp  : yield surface state variables
+c     emic  : microstructure deviator
+c     eeq   : equivalent plastic strain
+c     ref   : yield surface reference sizen
+c             used to renormalized yield surface
+c     gk    : gk parameters
+c     e_ks  : ks parameters for Bauschinger effect
+c     f_ks  : f1 and f2 parameters for Bauschinger effect
+c     gL    : gL latent hardening parameter
+c     ekL   : kL latent hardening parameter
+c     eL    : L  latent hardening parameter
+c     gS    : gS parameter for cross hardening
+c     c_ks  : ks parameter for cross hardening
+c     ss    : S  parameter for cross hardening
       implicit none
-      integer iopt,nyldp
-      dimension yldp(nyldp)
-      real*8 yldp
-
-c     local - microstructure deviator
-      integer ntens
-      dimension emic(ntens)
-      real*8 emic
-c     local - Bauschinger parameters
-      dimension gk(4)
-      dimension e_ks(5)
-      dimension f_ks(2)
-      real*8 gk,e_ks,f_ks,eeq
-c     local - Latent hardening parameters
-      real*8 gL,ekL,eL
-c     local - cross hardening parameters
-      real*8 gS,c_ks,ss
-
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c**   Arguments passed
+      integer iopt,nyldp,ntens
+      dimension yldp(nyldp),emic(ntens),gk(4),e_ks(5),f_ks(2)
+      real*8 yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss
 c     local
       integer i
 
@@ -205,47 +173,51 @@ c     local
 c     HAH yield surface/state variables (and a few constants if any)
 c***  equivalent plastic strain (cumulative)
          eeq     = yldp(1)
+c***  reference size
+         ref     = yldp(2)
+
 c***  microstructure deviator
          do i=1,ntens
-            emic(i) = yldp(i+1)
+            emic(i) = yldp(i+2)
          enddo
 c***  Bauschinger effect
-         gk(:)   = yldp(ntens+1:ntens+4)   ! state variables
-         e_ks(:) = yldp(ntens+4:ntens+8)  ! k1,k2,k3,k4,k5 constants
+         gk(:)   = yldp(ntens+2:ntens+5)   ! state variables
+         e_ks(:) = yldp(ntens+5:ntens+9)  ! k1,k2,k3,k4,k5 constants
          do i=1,2
-            f_ks(i) = yldp(ntens+8+i) ! f_k state parameters
+            f_ks(i) = yldp(ntens+9+i) ! f_k state parameters
          enddo
 c***  Latent hardening
-         gL      = yldp(ntens+11)
-         ekL     = yldp(ntens+12)
-         eL      = yldp(ntens+13)
+         gL      = yldp(ntens+12)
+         ekL     = yldp(ntens+13)
+         eL      = yldp(ntens+14)
 c***  cross hardening
-         gS      = yldp(ntens+14)
-         c_ks    = yldp(ntens+15)
-         ss      = yldp(ntens+16)
+         gS      = yldp(ntens+15)
+         c_ks    = yldp(ntens+16)
+         ss      = yldp(ntens+17)
       elseif (iopt.eq.1) then   ! state variables -> yldp
 
 c     HAH yield surface/state variables (and a few constants if any)
 c***  equivalent plastic strain (cumulative)
          yldp(1)   = eeq
+         yldp(2)   = ref
 c***  microstructure deviator
          do i=1,ntens
-            yldp(i+1) = emic(i)
+            yldp(i+2) = emic(i)
          enddo
 c***  Bauschinger effect
-         yldp(ntens+1:ntens+4) = gk(:)      ! state variables
-         yldp(ntens+4:ntens+8) = e_ks(:)  ! k1,k2,k3,k4,k5 constants
+         yldp(ntens+2:ntens+5) = gk(:)      ! state variables
+         yldp(ntens+5:ntens+9) = e_ks(:)  ! k1,k2,k3,k4,k5 constants
          do i=1,2
-            yldp(ntens+8+i) = f_ks(i) ! f_k state parameters
+            yldp(ntens+9+i) = f_ks(i) ! f_k state parameters
          enddo
 c***  Latent hardening
-         yldp(ntens+11) = gL
-         yldp(ntens+12) = ekL
-         yldp(ntens+13) = eL
+         yldp(ntens+12) = gL
+         yldp(ntens+13) = ekL
+         yldp(ntens+14) = eL
 c***  cross hardening
-         yldp(ntens+14) = gS
-         yldp(ntens+15) = c_ks
-         yldp(ntens+16) = ss
+         yldp(ntens+15) = gS
+         yldp(ntens+16) = c_ks
+         yldp(ntens+17) = ss
       endif
 
 c     yield surface constants

@@ -1,6 +1,35 @@
 c     Given stress s, calculate deviator and hydrostatic pressure
 c-----------------------------------------------------------------------
-      subroutine deviat(cauchy,ntens,sdev)
+      subroutine deviat_inv(ntens,cauchy,sdev,p)
+c     Arguments
+c     ntens  : Len of cauchy, sdev
+c     cauchy : cauchy stress
+c     sdev   : deviatoric stress
+c     p      : hydrostatic pressure
+      implicit none
+      integer ntens
+      dimension cauchy(ntens),sdev(ntens)
+      real*8 cauchy,sdev,p
+cf2py intent(in) ntens, sdev,p
+cf2py intent(out) cauchy
+cf2py depend(ntens) sdev,cauchy
+      if (ntens.eq.3) then
+         cauchy(1) = sdev(1) + p
+         cauchy(2) = sdev(2) + p
+         cauchy(3) = sdev(3)
+      else
+         write(*,*) 'deviat_invert is not ready for this dimension'
+         call exit(-1)
+      endif
+      return
+      end subroutine deviat_inv
+c-----------------------------------------------------------------------
+      subroutine deviat(ntens,cauchy,sdev,p)
+c     Arguments
+c     ntens   : Len of <cauchy>, <sdev>
+c     cauchy  : cauchy stress
+c     sdev    : deviatoric stress
+c     p       : hydrostatic pressure
       implicit none
       integer ntens
       dimension cauchy(ntens),sdev(ntens)
@@ -25,6 +54,10 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
 c     Given stress s3; plane stress condition with s(3) = 0.
       subroutine deviat3(s,sd,p)
+c     Arguments
+c     s   : cauchy stress under plane stress space (s11,s22,s12 with s33=0)
+c     sd  : stress deviator
+c     p   : hydrostatic pressure
       implicit none
       real*8 s(3),sd(3),p
       p = (s(1)+s(2))/3.

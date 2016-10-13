@@ -3,24 +3,24 @@
 CMP=gfortran
 FLAGS=-g -std=gnu -fstack-arrays ## -fcheck=all
 
-
 objects_hah_test=hah_test.o bauschinger_lib.o \
 	hah_lib.o bauschinger.o hah.o \
 	hah_yieldsurface.o yld.o vm.o cnv.o hill48.o yld2000_2d.o\
-	hah_update.o algb.o dev.o lib_write.o is.o lib.o yld_lib.o
+	hah_update.o algb.o dev.o lib_write.o is.o lib.o yld_lib.o\
+	latent.o
 objects_yld_test=yld.o yld_test.o yld2000_2d.o bauschinger.o \
 	hah.o hah_update.o dev.o algb.o cnv.o vm.o hill48.o \
 	hah_yieldsurface.o hah_lib.o lib_write.o is.o lib.o
 
 ######################################################################
-# executables
-
+# Fortran executables
 hah_test: $(objects_hah_test)
 	$(CMP) $(FLAGS) $(objects_hah_test) -o hah_test
 
 yld_test: $(objects_yld_test)
 	$(CMP) $(FLAGS) $(objects_yld_test) -o yld_test
 ######################################################################
+
 
 yld_test.o: umats/yld/yld_test.f
 	$(CMP) $(FLAGS) -c umats/yld/yld_test.f
@@ -58,8 +58,10 @@ is.o: umats/lib/is.f
 	$(CMP) $(FLAGS) -c umats/lib/is.f
 lib.o: umats/lib/lib.f
 	$(CMP) $(FLAGS) -c umats/lib/lib.f
-yld_lib.o : umats/yld/yld_lib.f
+yld_lib.o: umats/yld/yld_lib.f
 	$(CMP) $(FLAGS) -c umats/yld/yld_lib.f
+latent.o: umats/yld/hah/latent.f
+	$(CMP) $(FLAGS) -c umats/yld/hah/latent.f
 
 
 .PHONY: all clean

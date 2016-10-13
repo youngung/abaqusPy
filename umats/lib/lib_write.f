@@ -63,7 +63,7 @@ c     val: the value
          get_fmt="e12.4,x"
       else
          write(*,*) 'Err: Unexpected case of max value'
-         stop -1
+         call exit(-1)
       endif
       return
       end function get_fmt
@@ -307,7 +307,7 @@ c-----------------------------------------------------------------------
       call fill_line(iunit,'*',52)
       call w_chr(iunit, '--  Reached safely at debugging the point  --')
       call fill_line(iunit,'*',52)
-      stop -1
+      call exit(-1)
       end subroutine
 c-----------------------------------------------------------------------
 

@@ -9,11 +9,11 @@ c     to test various yield functions
      $     dphil(6),d2phil(6,6),dphi33m(3,3),dphi33l(3,3),
      $     dphi33ld(3,3),yldp_hill(6),yldp_yld2000(9),aux33(3,3),
      $     aux3(3),bux3(3),rv
-      pi=4.d0*datan(1.d0)
+      pi=4d0*datan(1d0)
 
 c     Uniaxial tensin stress state referred in the lab axes
-      s6lab(:)=0.
-      s6lab(1)=1.d0
+      s6lab(:)=0d0
+      s6lab(1)=1d0
       call voigt2(s6lab,s33lab)
 
 c-----------------------------------------------------------------------
