@@ -7,24 +7,26 @@ c
 c     Youngung Jeong, Clemson University
 c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
-      subroutine yld2000_2d(cauchy,psi,dpsi,d2psi,yldc)
+      subroutine yld2000_2d(cauchy,phi,dphi,d2phi,yldc)
       implicit none
 c     Arguments
 c     cauchy: cauchy stress
-c     psi   : yield surface
-c     dpsi  : yield surface 1st derivative w.r.t cauchy stress
-c     d2psi : 2nd derivative - (not included yet)
+c     phi   : yield surface
+c     dphi  : yield surface 1st derivative w.r.t cauchy stress
+c     d2phi : 2nd derivative - (not included yet)
 c     yldc  : yield surface components
       integer ntens
       parameter(ntens=3)
-      dimension cauchy(ntens),sdev(ntens),dpsi(ntens),d2psi(ntens,ntens)
+      dimension cauchy(ntens),sdev(ntens),dphi(ntens),d2phi(ntens,ntens)
      $     ,yldc(9)
-      real*8 cauchy,psi,dpsi,d2psi,yldc,hydro
+      real*8 cauchy,phi,dphi,d2phi,yldc,hydro,sdev
 c     locals controlling
       integer imsg
       logical idiaw
+cf2py intent(in)  cauchy,yldc
+cf2py intent(out) phi,dphi,d2phi
       call deviat(ntens,cauchy,sdev,hydro)
-      call yld2000_2d_dev(sdev,psi,dpsi,d2psi,yldc)
+ 1    call yld2000_2d_dev(sdev,phi,dphi,d2phi,yldc)
       return
       end subroutine yld2000_2d
 c-----------------------------------------------------------------------
@@ -46,13 +48,10 @@ c     yldc  : yield surface components
 c     locals controlling
       integer imsg
       logical idiaw
-c-----------------------------------------------------------------------
-cf2py intent(in)  cauchy,yldc
+cf2py intent(in)  sdev,yldc
 cf2py intent(out) psi,dpsi,d2psi
-c-----------------------------------------------------------------------
       imsg = 0
       idiaw = .false.
-
       alpha(:) = yldc(1:8)
       a        = yldc(9)        ! yield surface exponent
       if (idiaw) then
@@ -69,11 +68,8 @@ c-----------------------------------------------------------------------
          call w_chr(imsg,'c2')
          call w_mdim(imsg,c(2,:,:),3,1d0)
       endif
-
       call calc_x_dev(sdev,c(1,:,:),x1) ! x1: linearly transformed stress (prime)
       call calc_x_dev(sdev,c(2,:,:),x2) ! x2: linearly transformed stress (double prime)
-c$$$      call calc_x(cauchy,c(1,:,:),x1) ! x1: linearly transformed stress (prime)
-c$$$      call calc_x(cauchy,c(2,:,:),x2) ! x2: linearly transformed stress (double prime)
       call hershey(x1,x2,a,phis(1),phis(2))
       psi = (0.5d0*(phis(1)+phis(2)))**(1d0/a)
       if (idiaw) then
@@ -82,10 +78,8 @@ c$$$      call calc_x(cauchy,c(2,:,:),x2) ! x2: linearly transformed stress (dou
          call w_val(0,'psi :',psi)
          call fill_line(0,'*',52)
       endif
-c$$$      call calc_dphi_dcauchy(cauchy,c(1,:,:),a,dphis(1,:),0)
       call calc_dphi_dev(sdev,c(1,:,:),a,dphis(1,:),0)
       if (idiaw) call fill_line(0,'-',52)
-c$$$      call calc_dphi_dcauchy(cauchy,c(2,:,:),a,dphis(2,:),1)
       call calc_dphi_dev(sdev,c(2,:,:),a,dphis(2,:),1)
       if (idiaw) call fill_line(0,'*',52)
       dpsi(:) = 0d0

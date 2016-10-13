@@ -8,7 +8,7 @@ objects_hah_test=hah_test.o bauschinger_lib.o \
 	hah_yieldsurface.o yld.o vm.o cnv.o hill48.o yld2000_2d.o\
 	hah_update.o algb.o dev.o lib_write.o is.o lib.o yld_lib.o\
 	latent.o
-objects_yld_test=yld.o yld_test.o yld2000_2d.o bauschinger.o \
+objects_yld_test=yld.o yld_uten_test.o yld2000_2d.o bauschinger.o \
 	hah.o hah_update.o dev.o algb.o cnv.o vm.o hill48.o \
 	hah_yieldsurface.o hah_lib.o lib_write.o is.o lib.o
 
@@ -22,8 +22,8 @@ yld_test: $(objects_yld_test)
 ######################################################################
 
 
-yld_test.o: umats/yld/yld_test.f
-	$(CMP) $(FLAGS) -c umats/yld/yld_test.f
+yld_uten_test.o: umats/yld/test.f
+	$(CMP) $(FLAGS) -c umats/yld/test.f -o yld_uten_test.o
 yld.o: umats/yld/yld.f
 	$(CMP) $(FLAGS) -c umats/yld/yld.f
 vm.o:  umats/yld/vm.f

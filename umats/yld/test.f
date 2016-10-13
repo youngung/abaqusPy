@@ -93,13 +93,13 @@ c$$$
       return
       end program
 c$$$!     pal
-      include "/home/younguj/repo/abaqusPy/umats/yld/vm.f"
-      include "/home/younguj/repo/abaqusPy/umats/yld/hill48.f"
-      include "/home/younguj/repo/abaqusPy/umats/yld/yld2000_2d.f"
-      include "/home/younguj/repo/abaqusPy/umats/lib/lib_write.f"
-      include "/home/younguj/repo/abaqusPy/umats/lib/is.f"
-      include "/home/younguj/repo/abaqusPy/umats/lib/lib.f"
-      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
+c      include "/home/younguj/repo/abaqusPy/umats/yld/vm.f"
+c      include "/home/younguj/repo/abaqusPy/umats/yld/hill48.f"
+c      include "/home/younguj/repo/abaqusPy/umats/yld/yld2000_2d.f"
+c      include "/home/younguj/repo/abaqusPy/umats/lib/lib_write.f"
+c      include "/home/younguj/repo/abaqusPy/umats/lib/is.f"
+c      include "/home/younguj/repo/abaqusPy/umats/lib/lib.f"
+c      include "/home/younguj/repo/abaqusPy/umats/lib/cnv.f"
 c$$$!     mac
 c$$$      include "/Users/yj/repo/abaqusPy/umats/yld/vm.f"
 c$$$      include "/Users/yj/repo/abaqusPy/umats/yld/hill48.f"
