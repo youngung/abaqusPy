@@ -21,7 +21,7 @@ c     yldc  : yield surface components
      $     dphis(2,ntens),yldc(9),alpha(8)
       real*8 cauchy,dpsi,d2psi,psi,c,x1,x2,a,
      $     phis,dphis,yldc,alpha,l2c
- 0    integer i
+      integer i
 c-----------------------------------------------------------------------
 cf2py intent(in)  cauchy,yldc
 cf2py intent(out) psi,dpsi,d2psi

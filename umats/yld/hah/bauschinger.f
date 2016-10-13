@@ -1,6 +1,6 @@
 c------------------------------------------------------------------------
 c     Bauschinger subroutines to be wrapped by f2py.
-c     This module should be also used in Abaqus UMAT (under development...)
+c     This module should be also used in Abaqus UMAT
 c     Find more information of Abaqus UMAT in
 c       www.github.com/youngung/abaqusPy
 c
@@ -108,6 +108,30 @@ c***  Eqs 14&15 in Ref. [1]
  20   continue
       return
       end subroutine calc_bau
+c------------------------------------------------------------------------
+      subroutine bauschinger(f_ks,q,emic,sdev,ntens,phib1,phib2)
+c     Arguments
+c     f_ks : f1, f2 parameters
+c     q    : yield function exponent
+c     emic : microstructure deviator
+c     sdev : deviatoric stress
+c     ntens: Len of sdev, emic
+      implicit none
+      integer ntens
+      dimension f_ks(2),emic(ntens),sdev(ntens)
+      real*8 f_ks,q,emic,sdev,phib1,phib2
+
+c     locals
+      real*8 dotp,dot_prod
+cf2py intent(in) f_ks,q,emic,sdev,ntens
+cf2py intent(out) f1,f2
+
+      dotp = dot_prod(emic,sdev,ntens)
+      phib1 = (f_ks(1)**q) * (dabs(dotp-dabs(dotp))**q)
+      phib2 = (f_ks(2)**q) * (dabs(dotp+dabs(dotp))**q)
+
+      return
+      end subroutine bauschinger
 c------------------------------------------------------------------------
 c$$$      include "bauschinger_lib.f"
 

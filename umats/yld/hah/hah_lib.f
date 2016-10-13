@@ -33,15 +33,15 @@ cf2py intent(out) tensor_colin, tensor_ortho
       H = 8d0/3d0
 
       dd = dot_prod(tensor,emic,ntens)
-      
+
       call w_val(imsg,'dd',dd)
 
 c     Eqs 4&5 in Ref [1]
       tensor_colin(:) = H * dd * emic(:)
       tensor_ortho(:) = tensor(:) - tensor_colin(:)
 
-      call fill_line(imsg,'#',52)
       call w_chr(imsg,'Exit HAH_DEDCOMPOSE')
+      call fill_line(imsg,'#',52)
       call w_empty_lines(imsg,1)
 
       return
@@ -77,10 +77,11 @@ c***  normalization.
       return
       end subroutine hat
 c------------------------------------------------------------------------
+c     Calculate cos2chi value using the two given hat tensors, <a> and <b>
       subroutine calc_cos2chi(a,b,ntens,val)
 c     Arguments
-c     a   : tensor in 6d
-c     b   : tensor in 6d
+c     a   : tensor in 6d (it should be a hat property)
+c     b   : tensor in 6d (it should be a hat property)
 c     val : value to be returned
       implicit none
       integer ntens
@@ -90,6 +91,11 @@ cf2py intent(in) a,b,ntens
 cf2py intent(out) val
       H = 8d0/3d0
       val = dot_prod(a,b,ntens) * H
+
+      if (abs(val).gt.1d0) then
+         write(*,*)'Something went wrong in calc_cos2chi'
+      endif
+
       return
       end subroutine calc_cos2chi
 c------------------------------------------------------------------------
@@ -144,6 +150,7 @@ cf2py intent(out) s1,s2
 c-----------------------------------------------------------------------
 c     subroutine that converts back and forth
       subroutine hah_io(yldp,nyldp,
+
      $     eeq,
 
      $     ntens,
@@ -161,7 +168,7 @@ c     Arguments
 c     yldp  : yield surface state variables
 c     nyldp : Len of yldp
 c     eeq   : equivalent plastic strain
-c     emic   : microstructure deviator
+c     emic  : microstructure deviator
 c     gk    : gk parameters
 c     gL    : gL
 c     ekL   : kL

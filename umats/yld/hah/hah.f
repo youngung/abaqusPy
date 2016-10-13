@@ -61,7 +61,7 @@ c**      phi_chi, dphi_chi, d2phi_chi
       call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,cauchy,
      $     phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
       call w_chr(imsg,'right after hah_yieldsurface')
-      call exit(-1)
+c      call exit(-1)
       return
       end subroutine hah
 c      include '/home/younguj/repo/abaqusPy/umats/yld/yld.f'

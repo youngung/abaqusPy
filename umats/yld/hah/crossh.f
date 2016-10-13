@@ -23,3 +23,23 @@ c     intent(out) dgS
       return
       end subroutine cross_hardening
 c------------------------------------------------------------------------
+      subroutine crossh(gS,so,phi,phi_chi,phi_x)
+c     Arguments
+c     kS         : ks parameter
+c     ss         : S parameter
+c     gS         : gS parameter
+c     emic       : microstructure deviator
+c     ntens      : Len of tensor
+c     tensor_ref : reference tensor
+c     dgS        : incremental gS
+      implicit none
+      integer ntens
+      dimension emic(ntens),tensor_ref(ntens)
+      real*8 ks,ss,gS,emic
+      real*8 dgS
+c     local
+      real*8 cos2chi
+
+
+      return
+      end subroutine crossh

@@ -37,6 +37,8 @@ c     local - cross hardening parameters
       aux_ten(:)=0d0
       aux_ten(1)=1d0
       gL = 1d0
+      e_ks(:)=1d0               ! k1,k2,k3,k4,k5
+      f_ks(:)=0d0               ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
 
       call deviat(aux_ten,ntens,emic)
 
@@ -70,7 +72,24 @@ c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
       call w_chr(imsg,'right after exit hah')
 
 c$$$      call w_ival(imsg,'iyld_choice:',iyld_choice)
-c$$$      call w_val( imsg,'phi_chi    :',phi_chi)
-c$$$      call w_val( imsg,'phi        :',phi)
+      call w_val( imsg,'phi_chi    :',phi_chi)
+      call w_val( imsg,'phi        :',phi)
 
       end program test
+c--------------------------------------------------------------------------------
+
+      subroutine hah_locus(cauchy,yldc,nyldc,yldp,nyldp,ntens)
+      implicit none
+c     Arguments passed into
+      integer ntens,nyldc,nyldp
+      dimension cauchy(ntens),yldc(nyldc),yldp(nyldp)
+      real*8 cauchy,yldc,yldp
+
+c     local variables.
+      dimension dphi(ntens),d2phi(ntens)
+      real*8 phi,dphi,d2phi
+      integer iyld_hoice
+
+
+      return
+      end subroutine hah_locus
