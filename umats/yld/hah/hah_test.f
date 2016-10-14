@@ -111,7 +111,7 @@ c     local variables.
      $     aux3,aux33,phim,dphim,dphi33m,s3mat,dphi33l,rv,
      $     s6lab
       integer nth,i,j
-      parameter(nth=5)
+      parameter(nth=2)
 
       pi=4.d0*datan(1.d0)
 
@@ -156,6 +156,7 @@ c$$$
          call voigt1(s33mat,s6mat)
 
          call reduce_6to3(s6mat,s3mat)
+
          call hah(iyld_choice,s6mat,phim,dphi,d2phi,
      $        yldc,yldp,nyldc,nyldp,ntens)
 
@@ -172,13 +173,12 @@ c$$$
          write(*,'(4f7.2,x,a1,x,2f7.2)',advance='no')
      $        (dphi33l(i,i),i=1,3),dphi33l(1,2),'|',rv,phim
          write(*,*)
-
  10   continue
 
 
       call cpu_time(time1)
-      write(*,'(a,f7.1)') 'Elapsed time: [\mu s]',
-     $     (time1-time0)*1e6
+c      write(*,'(a,f7.1)') 'Elapsed time: [\mu s]',
+c     $     (time1-time0)*1e6
 
       return
       end subroutine hah_uten

@@ -80,6 +80,7 @@ c**   saves ref to yldp
       call hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)
       call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
      $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
+
       if (idiaw) then
          call fill_line(imsg,'*',72)
          call fill_line(imsg,'*',72)

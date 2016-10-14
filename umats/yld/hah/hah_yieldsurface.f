@@ -134,6 +134,7 @@ c---  anisotropic yield surface with latent hardening
 
       phi_lat_norm = phi_lat**yldp(9)
       phi_lat_norm = (ref/phi_lat_norm)**(1d0/yldp(9))
+
       if (idiaw) then
          call w_val(imsg,'phi_lat',phi_lat)
          call w_val(imsg,'phi_lat_norm',phi_lat_norm)
@@ -142,11 +143,10 @@ c      call exit(-1)
 
 c---  anisotropic yield surface with full HAH
       call bauschinger(f_ks,yldp(9),emic,sdev,ntens,phi_bs(1),phi_bs(2))
-      call w_dim(imsg,phi_bs,2,1d0,.false.)
-
       fht = phi_lat**yldp(9) + phi_bs(1)**yldp(9) + phi_bs(2)**yldp(9)
       rah = (ref/fht) ** (1/yldp(9))
       if (idiaw) then
+         call w_dim(imsg,phi_bs,2,1d0,.false.)
          call w_val(imsg,'rah',rah)
       endif
 
