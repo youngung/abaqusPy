@@ -72,7 +72,7 @@ c     locals
       real*8 sdev,so,sc,sdp,emic,phi,dphi,d2phi
 
 c     variables to be stored from yldp
-      integer iopt,imsg,i
+      integer imsg
       dimension gk(4),e_ks(5),f_ks(2),sp(ntens),phis(2)
       real*8 gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,sp,phis,hydro
       logical idiaw

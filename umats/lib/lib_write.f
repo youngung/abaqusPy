@@ -124,6 +124,47 @@ c     v   : the value
       return
       end subroutine w_val
 c-----------------------------------------------------------------------
+      subroutine w_vals(iunit,v)
+c     Arguments
+c     iunit: file ID
+c     str : chracter that describe the passed value
+c     v   : the value
+      implicit none
+      integer iunit
+      character*80 fmt,get_fmt
+      real*8 v
+      fmt = '('//trim(get_fmt(v))//')'
+      if (iunit.eq.0) then
+         write(*,    trim(fmt)) v
+      else
+         write(iunit,trim(fmt)) v
+      endif
+      return
+      end subroutine w_vals
+c-----------------------------------------------------------------------
+      subroutine w_valc(iunit,str,v)
+c     Arguments
+c     iunit: file ID
+c     str : chracter that describe the passed value
+c     v   : the value
+      implicit none
+      integer iunit,nc
+      character*80 fmt,get_fmt,ncc
+      character(len=*) str
+      real*8 v
+      fmt = get_fmt(v)
+      nc = len(str)
+      write(ncc,'(i80)') nc
+      ncc=adjustl(ncc)
+      fmt = trim('(a')//trim(ncc)//',x,'//trim(fmt)//')'
+      if (iunit.eq.0) then
+         write(*,    trim(fmt),advance='no') trim(str),v
+      else
+         write(iunit,trim(fmt),advance='no') trim(str),v
+      endif
+      return
+      end subroutine w_valc
+c-----------------------------------------------------------------------
       subroutine w_ival(iunit,str,iv)
 c     Arguments
 c     iunit: file ID
@@ -237,7 +278,11 @@ c     ibr: flag to insert line-breaker
       else
          write(clen,"(i2)") ndi
          fmt = '('//trim(clen)//trim(fmt)//')'
-         write(*   ,fmt) (brray(i),i=1,ndi)
+         if (ibr) then
+            write(*   ,fmt) (brray(i),i=1,ndi)
+         else
+            write(*   ,fmt,advance='no') (brray(i),i=1,ndi)
+         endif
       endif
       return
       end subroutine w_dim
@@ -249,6 +294,7 @@ c     chr : chracter
       integer iunit
       character*80 fmt,get_fmt_str
       character(len=*) str
+
       fmt = get_fmt_str(str)
       if (iunit.eq.0) then
          write(*,    trim(fmt)) trim(str)
@@ -257,6 +303,24 @@ c     chr : chracter
       endif
       return
       end subroutine w_chr
+c-----------------------------------------------------------------------
+      subroutine w_chrc(iunit,str)
+c     iunit: file ID
+c     chr : chracter
+      implicit none
+      integer iunit
+      character*80 fmt,get_fmt_str
+      character(len=*) str
+c      logical ibr
+
+      fmt = get_fmt_str(str)
+      if (iunit.eq.0) then
+         write(*,    trim(fmt),advance='no') trim(str)
+      else
+         write(iunit,trim(fmt),advance='no') trim(str)
+      endif
+      return
+      end subroutine w_chrc
 c-----------------------------------------------------------------------
 c     print header
       subroutine print_head(i)

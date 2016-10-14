@@ -20,7 +20,7 @@ c     tensor_ortho : orthogonal component of <tensor>
       dimension tensor_ortho(ntens)
       dimension emic(ntens)
       real*8 tensor,tensor_colin,tensor_ortho,dot_prod,H,dd,emic
-      integer i,imsg
+      integer imsg
       logical idiaw
 cf2py intent(in) tensor, ntens, emic
 cf2py intent(out) tensor_colin, tensor_ortho
@@ -252,7 +252,6 @@ c     hah_io
 c     locals
       dimension cauchy_ref(ntens)
       real*8 cauchy_ref
-      integer imsg
 
       cauchy_ref(:)=0d0
       cauchy_ref(1)=1d0

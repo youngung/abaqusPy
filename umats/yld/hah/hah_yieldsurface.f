@@ -32,7 +32,7 @@ c     d2phi      : HAH yield surface 2nd derivative
       real*8 yldc,yldp,sdev,cauchy
 c     isotropic yield surface
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
-      real*8, intent(in) :: phi_chi,dphi_chi,d2phi_chi
+      real*8 phi_chi,dphi_chi,d2phi_chi
 c     HAH yield surface
       dimension dphi(ntens),d2phi(ntens,ntens)
       real*8 phi,dphi,d2phi
@@ -71,6 +71,21 @@ c-----------------------------------------------------------------------
       imsg = 0
       idiaw=.true.
       idiaw=.false.
+      d2phi(:,:)=d2phi(:,:)
+      d2phi_chi(:,:)=d2phi_chi(:,:)
+      d2phi_lat(:,:)=d2phi_lat(:,:)
+      d2phi_x(:,:)=d2phi_x(:,:)
+      dphi(:)=dphi(:)
+      dphi_chi(:)=dphi_chi(:)
+      dphi_lat(:)=dphi_lat(:)
+      dphi_x(:)=dphi_x(:)
+      phi_omega=phi_omega
+      phi_x=phi_x
+      phibs(:)=phibs(:)
+      sdp(:)=sdp(:)
+      sp(:)=sp(:)
+      target(:)=target(:)
+
 
       call deviat(ntens,cauchy,sdev,hydro)
 
@@ -229,15 +244,17 @@ c$$$c      call exit(-1)
       end subroutine hah_yieldsurface
 
 c-----------------------------------------------------------------------
-      subroutine hah_ys_ref(iyld,cauchy,ntens,yldc,nyldc)
-      implicit none
-      integer iyld,ntens,nyldc
-      dimension cauchy(ntens),yldc(nyldc)
-      real*8 cauchy,yldc
-      dimension dphi(ntens),d2phi(ntens,ntens)
-      real*8 ref,dphi,d2phi
-
-      call yld2000_2d(cauchy,ref,dphi,d2phi,yldc)
-
-      return
-      end subroutine hah_ys_ref
+c$$$      subroutine hah_ys_ref(iyld,cauchy,ntens,yldc,nyldc)
+c$$$      implicit none
+c$$$      integer iyld,ntens,nyldc
+c$$$      dimension cauchy(ntens),yldc(nyldc)
+c$$$      real*8 cauchy,yldc
+c$$$      dimension dphi(ntens),d2phi(ntens,ntens)
+c$$$      real*8 ref,dphi,d2phi
+c$$$
+c$$$
+c$$$
+c$$$      call yld2000_2d(cauchy,ref,dphi,d2phi,yldc)
+c$$$
+c$$$      return
+c$$$  end subroutine hah_ys_ref

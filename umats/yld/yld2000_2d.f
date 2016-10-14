@@ -21,9 +21,6 @@ c     yldc  : yield surface components
       dimension cauchy(ntens),sdev(ntens),dphi(ntens),d2phi(ntens,ntens)
      $     ,yldc(9)
       real*8 cauchy,phi,dphi,d2phi,yldc,hydro,sdev
-c     locals controlling
-      integer imsg
-      logical idiaw
 cf2py intent(in)  cauchy,yldc
 cf2py intent(out) phi,dphi,d2phi
       call deviat(ntens,cauchy,sdev,hydro)
@@ -117,8 +114,9 @@ c     dphi  : dphi  (dphi` or dphi``)
 c     iopt  : iopt (0: dphi`; 1: dphi``)
       implicit none
       dimension cauchy(3),c(3,3),dphi(3),sdev(3)
-      real*8 cauchy,c,a,dphi,sdev
+      real*8 cauchy,c,a,dphi,sdev,hydro
       integer iopt
+      call deviat(3,cauchy,sdev,hydro)
       call calc_dphi_dev(sdev,c,a,dphi,iopt)
       return
       end subroutine calc_dphi_dcauchy

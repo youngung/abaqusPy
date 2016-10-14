@@ -1,7 +1,11 @@
 ## make file for yld, yld testing
 
 CMP=gfortran
-FLAGS=-g -std=gnu -fstack-arrays ## -fcheck=all
+FLAGS=-g -std=gnu -fno-automatic\
+	-fcheck=recursion -Wall -fcheck=all,no-array-temps \
+	-finit-local-zero
+
+ #-Waliasing -Wall #  \
 
 objects_hah_test=hah_test.o bauschinger_lib.o \
 	hah_lib.o bauschinger.o hah.o \
