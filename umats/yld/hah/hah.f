@@ -1,6 +1,10 @@
 c-----------------------------------------------------------------------
 c     Homogeneous Anisotropic Hardening
 
+c     General references
+c     [1] Barlat et al. IJP 58, 2014 p201-218
+c     [2] Jeong et al., IJP, 2016 (in press)
+
 c     subroutine hah has several dependents
 c     read_alpha: yld2000_2d.f
 c     yld2000_2d: yld2000_2d.f
@@ -38,31 +42,30 @@ c     local controls
       idiaw=.false.
       imsg=0
 
-c     HAH yield surface depends only on the deviatoric stress
+c     HAH yield surface depends on the deviatoric stress
       call deviat(ntens,cauchy,sdev,hydro)
 
-      dphi_chi(:)=0d0
+      dphi_chi(:)   =0d0
       d2phi_chi(:,:)=0d0
 
       if (idiaw) then
-         call w_chr(imsg,'cauchy stress passed to subroutine hah')
+         call w_chr(imsg,'cauchy stress passed to subroutine HAH')
          call w_dim(imsg,cauchy,ntens,1d0,.false.)
-c        call exit(-1)
-      endif
-c$$$      call read_alpha(
-c$$$     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
-      if (idiaw) then
          call w_chr(imsg,'In hah.f')
          call w_ival(imsg,'iyld_choice:',iyld_choice)
+c        call exit(-1)
       endif
 
-      if (iyld_choice.eq.2) then ! plane-stress condition
+
+c     Calculate yield surface and its derivatives as a function of
+c     only yield function kernel without HAH distortion.
+c     These are saved to phi_chi, dphi_chi, d2phi_chi
+      if (iyld_choice.eq.2) then ! yld2000-2d; plane-stress condition
          if (ntens.ne.3) then
             write(*,*)'When iyld_choice.eq.2, it should be',
      $           ' plane stress condition with ntens=3'
             call exit(-1)
          endif
-c**      phi_chi, dphi_chi, d2phi_chi
          call yld2000_2d(cauchy,phi_chi,dphi_chi,d2phi_chi,yldc)
       else
          write(*,*) 'unexpected iyld_choice'
@@ -76,16 +79,26 @@ c**      phi_chi, dphi_chi, d2phi_chi
          call w_chr(imsg,'Just before hah_yieldsurface')
       endif
 
-c**   saves ref to yldp
-      call hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)
-      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
-     $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
+c$$$c     test
+      phi=phi_chi
+      dphi(:)=dphi_chi(:)
+c      d2phi(:,:)=d2phi_chi(:,:)
 
-      if (idiaw) then
-         call fill_line(imsg,'*',72)
-         call fill_line(imsg,'*',72)
-         call w_chr(imsg,'Exiting subroutine hah')
-      endif
+
+c$$$c**   saves ref to yldp
+c$$$      call hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)
+c$$$
+c$$$      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
+c$$$     $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
+c$$$      if (idiaw) then
+c$$$         call fill_line(imsg,'*',72)
+c$$$         call w_chr(imsg,'Exiting subroutine hah')
+c$$$         call fill_line(imsg,'*',72)
+c$$$      endif
+
+
+
+
 c      call exit(-1)
 
 c$$$      !call deviat(cauchy_test,ntens,sdev_test)

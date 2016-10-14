@@ -1,3 +1,5 @@
+*.dSym/
+*.o
 *guiState*
 core.*
 *.ipynb_checkpoints

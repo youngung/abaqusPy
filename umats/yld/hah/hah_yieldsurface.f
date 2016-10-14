@@ -10,38 +10,32 @@ c     hah_io in hah_lib.f
 c     hah_decompose in hah_lib.f
 c     yld in  ../yld.f
 c-----------------------------------------------------------------------
-      subroutine hah_yieldsurface(iyld_choice,yldc,nyldc,
-     $     yldp,nyldp,cauchy,
-     $     phi_chi,dphi_chi,d2phi_chi,ntens,
-     $     phi,dphi,d2phi)
+      subroutine hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
+     $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
 c     Arguments
 c     iyld_choice: choice of yield surface kernel
-c     yldc      : yield surface constants
-c     nyldc     : Len of yldc
-c     yldp      : yield surface parameters
-c     nyldp     : Len of yldp
-c     cauchy    : cauchy stress tensor
-c     phi_chi   : isotropic yield surface
-c     dphi_chi  : isotropic yield surface 1st derivative
-c     d2phi_chi : isotropic yield surface 2nd derivative
-c     ntens     : Len of deviatoric stress tensor
-c     phi       : HAH yield surface
-c     dphi      : HAH yield surface 1st derivative
-c     d2phi     : HAH yield surface 2nd derivative
+c     yldc       : yield surface constants
+c     nyldc      : Len of yldc
+c     yldp       : yield surface parameters
+c     nyldp      : Len of yldp
+c     cauchy     : cauchy stress tensor
+c     phi_chi    : isotropic yield surface
+c     dphi_chi   : isotropic yield surface 1st derivative
+c     d2phi_chi  : isotropic yield surface 2nd derivative
+c     ntens      : Len of deviatoric stress tensor
+c     phi        : HAH yield surface
+c     dphi       : HAH yield surface 1st derivative
+c     d2phi      : HAH yield surface 2nd derivative
       implicit none
       integer iyld_choice,ntens,nyldp,nyldc
       dimension yldc(nyldc),yldp(nyldp),sdev(ntens),cauchy(ntens)
-
       real*8 yldc,yldp,sdev,cauchy
-
 c     isotropic yield surface
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
       real*8, intent(in) :: phi_chi,dphi_chi,d2phi_chi
-
 c     HAH yield surface
       dimension dphi(ntens),d2phi(ntens,ntens)
       real*8 phi,dphi,d2phi
-
 c     local - microstructure deviator
       dimension emic(6)
       real*8 emic
@@ -50,7 +44,6 @@ c     local - Bauschinger parameters
       real*8 gk,e_ks,f_ks,eeq,target,phi_bs
 c     local - Latent hardening parameters
       real*8 gL,ekL,eL
-
 c     local - cross hardening parameters
       real*8 gS,c_ks,ss
 c     local
@@ -68,7 +61,6 @@ c     local-bau
 c     local-control
       integer imsg
       logical idiaw
-
       real*8 phi_chi_ref, phi_isoh, hydro, fht, rah
 
 cf2py intent(in) iyld_choice,yldc,nyldc,yldp,nylpd
@@ -145,6 +137,7 @@ c---  anisotropic yield surface with full HAH
       call bauschinger(f_ks,yldp(9),emic,sdev,ntens,phi_bs(1),phi_bs(2))
       fht = phi_lat**yldp(9) + phi_bs(1)**yldp(9) + phi_bs(2)**yldp(9)
       rah = (ref/fht) ** (1/yldp(9))
+      phi = rah*1d0
       if (idiaw) then
          call w_dim(imsg,phi_bs,2,1d0,.false.)
          call w_val(imsg,'rah',rah)
@@ -241,12 +234,10 @@ c-----------------------------------------------------------------------
       integer iyld,ntens,nyldc
       dimension cauchy(ntens),yldc(nyldc)
       real*8 cauchy,yldc
-
       dimension dphi(ntens),d2phi(ntens,ntens)
       real*8 ref,dphi,d2phi
 
       call yld2000_2d(cauchy,ref,dphi,d2phi,yldc)
-
 
       return
       end subroutine hah_ys_ref

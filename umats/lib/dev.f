@@ -24,10 +24,11 @@ cf2py depend(ntens) sdev,cauchy
       return
       end subroutine deviat_inv
 c-----------------------------------------------------------------------
+c     Calculate deviatoric part of cauchy tensor
       subroutine deviat(ntens,cauchy,sdev,p)
 c     Arguments
-c     ntens   : Len of <cauchy>, <sdev>
-c     cauchy  : cauchy stress
+c     ntens   : Len of <cauchy> and <sdev>
+c     cauchy  : cauchy stress (can be other tensors of interest)
 c     sdev    : deviatoric stress
 c     p       : hydrostatic pressure
       implicit none
@@ -36,7 +37,13 @@ c     p       : hydrostatic pressure
       real*8 cauchy,sdev,p
       if (ntens.eq.3) then
          call deviat3(cauchy,sdev,p)
+      elseif(ntens.eq.6) then
+         call deviat6(cauchy,sdev,p)
+      else
+         write(*,*) 'unexpected case given to deviat'
+         call exit(-1)
       endif
+      return
       end subroutine deviat
 c-----------------------------------------------------------------------
       subroutine deviat6(s,sd,p)

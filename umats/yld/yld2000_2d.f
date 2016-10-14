@@ -31,13 +31,24 @@ cf2py intent(out) phi,dphi,d2phi
       return
       end subroutine yld2000_2d
 c-----------------------------------------------------------------------
+c     yld2000_2d_dev is implementation of the yld2000-2d model as a
+c     function of 'deviatoric' stress and yield function constants
+c     stored in yldc.
       subroutine yld2000_2d_dev(sdev,psi,dpsi,d2psi,yldc)
+c     psi is defiend as ((phi`+phi``)/2)^(1/q)
+c       where phi` and phi`` are analogous to Hershey isotropic functions;
+c             and q is the yield function exponent
+c       note that phi` and phi`` are functions of principal values of
+c       'linearly' transformed stress tensors.
+c     psi is a homogeneous function of degree 1.
+
 c     Arguments
 c     sdev  : deviatoric stress
 c     psi   : yield surface
 c     dpsi  : yield surface 1st derivative w.r.t cauchy stress
 c     d2psi : 2nd derivative - (not included yet)
-c     yldc  : yield surface components
+c     yldc  : yield surface constants
+c             yldc(1:8) - alpha values, yldc(9): yield function exponent
       implicit none
       integer ntens
       parameter(ntens=3)
@@ -91,7 +102,7 @@ cf2py intent(out) psi,dpsi,d2psi
       dpsi(3)=dpsi(3)
       if (idiaw) call w_dim(0,dpsi,3,1d0,.true.)
 
-c     2nd derivatives
+c     2nd derivatives - on my to-do list
       d2psi(:,:) = 0d0
 
       return

@@ -21,7 +21,6 @@ yld_test: $(objects_yld_test)
 	$(CMP) $(FLAGS) $(objects_yld_test) -o yld_test
 ######################################################################
 
-
 yld_uten_test.o: umats/yld/test.f
 	$(CMP) $(FLAGS) -c umats/yld/test.f -o yld_uten_test.o
 yld.o: umats/yld/yld.f
