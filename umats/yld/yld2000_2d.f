@@ -2,9 +2,10 @@ c-----------------------------------------------------------------------
 c     Yld2000-2d model for the case of planar stress condition where
 c     sig_xx,sig_yy,sig_xy are non-zeros.
 
-c     Ref : Barlat et al., IJP 19, 2003, p1297-1319
+c     Ref
+c     Barlat et al., IJP 19, 2003, p1297-1319
 c
-c     Youngung Jeong, Clemson University
+c     Youngung Jeong
 c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
       subroutine yld2000_2d(cauchy,phi,dphi,d2phi,yldc)
@@ -26,7 +27,7 @@ c     locals controlling
 cf2py intent(in)  cauchy,yldc
 cf2py intent(out) phi,dphi,d2phi
       call deviat(ntens,cauchy,sdev,hydro)
- 1    call yld2000_2d_dev(sdev,phi,dphi,d2phi,yldc)
+      call yld2000_2d_dev(sdev,phi,dphi,d2phi,yldc)
       return
       end subroutine yld2000_2d
 c-----------------------------------------------------------------------

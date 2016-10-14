@@ -63,13 +63,7 @@ c$$$     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
             call exit(-1)
          endif
 c**      phi_chi, dphi_chi, d2phi_chi
-
-         cauchy_test(:)=0d0
-         cauchy_test(1)=1d0
-c        cauchy_test(2)=1d0
-         call yld2000_2d(cauchy_test,ref,dphi_chi,d2phi_chi,yldc)
          call yld2000_2d(cauchy,phi_chi,dphi_chi,d2phi_chi,yldc)
-
       else
          write(*,*) 'unexpected iyld_choice'
          call exit(-1)
@@ -81,6 +75,12 @@ c        cauchy_test(2)=1d0
          call w_dim(imsg,cauchy,ntens,1.,.false.)
          call w_chr(imsg,'Just before hah_yieldsurface')
       endif
+
+      call latent(iyld_choice,ntens,nyldp,nyldc,cauchy,yldp,yldc,phi)
+      call w_val(imsg,'phi:',phi)
+      call exit(-1)
+
+
 
 c$$$      !call deviat(cauchy_test,ntens,sdev_test)
 c$$$      call deviat(ntens,cauchy_test,ntens,sdev_test)

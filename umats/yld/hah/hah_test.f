@@ -34,7 +34,7 @@ c     local - Latent hardening parameters
 c     local - cross hardening parameters
       real*8 gS,c_ks,ss
 c     local - gen
-      real*8 ref
+      real*8 ref,hydro
 c     local - controlling
       integer imsg
       logical idiaw
@@ -46,10 +46,11 @@ c      idiaw=.false.
       aux_ten(:)=0d0
       aux_ten(1)=1d0
       gL = 1d0
+      gS = 1d0
       e_ks(:)=1d0               ! k1,k2,k3,k4,k5
       f_ks(:)=0d0               ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
 
-      call deviat(aux_ten,ntens,emic)
+      call deviat(ntens,aux_ten,emic,hydro)
       call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
      $     gL,ekL,eL,gS,c_ks,ss)
 

@@ -10,7 +10,7 @@ objects_hah_test=hah_test.o bauschinger_lib.o \
 	latent.o
 objects_yld_test=yld.o yld_uten_test.o yld2000_2d.o bauschinger.o \
 	hah.o hah_update.o dev.o algb.o cnv.o vm.o hill48.o \
-	hah_yieldsurface.o hah_lib.o lib_write.o is.o lib.o
+	hah_yieldsurface.o hah_lib.o lib_write.o is.o lib.o latent.o
 
 ######################################################################
 # Fortran executables

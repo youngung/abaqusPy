@@ -51,7 +51,7 @@ c     Eq 16 --
 
 c------------------------------------------------------------------------
 c     Latent hardening effect accounted.
-      subroutine latent(iyld_law,ntens,nyldp,nyldc,cauchy,yldp,yldc)
+      subroutine latent(iyld_law,ntens,nyldp,nyldc,cauchy,yldp,yldc,phi)
 c     Arguments
 c     iyld_law : type of yield function
 c     ntens    : Len of sdev, emic
@@ -60,6 +60,7 @@ c     nyldc    : Len of yldc
 c     cauchy   : cauchy stress
 c     yldp     : yldp
 c     yldc     : yldc
+c     phi      : (phi1**2+phi2**2)**(1/2)
       implicit none
 c     Arguments passed
       integer iyld_law,ntens,nyldp,nyldc
@@ -71,12 +72,12 @@ c     locals
       real*8 sdev,so,sc,sdp,emic,phi,dphi,d2phi
 
 c     variables to be stored from yldp
-      integer iopt,imsg
-      dimension gk(4),e_ks(5),f_ks(2)
-      real*8 gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss
+      integer iopt,imsg,i
+      dimension gk(4),e_ks(5),f_ks(2),sp(ntens),phis(2)
+      real*8 gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,sp,phis,hydro
       logical idiaw
       imsg=0
-      idiaw=.true.
+      idiaw=.false.
 
 c**   restore parameters from yldp
       call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
@@ -84,15 +85,46 @@ c**   restore parameters from yldp
 
       if (idiaw) then
          call w_val(imsg,'gL:',gL)
+         call w_val(imsg,'gS:',gS)
       endif
 
 c**   Apply linear transformation to stress deviator
 c     1. deviator
-      call deviat(cauchy,ntens,sdev)
+      call deviat(ntens,cauchy,sdev,hydro)
 c     2. Obtain orthogonal / collinear components
       call hah_decompose(sdev,ntens,emic,sc,so)
 c     3. Transform to allow extension along so
       sdp = sc(:) + so(:) / gL
+c     sp = 4(1-g_s) s_o
+      do i=1,ntens
+         sp(i) = 4d0*(1d0-gS) * so(i)
+      enddo
+
+      if (idiaw) then
+         call w_chr(imsg,'cauchy')
+         call w_dim(imsg,cauchy,ntens,1d0,.false.)
+         call w_chr(imsg,'sdev')
+         call w_dim(imsg,sdev,ntens,1d0,.false.)
+         call w_chr(imsg,'emic')
+         call w_dim(imsg,emic,ntens,1d0,.false.)
+         call w_chr(imsg,'sc')
+         call w_dim(imsg,sc,ntens,1d0,.false.)
+         call w_chr(imsg,'so')
+         call w_dim(imsg,so,ntens,1d0,.false.)
+         call w_chr(imsg,'sdp')
+         call w_dim(imsg,sdp,ntens,1d0,.false.)
+         call w_chr(imsg,'sp')
+         call w_dim(imsg,sp, ntens,1d0,.false.)
+      endif
+
+      if (iyld_law.eq.2) then
+         call yld2000_2d_dev(sdp,phis(1),dphi,d2phi,yldc)
+         call yld2000_2d_dev(sp,phis(2),dphi,d2phi,yldc)
+         phi = dsqrt(phis(1)**2 + phis(2)**2)
+      else
+         call w_chr(imsg,'** iyld_law not expected in latent')
+         call exit(-1)
+      endif
 
       return
       end subroutine latent

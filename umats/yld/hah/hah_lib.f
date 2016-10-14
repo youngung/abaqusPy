@@ -1,7 +1,10 @@
 c-----------------------------------------------------------------------
+c     Library subroutines for Homogeneous Anisotropic Hardening model
 c     General references
-c     [1] Barlat et al. IJP 58, 2014 p201-218
+
+c     [1] Barlat et al., IJP 58, 2014 p201-218
 c     [2] Jeong et al., IJP, 2016 (in press)
+c-----------------------------------------------------------------------
       subroutine hah_decompose(tensor,ntens,emic,
      $     tensor_colin,tensor_ortho)
 c     Arguments
