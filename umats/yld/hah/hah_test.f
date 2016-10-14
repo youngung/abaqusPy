@@ -54,7 +54,6 @@ c      idiaw=.false.
       call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
      $     gL,ekL,eL,gS,c_ks,ss)
 
-
       iyld_choice=2             ! yld2000-2d
 
       if (idiaw) then
@@ -86,9 +85,11 @@ c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
 c$$$      call w_ival(imsg,'iyld_choice:',iyld_choice)
          call w_val( imsg,'phi_chi    :',phi_chi)
          call w_val( imsg,'phi        :',phi)
+         call fill_line(imsg,'*',72)
       endif
 
-c      call hah_uten(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
+
+      call hah_uten(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
 c      call hah_locus(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
 
       end program test
@@ -110,7 +111,7 @@ c     local variables.
      $     aux3,aux33,phim,dphim,dphi33m,s3mat,dphi33l,rv,
      $     s6lab
       integer nth,i,j
-      parameter(nth=20)
+      parameter(nth=5)
 
       pi=4.d0*datan(1.d0)
 
@@ -210,7 +211,7 @@ c     pi and yield surface exponent q stored in yldc
 
 
       s6lab(:)=0d0
-      s6lab(1)=1d0
+      s6lab(1)=2d0
       call voigt2(s6lab,s33lab)
 
       write(*,'(a11,3(4a11,x,a1,x),a11)')'th',
@@ -229,7 +230,7 @@ c      write(*,'(a,f11.2)')'ref:',ref
       do 10 j=1,nth
          th = 2*pi/(nth-1)*(j-1)
 
-         write(*,'(f11.2)',advance='no') th*180.d0/pi
+         write(*,'(f11.2,a)',advance='no') th*180.d0/pi,'|'
 
          s6mat(1)   = dcos(th)
          s6mat(2)   = dsin(th)
@@ -254,22 +255,18 @@ c$$$
          call hah(iyld_choice,s6mat,phim,dphi,d2phi,
      $        yldc,yldp,nyldc,nyldp,ntens)
 
-c         write(*,*)
 c         write(*,*)'phim:',phim
 
-         do i=1,6
-            s6mat(i) = s6mat(i)/phim**8
-         enddo
+         s6mat(:) = s6mat(:)/phim**8
+
 
          if (s6mat(1).eq.0 .and. s6mat(2).eq.0) then
             write(*,*)'something went wrong'
             call exit(-1)
          endif
 
-
-         call hah(iyld_choice,s6mat,phim,dphi,d2phi,
-     $        yldc,yldp,nyldc,nyldp,ntens)
-
+c         call hah(iyld_choice,s6mat,phim,dphi,d2phi,
+c     $        yldc,yldp,nyldc,nyldp,ntens)
 
          call reduce_3to6(aux3,dphim)
          call voigt4(dphim,dphi33m)
@@ -279,13 +276,12 @@ c         write(*,*)'phim:',phim
          write(*,'(4e11.3,x,a1,x)',advance='no')
      $        (s33mat(i,i),i=1,3),s33mat(1,2),'|'
 
-
          write(*,'(4e11.3,x,a1,f11.7)',advance='no')
      $        (dphi33m(i,i),i=1,3),dphi33m(1,2),'|',phim
-         write(*,*)
+c         write(*,*)
 
-         write(1,'(f11.2,2e13.5,f11.7)')
-     $        th*180d0/pi, s6mat(1), s6mat(2), phim
+c         write(1,'(f11.2,2e13.5,f11.7)')
+c     $        th*180d0/pi, s6mat(1), s6mat(2), phim
 
  10   continue
 

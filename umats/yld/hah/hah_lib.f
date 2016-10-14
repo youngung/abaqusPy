@@ -223,8 +223,47 @@ c***  cross hardening
          yldp(ntens+17) = ss
       endif
 
+
+c     diagnose
+      if (dabs(gL).lt.1e-3) then
+         write(*,*)'gL is too small'
+         call exit(-1)
+      endif
+
 c     yield surface constants
 
       return
       end subroutine hah_io
+c-----------------------------------------------------------------------
+c     Calculate referece size of yield surface and save it to yldp
+      subroutine hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)
+      implicit none
+c     Arguments
+c     ntens       : Len of stress
+c     nyldp       : Len of yldp
+c     nyldc       : Len of yldc
+c     iyld_choice : yield surface choice
+      integer ntens,nyldp,nyldc,iyld_choice
+      dimension yldp(nyldp),yldc(nyldc)
+      real*8 yldp,yldc
+c     hah_io
+      dimension emic(ntens),gk(4),e_ks(5),f_ks(2)
+      real*8 emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss
+c     locals
+      dimension cauchy_ref(ntens)
+      real*8 cauchy_ref
+      integer imsg
+
+      cauchy_ref(:)=0d0
+      cauchy_ref(1)=1d0
+c      cauchy_ref(2)=1d0
+      call latent(iyld_choice,ntens,nyldp,nyldc,cauchy_ref,yldp,yldc,
+     $     ref)
+      ref = ref**yldc(9)
+c      call w_val(imsg,'ref',ref)
+c     save ref to yldp
+      call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
+     $     gL,ekL,eL,gS,c_ks,ss)
+      return
+      end subroutine hah_calc_ref
 c-----------------------------------------------------------------------

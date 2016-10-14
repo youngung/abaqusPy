@@ -11,7 +11,7 @@ c     hah_decompose in hah_lib.f
 c     yld in  ../yld.f
 c-----------------------------------------------------------------------
       subroutine hah_yieldsurface(iyld_choice,yldc,nyldc,
-     $     yldp,nyldp,sdev,
+     $     yldp,nyldp,cauchy,
      $     phi_chi,dphi_chi,d2phi_chi,ntens,
      $     phi,dphi,d2phi)
 c     Arguments
@@ -20,7 +20,7 @@ c     yldc      : yield surface constants
 c     nyldc     : Len of yldc
 c     yldp      : yield surface parameters
 c     nyldp     : Len of yldp
-c     sdev      : deviatoric stress tensor
+c     cauchy    : cauchy stress tensor
 c     phi_chi   : isotropic yield surface
 c     dphi_chi  : isotropic yield surface 1st derivative
 c     d2phi_chi : isotropic yield surface 2nd derivative
@@ -30,9 +30,9 @@ c     dphi      : HAH yield surface 1st derivative
 c     d2phi     : HAH yield surface 2nd derivative
       implicit none
       integer iyld_choice,ntens,nyldp,nyldc
-      dimension yldc(nyldc),yldp(nyldp),sdev(ntens)
+      dimension yldc(nyldc),yldp(nyldp),sdev(ntens),cauchy(ntens)
 
-      real*8 yldc,yldp,sdev
+      real*8 yldc,yldp,sdev,cauchy
 
 c     isotropic yield surface
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
@@ -46,11 +46,8 @@ c     local - microstructure deviator
       dimension emic(6)
       real*8 emic
 c     local - Bauschinger parameters
-      dimension gk(4)
-      dimension e_ks(5)
-      dimension f_ks(2)
-      dimension target(ntens)
-      real*8 gk,e_ks,f_ks,eeq,target
+      dimension gk(4),e_ks(5),f_ks(2),target(ntens),phi_bs(2)
+      real*8 gk,e_ks,f_ks,eeq,target,phi_bs
 c     local - Latent hardening parameters
       real*8 gL,ekL,eL
 
@@ -61,7 +58,7 @@ c     local
       real*8 sc,so,sdp,sp,ref
 c     local-latent
       dimension dphi_lat(ntens),d2phi_lat(ntens,ntens)
-      real*8 phi_lat,dphi_lat,d2phi_lat
+      real*8 phi_lat,dphi_lat,d2phi_lat,phi_lat_norm
 c     local-cross
       dimension dphi_x(ntens),d2phi_x(ntens,ntens)
       real*8 phi_x,dphi_x,d2phi_x,phi_omega
@@ -71,14 +68,19 @@ c     local-bau
 c     local-control
       integer imsg
       logical idiaw
-      
+
+      real*8 phi_chi_ref, phi_isoh, hydro, fht, rah
+
 cf2py intent(in) iyld_choice,yldc,nyldc,yldp,nylpd
 cf2py intent(in) sdev,phi_chi,dphi_chi,d2phi_chi,ntens
 cf2py intent(out) phi,dphi,d2phi
 
 c-----------------------------------------------------------------------
       imsg = 0
+      idiaw=.true.
       idiaw=.false.
+
+      call deviat(ntens,cauchy,sdev,hydro)
 
 c$$$c     obtain deviatoric stress
 c$$$      call deviat(cauchy,ntens,sdev)
@@ -88,7 +90,7 @@ c$$$      call deviat(cauchy,ntens,sdev)
          call fill_line(imsg,'#',72)
          call w_chr(imsg,'deviatoric stress')
          call w_dim(imsg,sdev,ntens,1d0,.false.)
-c     call exit(-1)
+c         call exit(-1)
       endif
 
 c-----------------------------------------------------------------------
@@ -114,85 +116,121 @@ c     decompose deviatoric stress
          call w_dim(imsg,so,ntens,1d0,.false.)
       endif
 
-      sdp(:) = sc(:) + so(:)/gL
+c---  anisotropic yield surface with isotropic hardening / phi_isoh
+c     phi_chi, dphi_chi, d2phi_chi
+      phi_chi_ref = phi_chi**yldc(9)
+      phi_isoh = (ref/phi_chi_ref)**(1d0/yldc(9))
       if (idiaw) then
-         call w_val(imsg,'gL:',gL)
-         call w_chr(imsg,'sdp')
-         call w_dim(imsg,sdp,ntens,1d0,.false.)
-      endif
-
-c------------------------------
-c     Latent extension
-c------------------------------
-c***  Target direction
-      target(:) = sdev(:)
-c***  stress double prime following eq 25 in Ref [1]
-      if (gL.eq.0) then
-         call w_empty_lines(imsg,2)
-         call fill_line(imsg,'*',72)
-         call w_chr(imsg,'**** Error gL is zero ****')
-         call fill_line(imsg,'*',72)
-         call exit(-1)
+         call w_val(imsg,'ref',ref)
+         call w_val(imsg,'phi_chi',phi_chi)
+         call w_val(imsg,'phi_chi_ref',phi_chi_ref)
+         call w_val(imsg,'phi_isoh',phi_isoh)
       endif
 c      call exit(-1)
-c------------------------------
-      if (.false.) then
-         call w_chr(imsg,'** calling yld for phi_lat **')
-c     call exit(-1)
-         call yld(iyld_choice,yldp,yldc,nyldp,nyldc,sdp,phi_lat,
-     $        dphi_lat,d2phi_lat,ntens)
-c     call exit(-1)
-      else
-         phi_lat=1d0
-      endif
 
-c------------------------------
-c     Cross load hardening
-c------------------------------
-      sp(:) = 4d0*(1d0-gS)*so(:)
+c---  anisotropic yield surface with latent hardening
+      call latent(iyld_choice,ntens,nyldp,nyldc,cauchy,
+     $     yldp,yldc,phi_lat)
+
+      phi_lat_norm = phi_lat**yldp(9)
+      phi_lat_norm = (ref/phi_lat_norm)**(1d0/yldp(9))
       if (idiaw) then
-         call w_chr(imsg,'** calling yld for phi_x **')
+         call w_val(imsg,'phi_lat',phi_lat)
+         call w_val(imsg,'phi_lat_norm',phi_lat_norm)
       endif
-      call yld(iyld_choice,yldp,yldc,nyldp,nyldc,sp,phi_x,dphi_x,
-     $     d2phi_x,ntens)
 c      call exit(-1)
 
-      phi_omega = (dsqrt(phi_lat**2+phi_x**2))**8d0
+c---  anisotropic yield surface with full HAH
+      call bauschinger(f_ks,yldp(9),emic,sdev,ntens,phi_bs(1),phi_bs(2))
+      call w_dim(imsg,phi_bs,2,1d0,.false.)
 
-c------------------------------
-c     Bauschinger
-c------------------------------
+      fht = phi_lat**yldp(9) + phi_bs(1)**yldp(9) + phi_bs(2)**yldp(9)
+      rah = (ref/fht) ** (1/yldp(9))
       if (idiaw) then
-         call w_chr(imsg,'** calling Bauschinger for phibs **')
-         call w_chr(imsg,'f_ks passed to Bauschinger')
-         call w_dim(imsg,f_ks,2,1d0,.false.)
-      endif
-      call bauschinger(f_ks,yldc(9),emic,sdev,ntens,phibs(1),phibs(2))
-      if (idiaw) then
-         call w_chr(imsg,'phib1, phib2')
-         call w_dim(imsg,phibs,2,1d0,.false.)
-         call w_chr(imsg,'**')
-      endif
-
-c--------------------------------------------------
-c     HAH Yield surface
-      phi = (phi_omega+phibs(1)+phibs(2))**(1d0/8d0)
-c--------------------------------------------------
-
-      if (idiaw)  then
-         call w_empty_lines(imsg,2)
-         call fill_line(imsg,'*',72)
-         call w_val(imsg,'phi_x    :',phi_x)
-         call w_val(imsg,'phi_chi  :',phi_chi)
-         call w_val(imsg,'phi_lat  :',phi_lat)
-         call w_val(imsg,'phi_omega:',phi_omega)
-         call w_val(imsg,'phi      :',phi)
-         call w_chr(imsg,'Exit HAH_YIELDSURFACE')
-         call fill_line(imsg,'*',72)
-         call w_empty_lines(imsg,2)
+         call w_val(imsg,'rah',rah)
       endif
 
 c      call exit(-1)
+
+c$$$      sdp(:) = sc(:) + so(:)/gL
+c$$$      if (idiaw) then
+c$$$         call w_val(imsg,'gL:',gL)
+c$$$         call w_chr(imsg,'sdp')
+c$$$         call w_dim(imsg,sdp,ntens,1d0,.false.)
+c$$$      endif
+c$$$
+c$$$c------------------------------
+c$$$c     Latent extension
+c$$$c------------------------------
+c$$$c***  Target direction
+c$$$      target(:) = sdev(:)
+c$$$c***  stress double prime following eq 25 in Ref [1]
+c$$$      if (gL.eq.0) then
+c$$$         call w_empty_lines(imsg,2)
+c$$$         call fill_line(imsg,'*',72)
+c$$$         call w_chr(imsg,'**** Error gL is zero ****')
+c$$$         call fill_line(imsg,'*',72)
+c$$$         call exit(-1)
+c$$$      endif
+c$$$c      call exit(-1)
+c$$$c------------------------------
+c$$$      if (.false.) then
+c$$$         call w_chr(imsg,'** calling yld for phi_lat **')
+c$$$c     call exit(-1)
+c$$$         call yld(iyld_choice,yldp,yldc,nyldp,nyldc,sdp,phi_lat,
+c$$$     $        dphi_lat,d2phi_lat,ntens)
+c$$$c     call exit(-1)
+c$$$      else
+c$$$         phi_lat=1d0
+c$$$      endif
+c$$$
+c$$$c------------------------------
+c$$$c     Cross load hardening
+c$$$c------------------------------
+c$$$      sp(:) = 4d0*(1d0-gS)*so(:)
+c$$$      if (idiaw) then
+c$$$         call w_chr(imsg,'** calling yld for phi_x **')
+c$$$      endif
+c$$$      call yld(iyld_choice,yldp,yldc,nyldp,nyldc,sp,phi_x,dphi_x,
+c$$$     $     d2phi_x,ntens)
+c$$$c      call exit(-1)
+c$$$
+c$$$      phi_omega = (dsqrt(phi_lat**2+phi_x**2))**8d0
+c$$$
+c$$$c------------------------------
+c$$$c     Bauschinger
+c$$$c------------------------------
+c$$$      if (idiaw) then
+c$$$         call w_chr(imsg,'** calling Bauschinger for phibs **')
+c$$$         call w_chr(imsg,'f_ks passed to Bauschinger')
+c$$$         call w_dim(imsg,f_ks,2,1d0,.false.)
+c$$$      endif
+c$$$      call bauschinger(f_ks,yldc(9),emic,sdev,ntens,phibs(1),phibs(2))
+c$$$      if (idiaw) then
+c$$$         call w_chr(imsg,'phib1, phib2')
+c$$$         call w_dim(imsg,phibs,2,1d0,.false.)
+c$$$         call w_chr(imsg,'**')
+c$$$      endif
+c$$$
+c$$$c--------------------------------------------------
+c$$$c     HAH Yield surface
+c$$$      phi = (phi_omega+phibs(1)+phibs(2))**(1d0/8d0)
+c$$$c--------------------------------------------------
+c$$$
+c$$$      if (idiaw)  then
+c$$$         call w_empty_lines(imsg,2)
+c$$$         call fill_line(imsg,'*',72)
+c$$$         call w_val(imsg,'phi_x    :',phi_x)
+c$$$         call w_val(imsg,'phi_chi  :',phi_chi)
+c$$$         call w_val(imsg,'phi_lat  :',phi_lat)
+c$$$         call w_val(imsg,'phi_omega:',phi_omega)
+c$$$         call w_val(imsg,'phi      :',phi)
+c$$$         call w_chr(imsg,'Exit HAH_YIELDSURFACE')
+c$$$         call fill_line(imsg,'*',72)
+c$$$         call w_empty_lines(imsg,2)
+c$$$      endif
+c$$$
+c$$$c      call exit(-1)
 
       return
       end subroutine hah_yieldsurface

@@ -76,11 +76,16 @@ c**      phi_chi, dphi_chi, d2phi_chi
          call w_chr(imsg,'Just before hah_yieldsurface')
       endif
 
-      call latent(iyld_choice,ntens,nyldp,nyldc,cauchy,yldp,yldc,phi)
-      call w_val(imsg,'phi:',phi)
-      call exit(-1)
-
-
+c**   saves ref to yldp
+      call hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)
+      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
+     $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
+      if (idiaw) then
+         call fill_line(imsg,'*',72)
+         call fill_line(imsg,'*',72)
+         call w_chr(imsg,'Exiting subroutine hah')
+      endif
+c      call exit(-1)
 
 c$$$      !call deviat(cauchy_test,ntens,sdev_test)
 c$$$      call deviat(ntens,cauchy_test,ntens,sdev_test)
