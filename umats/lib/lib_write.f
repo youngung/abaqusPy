@@ -260,11 +260,18 @@ c     ndi: size of the array
 c     fact:multiplicative factor to scale the elements in the array
 c     ibr: flag to insert line-breaker
       implicit none
+      integer, intent(in) :: iunit
+      integer, intent(in) :: ndi
+      dimension array(ndi)
+      real*8, intent(in) ::  array
+      logical, intent(in) :: ibr
+
+      dimension brray(ndi)
+      real*8 brray
       character*80 fmt,clen,get_fmt
-      dimension array(ndi),brray(ndi)
-      integer ndi,iunit,i
-      real*8 array,fact,get_mx,mxv,brray
-      logical ibr
+      integer i
+      real*8 fact,get_mx,mxv
+
       do 10 i=1,ndi
          brray(i) = array(i) * fact
  10   continue
@@ -284,6 +291,11 @@ c     ibr: flag to insert line-breaker
             write(*   ,fmt,advance='no') (brray(i),i=1,ndi)
          endif
       endif
+
+      write(*,*) array
+      write(*,*) brray
+c      call exit(-1)
+
       return
       end subroutine w_dim
 c-----------------------------------------------------------------------
@@ -291,9 +303,9 @@ c-----------------------------------------------------------------------
 c     iunit: file ID
 c     chr : chracter
       implicit none
-      integer iunit
+      integer,intent(in):: iunit
+      character(len=*), intent(in):: str
       character*80 fmt,get_fmt_str
-      character(len=*) str
 
       fmt = get_fmt_str(str)
       if (iunit.eq.0) then
@@ -308,10 +320,9 @@ c-----------------------------------------------------------------------
 c     iunit: file ID
 c     chr : chracter
       implicit none
-      integer iunit
+      integer, intent(in) :: iunit
+      character(len=*), intent(in) ::  str
       character*80 fmt,get_fmt_str
-      character(len=*) str
-c      logical ibr
 
       fmt = get_fmt_str(str)
       if (iunit.eq.0) then

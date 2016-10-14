@@ -30,7 +30,7 @@ c     ntens       - Len of stress tensor
       real*8 yldc,yldp,cauchy,phi,dphi,d2phi,sdev
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
       real*8 phi_chi,dphi_chi,d2phi_chi
-      integer iyld_choice
+      integer iyld_choice,i
 
       real*8 hydro
 c     local controls
@@ -102,16 +102,18 @@ c         call exit(-1)
       endif
 
 
-
-
 c$$$c     test
       phi=phi_chi
-      dphi(:)=dphi_chi(:)
+      do i=1,ntens
+         dphi(i)=dphi_chi(i)
+      enddo
+
+      write(*,*)'dphi:'
+      write(*,*)dphi
+c      call exit(-1)
+
       d2phi(:,:)=d2phi_chi(:,:)
 
-
-      write(*,*)'ntens in hah'
-      write(*,*)ntens
 
       end subroutine hah
 

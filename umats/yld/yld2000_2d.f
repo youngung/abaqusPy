@@ -51,8 +51,10 @@ c             yldc(1:8) - alpha values, yldc(9): yield function exponent
       parameter(ntens=3)
       dimension sdev(ntens),dpsi(ntens),d2psi(ntens,ntens),
      $     c(2,ntens,ntens),x1(ntens),x2(ntens),l2c(2,ntens,ntens),
-     $     phis(2),dphis(2,ntens),yldc(9),alpha(8)
-      real*8 sdev,psi,dpsi,d2psi,c,x1,x2,a,phis,dphis,yldc,alpha,l2c
+     $     phis(2),dphis(2,ntens),yldc(9),alpha(8),aux2(ntens,ntens),
+     $     aux1(ntens)
+      real*8 sdev,psi,dpsi,d2psi,c,x1,x2,a,phis,dphis,yldc,alpha,l2c,
+     $     aux2,aux1
       integer i
 c     locals controlling
       integer imsg
@@ -73,12 +75,17 @@ cf2py intent(out) psi,dpsi,d2psi
       if (idiaw) then
          call fill_line(imsg,'*',52)
          call w_chr(imsg,'c1')
-         call w_mdim(imsg,c(1,:,:),3,1d0)
+         aux2(:,:) = c(1,:,:)
+         call w_mdim(imsg,aux2,3,1d0)
          call w_chr(imsg,'c2')
-         call w_mdim(imsg,c(2,:,:),3,1d0)
+         aux2(:,:) = c(2,:,:)
+         call w_mdim(imsg,aux2,3,1d0)
       endif
-      call calc_x_dev(sdev,c(1,:,:),x1) ! x1: linearly transformed stress (prime)
-      call calc_x_dev(sdev,c(2,:,:),x2) ! x2: linearly transformed stress (double prime)
+
+      aux2(:,:) = c(1,:,:)
+      call calc_x_dev(sdev,aux2,x1) ! x1: linearly transformed stress (prime)
+      aux2(:,:) = c(2,:,:)
+      call calc_x_dev(sdev,aux2,x2) ! x2: linearly transformed stress (double prime)
       call hershey(x1,x2,a,phis(1),phis(2))
       psi = (0.5d0*(phis(1)+phis(2)))**(1d0/a)
       if (idiaw) then
@@ -87,9 +94,13 @@ cf2py intent(out) psi,dpsi,d2psi
          call w_val(0,'psi :',psi)
          call fill_line(0,'*',52)
       endif
-      call calc_dphi_dev(sdev,c(1,:,:),a,dphis(1,:),0)
+      aux2(:,:) = c(1,:,:)
+      call calc_dphi_dev(sdev,aux2,a,aux1,0)
+      dphis(1,:) = aux1(:)
       if (idiaw) call fill_line(0,'-',52)
-      call calc_dphi_dev(sdev,c(2,:,:),a,dphis(2,:),1)
+      aux2(:,:) = c(2,:,:)
+      call calc_dphi_dev(sdev,aux2,a,aux1,1)
+      dphis(2,:) = aux1(:)
       if (idiaw) call fill_line(0,'*',52)
       dpsi(:) = 0d0
       do 5 i=1,ntens
@@ -384,6 +395,7 @@ c     x    : linearly transformed stress using c
       return
       end subroutine cmat
 c-----------------------------------------------------------------------
+c     Convert alpha parameters to c and l matrices
       subroutine alpha2lc(alpha,c,l)
 c     Arguments
 c     alpha : the 8 parameters
@@ -391,13 +403,22 @@ c     C     : C matrix
 c     L     : L matrix
       implicit none
       dimension alpha(8),c(2,3,3),l(2,3,3),aux266(2,6,6)
-      real*8 alpha,c,l,aux266
+      real*8 alpha,c,l,aux266,aux66(6,6),aux33(3,3)
       call alpha2l(alpha,aux266)
-      call reduce_basis(aux266(1,:,:),l(1,:,:))
-      call reduce_basis(aux266(2,:,:),l(2,:,:))
+      aux66(:,:) = aux266(1,:,:)
+      call reduce_basis(aux66,aux33)
+      l(1,:,:) = aux33
+      aux66(:,:) = aux266(2,:,:)
+      call reduce_basis(aux66,aux33)
+      l(2,:,:) = aux33
       call alpha2c(alpha,aux266)
-      call reduce_basis(aux266(1,:,:),c(1,:,:))
-      call reduce_basis(aux266(2,:,:),c(2,:,:))
+
+      aux66(:,:) = aux266(1,:,:)
+      call reduce_basis(aux66,aux33)
+      c(1,:,:) = aux33
+      aux66(:,:) = aux266(2,:,:)
+      call reduce_basis(aux66,aux33)
+      c(2,:,:) = aux33
       return
       end subroutine alpha2lc
 c-----------------------------------------------------------------------

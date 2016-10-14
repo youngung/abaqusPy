@@ -230,11 +230,13 @@ c     nyldp      : Len of yldp
 c     ntens      : Len of tensor
       implicit none
 c     Arguments passed into
-      integer iyld_choice,ntens,nyldc,nyldp
+      integer, intent(in) ::  ntens,nyldc,nyldp
+      integer, intent(in) :: iyld_choice
+
       dimension yldc(nyldc),yldp(nyldp)
-      real*8 yldc,yldp
+      real*8, intent(in) :: yldc,yldp
 c     Local variables.
-      dimension dphi(ntens),d2phi(ntens),smat(ntens)
+      dimension d2phi(ntens),smat(ntens),dphi(ntens)
       real*8 dphi,d2phi,pi,th,time0,time1,
      $     phim,q,smat
       integer nth,j
@@ -285,20 +287,16 @@ c         call exit(-1)
 
 c         call reduce_6to3(s6mat,s3mat)
 c         call voigt2(s6mat,s33mat)
-         write(*,*)
-         write(*,*)'ntens old'
-         write(*,*) ntens
          call hah(iyld_choice,smat,phim,dphi,d2phi,
      $        yldc,yldp,nyldc,nyldp,ntens)
-         write(*,*)'ntens new'
-         write(*,*) ntens
-         call exit(-1)
-         call w_vals(0,phim)
-         call w_chrc(0,'|')
+c         call w_vals(0,phim)
+c         call w_chrc(0,'|')
 c         write(*,*) dphi(1)
 c         write(*,*) dphi(2)
 c         write(*,*) dphi(3)
-         call w_dim(0,dphi,ntens,1d0,.false.)
+         write(*,*) smat
+         call w_dim(0,smat,ntens,1d0,.false.)
+c         call w_dim(0,dphi,ntens,1d0,.false.)
          call exit(-1)
 
 c$$$         write(*,'(4f11.3,x,a1,x,f11.3,x)',advance='no')
