@@ -24,13 +24,17 @@ c     nyldc       - Len of yldc
 c     nyldp       - Len of yldp
 c     ntens       - Len of stress tensor
       implicit none
-      integer, intent(in):: ntens,nyldc,nyldp
+      integer, intent(in):: iyld_choice,ntens,nyldc,nyldp
       dimension yldc(nyldc),yldp(nyldp),cauchy(ntens)
       dimension dphi(ntens),d2phi(ntens,ntens),sdev(ntens)
-      real*8 yldc,yldp,cauchy,phi,dphi,d2phi,sdev
+      real*8, intent(in)::yldc
+      real*8 yldp,cauchy,sdev
+
+      real*8, intent(out):: phi,dphi,d2phi
+
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
       real*8 phi_chi,dphi_chi,d2phi_chi
-      integer iyld_choice,i
+      integer i
 
       real*8 hydro
 c     local controls
@@ -44,8 +48,6 @@ c      idiaw=.true.
       d2phi(:,:)=d2phi(:,:)*1d0
 
 c     HAH yield surface depends on the deviatoric stress
-
-
 
       call deviat(ntens,cauchy,sdev,hydro)
 
@@ -104,17 +106,8 @@ c         call exit(-1)
 
 c$$$c     test
       phi=phi_chi
-      do i=1,ntens
-         dphi(i)=dphi_chi(i)
-      enddo
-
-      write(*,*)'dphi:'
-      write(*,*)dphi
-c      call exit(-1)
-
+      dphi(:)=dphi_chi(:)
       d2phi(:,:)=d2phi_chi(:,:)
-
-
       end subroutine hah
 
 

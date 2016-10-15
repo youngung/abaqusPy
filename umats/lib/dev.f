@@ -32,7 +32,7 @@ c     cauchy  : cauchy stress (can be other tensors of interest)
 c     sdev    : deviatoric stress
 c     p       : hydrostatic pressure
       implicit none
-      integer ntens
+      integer, intent(in):: ntens
       dimension cauchy(ntens),sdev(ntens)
       real*8 cauchy,sdev,p
       if (ntens.eq.3) then

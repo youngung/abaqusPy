@@ -90,7 +90,8 @@ c     this value.
 c     Argument
 c     ival: integer value
       implicit none
-      integer ival,nc
+      integer, intent(in) :: ival
+      integer nc
       character*80 ncc
       character*20 nc_no
       write(ncc,'(i10)')ival
@@ -171,10 +172,11 @@ c     iunit: file ID
 c     str : chracter that describe the passed value
 c     iv  : the integer value
       implicit none
-      integer iunit,nc
+      integer, intent(in):: iv, iunit
+      character(len=*), intent(in) ::  str
       character*80 fmt,get_fmt_int,ncc
-      character(len=*) str
-      integer iv
+      integer nc
+
       fmt = get_fmt_int(iv)
       nc = len(str)
       write(ncc,'(i10)') nc
@@ -260,8 +262,7 @@ c     ndi: size of the array
 c     fact:multiplicative factor to scale the elements in the array
 c     ibr: flag to insert line-breaker
       implicit none
-      integer, intent(in) :: iunit
-      integer, intent(in) :: ndi
+      integer, intent(in) :: iunit, ndi
       dimension array(ndi)
       real*8, intent(in) ::  array
       logical, intent(in) :: ibr
@@ -291,10 +292,6 @@ c     ibr: flag to insert line-breaker
             write(*   ,fmt,advance='no') (brray(i),i=1,ndi)
          endif
       endif
-
-      write(*,*) array
-      write(*,*) brray
-c      call exit(-1)
 
       return
       end subroutine w_dim
