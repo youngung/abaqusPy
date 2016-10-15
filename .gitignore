@@ -1,3 +1,12 @@
+*.docx
+yld_2000_2d_test
+hah_test
+yld_test
+*.DS_store
+build
+*.pdf
+*.txt
+fort.*
 *.dSym/
 *.o
 *guiState*

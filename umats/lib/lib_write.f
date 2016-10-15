@@ -143,6 +143,24 @@ c     v   : the value
       return
       end subroutine w_vals
 c-----------------------------------------------------------------------
+      subroutine w_valsc(iunit,v)
+c     Arguments
+c     iunit: file ID
+c     str : chracter that describe the passed value
+c     v   : the value
+      implicit none
+      integer iunit
+      character*80 fmt,get_fmt
+      real*8 v
+      fmt = '('//trim(get_fmt(v))//')'
+      if (iunit.eq.0) then
+         write(*,    trim(fmt),advance='no') v
+      else
+         write(iunit,trim(fmt),advance='no') v
+      endif
+      return
+      end subroutine w_valsc
+c-----------------------------------------------------------------------
       subroutine w_valc(iunit,str,v)
 c     Arguments
 c     iunit: file ID

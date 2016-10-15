@@ -3,7 +3,7 @@ c     to test various yield functions
       program test_yld
       implicit none
       integer nth,nyldc
-      parameter(nth=9)
+      parameter(nth=361)
       dimension yldc(9),rs(nth),ys(nth),locus(nth,2)
       real*8 yldc,rs,ys,locus
       real*8 toler
@@ -216,13 +216,11 @@ c-----------------------------------------------------------------------
             call reduce_3to6(aux3,dphim)
          endif
 
-
-
          if (verbose) then
             write(*,'(3f7.2)',advance='no') s6mat(1),s6mat(2),phim
             write(*,*)
          endif
-         write(1,'(2f7.2)') s6mat(1),s6mat(2)
+         write(1,'(2f9.4)') s6mat(1),s6mat(2)
          locus(j,1:2) = s6mat(1:2)
 
  10   continue

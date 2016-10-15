@@ -155,38 +155,18 @@ c     local variables.
       do 10 j=1,nth
          th = pi/2d0 - pi/2d0/(nth-1)*(j-1)
          write(*,'(f7.2)',advance='no') th*180.d0/pi
-c$$$
-c$$$  si_lab (sij_l)
-c$$$
          write(*,'(4f7.2,x,a1,x)',advance='no')
      $        (s33lab(i,i),i=1,3),s33lab(1,2),'|'
-c$$$
-c$$$  si_mat (sij_m)
-c$$$
-
          call inplane_rot(th,s33lab,s33mat)
          write(*,'(4f7.2,x,a1,x)',advance='no')
      $        (s33mat(i,i),i=1,3),s33mat(1,2),'|'
-c$$$
-c$$$  si_lab (sij_l)
-c$$$
          call inplane_rot(th*(-1d0),s33mat,s33lab)
          write(*,'(4f7.2,x,a1,x)',advance='no')
      $        (s33lab(i,i),i=1,3),s33lab(1,2),'|'
-
-c$$$
-c$$$  ei_mat
-c$$$
-
          call voigt1(s33mat,s6mat)
          call reduce_6to3(s6mat,s3mat)
-c         write(*,*)'s3mat:',s3mat
-c         call exit(-1)
-
          call hah(iyld_choice,s3mat,phim,dphi,d2phi,
      $        yldc,yldp,nyldc,nyldp,ntens)
-
-c         write(*,*)'dphi:',dphi
          if (ntens.eq.3) then
             call reduce_3to6(dphi,dphi6)
             dphi6(3) = -dphi(1)-dphi(2)
@@ -196,26 +176,16 @@ c         write(*,*)'dphi:',dphi
          else
             call exit(-1)
          endif
-
-c         call w_mdim(0,dphi33m,3,1d0)
-c         call exit(-1)
 !        dphi in material axes
          write(*,'(4f7.2,x,a1,x)',advance='no')
      $        (dphi33m(i,i),i=1,3),dphi33m(1,2),'|'
-c$$$
-c$$$  ei_lab - strain in the lab space
-c$$$
          call inplane_rot(th*(-1.d0),dphi33m,dphi33l)
          rv =-dphi33l(2,2)/(dphi33l(1,1)+dphi33l(2,2))
          write(*,'(4f7.2,x,a1,x,2f7.2)',advance='no')
      $        (dphi33l(i,i),i=1,3),dphi33l(1,2),'|',rv,phim
          write(*,*)
  10   continue
-
       call cpu_time(time1)
-c      write(*,'(a,f7.1)') 'Elapsed time: [\mu s]',
-c     $     (time1-time0)*1e6
-
       return
       end subroutine hah_uten
 c-----------------------------------------------------------------------
@@ -239,11 +209,14 @@ c     Local variables.
       dimension d2phi(ntens),smat(ntens),dphi(ntens)
       real*8 dphi,d2phi,pi,th,time0,time1,
      $     phim,q,smat
-      integer nth,j
-      parameter(nth=6)
+      integer nth,i,j,imsg
+      parameter(nth=361)
+      logical idiaw
+      imsg=0
+      idiaw = .true.
 
       call cpu_time(time0)
-      open(1,file='ys.txt',status='unknown')
+      open(1,file='hah.txt',status='unknown')
 
 c     pi and yield surface exponent q stored in yldc
       pi=4.d0*datan(1.d0)
@@ -254,14 +227,9 @@ c$$$     $     's1_m', 's2_m', 's3_m', 's6_m', '|',
 c$$$     $     'e11_m','e22_m','e33_m','e12_m','|','phim',
 c$$$     $     's1_m', 's2_m', 's3_m', 's6_m', '|','phim'
 
-c$$$      s6mat_ref(:)=0d0 !! reference stress state (cauchy)
-c$$$      s6mat_ref(1)=1d0
-c$$$      call hah(iyld_choice,s6mat_ref,ref,dphi,d2phi,yldc,yldp,nyldc,
-c$$$     $     nyldp,ntens)
-
       do 10 j=1,nth
-         th = 2*pi/(nth-1)*(j-1)
-         write(*,'(f11.2,a)',advance='no') th*180.d0/pi,'|'
+         th = 4*pi/(nth-1)*(j-1)
+c         write(*,'(f7.1,a)',advance='no') th*180.d0/pi,'|'
          if (ntens.eq.3) then
             smat(1)   = dcos(th)
             smat(2)   = dsin(th)
@@ -274,97 +242,32 @@ c$$$     $     nyldp,ntens)
             write(*,*) 'unexpected dimension of ntens'
             call exit(-1)
          endif
-         call w_dim(0,smat,ntens,1d0,.false.)
-         call w_chrc(0,'|')
-c$$$         write(*,'(4f11.3,x,a1,x)',advance='no')
-c$$$     $        (smat(i),i=1,ntens),'|'
-c$$$
-c$$$  si_mat
-c$$$
-c         call deviat(ntens,smat,sdev,hydro)
-c         write(*,*)'sdev:',sdev
-c         call exit(-1)
 
-c         call reduce_6to3(s6mat,s3mat)
-c         call voigt2(s6mat,s33mat)
-c         write(*,*)
-c         write(*,*)'ntens---:',ntens
+c         call w_dim(imsg,smat,ntens,1d0,.false.)
+c         call w_chrc(imsg,'|')
          call hah(iyld_choice,smat,phim,dphi,d2phi,
      $        yldc,yldp,nyldc,nyldp,ntens)
-c          write(*,*)'ntens-:',ntens
-c         call exit(-1)
-c         call w_vals(0,phim)
-c         call w_chrc(0,'|')
-c         write(*,*) dphi(1)
-c         write(*,*) dphi(2)
-c         write(*,*) dphi(3)
-c         write(*,*) smat
 c         call w_dim(0,smat,ntens,1d0,.false.)
-         call w_dim(0,dphi,ntens,1d0,.false.)
-c         call exit(-1)
+c         call w_dim(imsg,dphi,ntens,1d0,.false.)
+c         call w_chrc(imsg,'|')
+c         call w_valsc(imsg,phim)
+c         call w_chrc(imsg,'|')
 
-c$$$         write(*,'(4f11.3,x,a1,x,f11.3,x)',advance='no')
-c$$$     $        (dphi(i),i=1,3),dphi(6),'|',phim
-
-
-c$$$c     size adjustment
-c$$$         dum=1d0/phim
-c$$$         sdev(:) = sdev(:) * dum
-c$$$         smat = sdev(:) + hydro
-c$$$c         write(*,*)'dum:',dum
-c$$$c         write(*,*)'sdev:',sdev
-c$$$         call hah(iyld_choice,smat,phim,dphi,d2phi,
-c$$$     $        yldc,yldp,nyldc,nyldp,ntens)
-c$$$         write(*,'(4f11.3,x,a1,x,f11.3)',advance='no')
-c$$$     $        (smat(i),i=1,3),smat(3),'|',phim
-c$$$c         call exit(-1)
-c$$$
-c$$$c         write(*,*)
-c$$$
-c$$$c         s6mat(:) = (s6mat(:)/phim)**(yldp(9))
-c$$$
-c$$$c         call hah(iyld_choice,s6mat,phim,dphi,d2phi,
-c$$$c     $        yldc,yldp,nyldc,nyldp,ntens)
-c$$$
-c$$$c         write(*,'(a,4f11.3,x,f11.7)',advance='no'), '|',
-c$$$c     $        (s6mat(i),i=1,3),dphi(6),phim
-c$$$
-c$$$c         write(*,*)'phim:',phim
-c$$$c          s6mat(:) = s6mat(:)    !!## /phim**8
-
+         smat(:) = smat(:)/phim
+         write(*,'(2f7.3)',advance='no') (smat(i),i=1,2)
+         write(*,'(2f7.3)',advance='no') (dphi(i),i=1,2)
+         write(1,'(2f7.3)',advance='no') (smat(i),i=1,2)
+         write(1,'(2f9.5)',advance='no') (dphi(i),i=1,2)
+c         call w_dim(imsg,smat,ntens,1d0,.false.)
+c         call w_chr(imsg,'|')
          write(*,*)
-
-c$$$         if (s6mat(1).eq.0 .and. s6mat(2).eq.0) then
-c$$$            write(*,*)'Something went wrong in hah_test.hah_locus'
-c$$$            call exit(-1)
-c$$$         endif
-
-c$$$c         call hah(iyld_choice,s6mat,phim,dphi,d2phi,
-c$$$c     $        yldc,yldp,nyldc,nyldp,ntens)
-c$$$
-c$$$         call reduce_3to6(aux3,dphim)
-c$$$         call voigt4(dphim,dphi33m)
-c$$$!        dphi in material axes
-c$$$
-c$$$         call voigt2(s6mat,s33mat)
-c$$$         write(*,'(4e11.3,x,a1,x)',advance='no')
-c$$$     $        (s33mat(i,i),i=1,3),s33mat(1,2),'|'
-c$$$
-c$$$         write(*,'(4e11.3,x,a1,f11.7)',advance='no')
-c$$$     $        (dphi33m(i,i),i=1,3),dphi33m(1,2),'|',phim
-c$$$c         write(*,*)
-c$$$
-c$$$c         write(1,'(f11.2,2e13.5,f11.7)')
-c$$$c     $        th*180d0/pi, s6mat(1), s6mat(2), phim
-
+ 2       write(1,*)
  10   continue
 
       call cpu_time(time1)
       write(*,'(a,f7.1)') 'Elapsed time: [\mu s]',
      $     (time1-time0)*1e6
 
-
       close(1)
-
       return
       end subroutine hah_locus
