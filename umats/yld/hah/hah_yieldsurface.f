@@ -27,15 +27,16 @@ c     phi        : HAH yield surface
 c     dphi       : HAH yield surface 1st derivative
 c     d2phi      : HAH yield surface 2nd derivative
       implicit none
-      integer iyld_choice,ntens,nyldp,nyldc
+      integer,intent(in)::iyld_choice,ntens,nyldp,nyldc
       dimension yldc(nyldc),yldp(nyldp),sdev(ntens),cauchy(ntens)
-      real*8 yldc,yldp,sdev,cauchy
+      real*8, intent(in)::cauchy
+      real*8 yldc,yldp,sdev
 c     isotropic yield surface
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
       real*8 phi_chi,dphi_chi,d2phi_chi
 c     HAH yield surface
       dimension dphi(ntens),d2phi(ntens,ntens)
-      real*8 phi,dphi,d2phi
+      real*8,intent(out):: phi,dphi,d2phi
 c     local - microstructure deviator
       dimension emic(6)
       real*8 emic
@@ -62,7 +63,6 @@ c     local-control
       integer imsg
       logical idiaw
       real*8 phi_chi_ref, phi_isoh, hydro, fht, rah
-
 cf2py intent(in) iyld_choice,yldc,nyldc,yldp,nylpd
 cf2py intent(in) sdev,phi_chi,dphi_chi,d2phi_chi,ntens
 cf2py intent(out) phi,dphi,d2phi
@@ -70,7 +70,9 @@ cf2py intent(out) phi,dphi,d2phi
 c-----------------------------------------------------------------------
       imsg = 0
       idiaw=.true.
-      idiaw=.false.
+c      idiaw=.false.
+
+c     Fooling the compiler - by-pass warning of unused arguments.
       d2phi(:,:)=d2phi(:,:)
       d2phi_chi(:,:)=d2phi_chi(:,:)
       d2phi_lat(:,:)=d2phi_lat(:,:)
@@ -85,18 +87,15 @@ c-----------------------------------------------------------------------
       sdp(:)=sdp(:)
       sp(:)=sp(:)
       target(:)=target(:)
-
-
-      call deviat(ntens,cauchy,sdev,hydro)
-
+c -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
 c$$$c     obtain deviatoric stress
-c$$$      call deviat(cauchy,ntens,sdev)
+      call deviat(ntens,cauchy,sdev,hydro)
       if (idiaw) then
          call fill_line(imsg,'#',72)
          call w_chr(imsg,'Enter HAH_YIELDSURFACE')
          call fill_line(imsg,'#',72)
          call w_chr(imsg,'deviatoric stress')
-         call w_dim(imsg,sdev,ntens,1d0,.false.)
+         call w_dim(imsg,sdev,ntens,1d0,.true.)
 c         call exit(-1)
       endif
 
@@ -106,7 +105,6 @@ c     Restore yldp into state variables/parameters
      $     gL,ekL,eL,gS,c_ks,ss)
 
 c     calculate yield surface
-
 c     decompose deviatoric stress
       if (idiaw) then
          call w_chr(imsg,'calling to hah_decompose')
@@ -114,24 +112,26 @@ c     decompose deviatoric stress
       call hah_decompose(sdev,ntens,emic,sc,so)
       if (idiaw) then
          call w_chr(imsg,'deviatoric Stress decomposition')
-         call w_dim(imsg,sdev,ntens,1d0,.false.)
+         call w_dim(imsg,sdev,ntens,1d0,.true.)
          call w_chr(imsg,'emic')
-         call w_dim(imsg,emic,ntens,1d0,.false.)
+         call w_dim(imsg,emic,ntens,1d0,.true.)
          call w_chr(imsg,'sc')
-         call w_dim(imsg,sc,ntens,1d0,.false.)
+         call w_dim(imsg,sc,ntens,1d0,.true.)
          call w_chr(imsg,'so')
-         call w_dim(imsg,so,ntens,1d0,.false.)
+         call w_dim(imsg,so,ntens,1d0,.true.)
+c         call exit(-1)
       endif
 
 c---  anisotropic yield surface with isotropic hardening / phi_isoh
 c     phi_chi, dphi_chi, d2phi_chi
       phi_chi_ref = phi_chi**yldc(9)
-      phi_isoh = (ref/phi_chi_ref)**(1d0/yldc(9))
+      phi_isoh    = (ref/phi_chi_ref)**(1d0/yldc(9))
       if (idiaw) then
          call w_val(imsg,'ref',ref)
          call w_val(imsg,'phi_chi',phi_chi)
          call w_val(imsg,'phi_chi_ref',phi_chi_ref)
          call w_val(imsg,'phi_isoh',phi_isoh)
+         call exit(-1)
       endif
 c      call exit(-1)
 

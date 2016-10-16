@@ -24,13 +24,13 @@ c     nyldc       - Len of yldc
 c     nyldp       - Len of yldp
 c     ntens       - Len of stress tensor
       implicit none
+c     Arguments
       integer, intent(in):: iyld_choice,ntens,nyldc,nyldp
       dimension yldc(nyldc),yldp(nyldp),cauchy(ntens)
       dimension dphi(ntens),d2phi(ntens,ntens),sdev(ntens)
       real*8, intent(in)::yldc
-      real*8 yldp,cauchy,sdev
-
       real*8, intent(out):: phi,dphi,d2phi
+      real*8 yldp,cauchy,sdev
 
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
       real*8 phi_chi,dphi_chi,d2phi_chi
@@ -63,7 +63,6 @@ c     HAH yield surface depends on the deviatoric stress
 c         call exit(-1)
       endif
 
-
 c     Calculate yield surface and its derivatives as a function of
 c     only yield function kernel without HAH distortion.
 c     These are saved to phi_chi, dphi_chi, d2phi_chi
@@ -94,7 +93,6 @@ c     These are saved to phi_chi, dphi_chi, d2phi_chi
          call exit(-1)
       endif
 
-
       if (idiaw) then
          call w_chr(imsg,'hah.f')
          call w_chr(imsg,'cauchy')
@@ -103,15 +101,18 @@ c     These are saved to phi_chi, dphi_chi, d2phi_chi
 c         call exit(-1)
       endif
 
-
 c$$$c     test
       phi=phi_chi
       dphi(:)=dphi_chi(:)
       d2phi(:,:)=d2phi_chi(:,:)
+
+      call hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)
+
+      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
+     $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
+
+      return
       end subroutine hah
-
-
-
 
 c$$$      call exit(-1)
 c$$$      do 10 i=1,ntens
@@ -122,7 +123,6 @@ c$$$ 10   continue
 c$$$      call exit(-1)
 
 c     call exit(-1)
-
 
 c$$$c**   saves ref to yldp
 c$$$      call hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)

@@ -63,13 +63,15 @@ c     yldc     : yldc
 c     phi      : (phi1**2+phi2**2)**(1/2)
       implicit none
 c     Arguments passed
-      integer iyld_law,ntens,nyldp,nyldc
+      integer,intent(in) :: iyld_law,ntens,nyldp,nyldc
       dimension cauchy(ntens),yldp(nyldp),yldc(nyldc)
-      real*8 cauchy,yldp,yldc
+      real*8 yldp,yldc
+      real*8, intent(in)::cauchy
 c     locals
       dimension sdev(ntens),so(ntens), sc(ntens), sdp(ntens),
      $     emic(ntens),dphi(ntens),d2phi(ntens)
-      real*8 sdev,so,sc,sdp,emic,phi,dphi,d2phi
+      real*8 sdev,so,sc,sdp,emic,dphi,d2phi
+      real*8, intent(out) :: phi
 
 c     variables to be stored from yldp
       integer imsg

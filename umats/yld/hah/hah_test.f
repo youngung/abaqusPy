@@ -1,4 +1,9 @@
-c     read_alpha is located in
+c-----------------------------------------------------------------------
+c     Homogeneoua Anisotropic Hardening
+c
+c     Youngung Jeong
+c     youngung.jeong@gmail.com
+c-----------------------------------------------------------------------
       program test
 c     Arguments
 c     iyld_choice - isotropic yield surface kernel
@@ -14,12 +19,10 @@ c     ntens       - Len of stress tensor
       implicit none
       integer ntens,nyldc,nyldp
       parameter(ntens=3,nyldc=9,nyldp=30)
-      dimension yldc(nyldc),yldp(nyldp),stress(ntens)
-      dimension dphi(ntens),d2phi(ntens,ntens)
-      real*8 yldc,yldp,stress,phi,dphi,d2phi
-      real*8 phi_chi
+      dimension yldc(nyldc),yldp(nyldp),stress(ntens),dphi(ntens),
+     $     d2phi(ntens,ntens)
+      real*8 yldc,yldp,stress,phi,dphi,d2phi,phi_chi
       integer iyld_choice
-
 c     local - microstructure deviator
       dimension emic(ntens)
       real*8 emic
@@ -42,7 +45,6 @@ c      idiaw=.false.
       idiaw=.true.
       imsg=0
 
-
 c     create a dummy microstructure deviator
       aux_ten(:)=0d0
       aux_ten(1)=1d0
@@ -63,9 +65,7 @@ c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
 
       iyld_choice=2             ! yld2000-2d
 
-      if (idiaw) then
-         call fill_line(imsg,'*',72)
-      endif
+      if (idiaw) call fill_line(imsg,'*',72)
 
       stress(:)=0d0
       stress(1)=1d0
@@ -103,10 +103,8 @@ c     Arguments passed into
       dimension yldc(nyldc),yldp(nyldp),stress(ntens),
      $     d2phi(ntens,ntens),dphi(ntens)
       real*8 yldc,yldp,stress,d2phi,dphi,phi
-
       call hah(iyld_choice,stress,phi,dphi,d2phi,yldc,yldp,nyldc,nyldp,
      $     ntens)
-
       return
       end subroutine one
 c--------------------------------------------------------------------------------
@@ -130,7 +128,6 @@ c     local variables.
       pi=4.d0*datan(1.d0)
 
       call cpu_time(time0)
-
 
       if (ntens.ne.3) then
          write(*,*)' *********************************************'
@@ -207,8 +204,7 @@ c     Arguments passed into
       real*8 yldp
 c     Local variables.
       dimension d2phi(ntens),smat(ntens),dphi(ntens)
-      real*8 dphi,d2phi,pi,th,time0,time1,
-     $     phim,q,smat
+      real*8 dphi,d2phi,pi,th,time0,time1,phim,q,smat
       integer nth,i,j,imsg
       parameter(nth=361)
       logical idiaw
@@ -254,20 +250,21 @@ c         call w_valsc(imsg,phim)
 c         call w_chrc(imsg,'|')
 
          smat(:) = smat(:)/phim
+         call hah(iyld_choice,smat,phim,dphi,d2phi,
+     $        yldc,yldp,nyldc,nyldp,ntens)
          write(*,'(2f7.3)',advance='no') (smat(i),i=1,2)
-         write(*,'(2f7.3)',advance='no') (dphi(i),i=1,2)
+         write(*,'(3f7.3)',advance='no') (dphi(i),i=1,2),phim
          write(1,'(2f7.3)',advance='no') (smat(i),i=1,2)
          write(1,'(2f9.5)',advance='no') (dphi(i),i=1,2)
 c         call w_dim(imsg,smat,ntens,1d0,.false.)
 c         call w_chr(imsg,'|')
          write(*,*)
- 2       write(1,*)
+         write(1,*)
  10   continue
 
       call cpu_time(time1)
       write(*,'(a,f7.1)') 'Elapsed time: [\mu s]',
      $     (time1-time0)*1e6
-
       close(1)
       return
       end subroutine hah_locus
