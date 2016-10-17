@@ -51,6 +51,7 @@ c     Eq 16 --
 
 c------------------------------------------------------------------------
 c     Latent hardening effect accounted and saved to phi
+c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
       subroutine latent(iyld_law,ntens,nyldp,nyldc,cauchy,yldp,yldc,phi)
 c     Arguments
 c     iyld_law : type of yield function
@@ -65,19 +66,18 @@ c     phi      : (phi1**2+phi2**2)**(1/2)
 c     Arguments passed
       integer,intent(in) :: iyld_law,ntens,nyldp,nyldc
       dimension cauchy(ntens),yldp(nyldp),yldc(nyldc)
-      real*8 yldp,yldc
-      real*8, intent(in)::cauchy
+      real*8, intent(inout) ::  yldp,yldc
+      real*8, intent(in)  :: cauchy
+      real*8, intent(out) :: phi
 c     locals
       dimension sdev(ntens),so(ntens), sc(ntens), sdp(ntens),
      $     emic(ntens),dphi(ntens),d2phi(ntens)
       real*8 sdev,so,sc,sdp,emic,dphi,d2phi
-      real*8, intent(out) :: phi
-
 c     variables to be stored from yldp
-      integer imsg
       dimension gk(4),e_ks(5),f_ks(2),sp(ntens),phis(2)
       real*8 gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,sp,phis,hydro
       logical idiaw
+      integer imsg
       imsg=0
 c      idiaw=.true.
       idiaw=.false.

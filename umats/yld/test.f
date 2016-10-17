@@ -3,7 +3,7 @@ c     to test various yield functions
       program test_yld
       implicit none
       integer nth,nyldc
-      parameter(nth=361)
+      parameter(nth=15)
       dimension yldc(9),rs(nth),ys(nth),locus(nth,2)
       real*8 yldc,rs,ys,locus
       real*8 toler

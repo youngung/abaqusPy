@@ -249,16 +249,17 @@ c     hah_io
       real*8 emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss
 c     locals
       dimension cauchy_ref(ntens)
-      real*8 cauchy_ref
+      real*8 cauchy_ref,phi
 
       call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
      $     gL,ekL,eL,gS,c_ks,ss)
       cauchy_ref(:)=0d0
       cauchy_ref(1)=1d0
-c      cauchy_ref(2)=1d0
+c     cauchy_ref(2)=1d0
+c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
       call latent(iyld_choice,ntens,nyldp,nyldc,cauchy_ref,yldp,yldc,
-     $     ref)
-      ref = ref**yldc(9)
+     $     phi)
+      ref = phi**(1d0/yldp(9))
 c      call w_val(imsg,'ref',ref)
 c     save ref to yldp
       call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,

@@ -1,5 +1,6 @@
 c-----------------------------------------------------------------------
-c     Homogeneoua Anisotropic Hardening
+c     To test if Homogeneoua Anisotropic Hardening implementation
+c
 c
 c     Youngung Jeong
 c     youngung.jeong@gmail.com
@@ -50,10 +51,11 @@ c     create a dummy microstructure deviator
       aux_ten(1)=1d0
       call deviat(ntens,aux_ten,emic,hydro)
 c     isotropic conditions
-      gL = 1d0
+      gL = 1.5d0
       gS = 1d0
       e_ks(:)=1d0               ! k1,k2,k3,k4,k5
       f_ks(:)=0d0               ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
+      f_ks(1)=1d0               ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
 c      call read_alpha(
 c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
 
@@ -94,20 +96,6 @@ c      call hah_uten(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
 
       end program test
 c--------------------------------------------------------------------------------
-c     Test one stress state
-      subroutine one(iyld_choice,nyldc,nyldp,ntens,yldc,yldp,stress,
-     $     d2phi,dphi,phi)
-      implicit none
-c     Arguments passed into
-      integer iyld_choice,nyldc,nyldp,ntens
-      dimension yldc(nyldc),yldp(nyldp),stress(ntens),
-     $     d2phi(ntens,ntens),dphi(ntens)
-      real*8 yldc,yldp,stress,d2phi,dphi,phi
-      call hah(iyld_choice,stress,phi,dphi,d2phi,yldc,yldp,nyldc,nyldp,
-     $     ntens)
-      return
-      end subroutine one
-c--------------------------------------------------------------------------------
       subroutine hah_uten(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
       implicit none
 c     Arguments passed into
@@ -115,15 +103,21 @@ c     Arguments passed into
       dimension yldc(nyldc),yldp(nyldp)
       real*8 yldc,yldp
       integer iyld_choice
-
 c     local variables.
       dimension dphi(ntens),d2phi(ntens,ntens),s33lab(3,3),s33mat(3,3),
-     $     s6mat(6),dphi33m(3,3),s3mat(3),
+     $     s6mat(6),dphi33m(3,3),s3mat(3),emic(ntens),
      $     dphi33l(3,3),s6lab(6),dphi6(6)
       real*8 dphi,d2phi,pi,th,s33lab,s33mat,s6mat,time0,time1,
-     $     dphi33m,s3mat,dphi33l,rv,dphi6,s6lab,phim
-      integer nth,i,j
-      parameter(nth=10)
+     $     dphi33m,s3mat,dphi33l,rv,dphi6,s6lab,phim,emic
+      integer nth,i,j,iverbose
+c     local - Latent hardening parameters
+      dimension e_ks(5),f_ks(2),gk(4)
+      real*8 gL,ekL,eL,e_ks,f_ks,gk
+c     local - cross hardening parameters
+      real*8 gS,c_ks,ss,eeq
+c     local - gen
+      real*8 ref
+      parameter(nth=10,iverbose=0)
 
       pi=4.d0*datan(1.d0)
 
@@ -141,25 +135,49 @@ c     local variables.
       s6lab(1)=1d0
       call voigt2(s6lab,s33lab)
 
-      write(*,'(a7,5(4a7,x,a1,x),2a7)')'th',
-     $     's11_l','s22_l','s33_l','s12_l','|',
-     $     's11_m','s22_m','s33_m','s12_m','|',
-     $     's11_l','s22_l','s33_l','s12_l','|',
-     $     'e11_m','e22_m','e33_m','e12_m','|',
-     $     'e11_l','e22_l','e33_l','e12_l','|',
-     $     'rv','phim'
+      write(*,*)
+      write(*,*)
+
+c     isotropic conditions
+      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
+     $     gL,ekL,eL,gS,c_ks,ss)
+      gL = 1d0
+      gS = 1.0d0
+      e_ks(:)=1d0               ! k1,k2,k3,k4,k5
+      f_ks(:)=0d0               ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
+
+      call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
+     $     gL,ekL,eL,gS,c_ks,ss)
+
+      if (iverbose.eq.1)  then
+         write(*,'(a7,5(4a7,x,a1,x),2a7)')'th',
+     $        's11_l','s22_l','s33_l','s12_l','|',
+     $        's11_m','s22_m','s33_m','s12_m','|',
+     $        's11_l','s22_l','s33_l','s12_l','|',
+     $        'e11_m','e22_m','e33_m','e12_m','|',
+     $        'e11_l','e22_l','e33_l','e12_l','|',
+     $        'rv','phim'
+      elseif (iverbose.eq.0)  then
+         write(*,'(3a7)') 'th','rv','phim'
+      endif
 
       do 10 j=1,nth
          th = pi/2d0 - pi/2d0/(nth-1)*(j-1)
-         write(*,'(f7.2)',advance='no') th*180.d0/pi
-         write(*,'(4f7.2,x,a1,x)',advance='no')
-     $        (s33lab(i,i),i=1,3),s33lab(1,2),'|'
+         if (iverbose.ge.0) write(*,'(f7.2)',advance='no') th*180.d0/pi
+         if (iverbose.eq.1) then
+            write(*,'(4f7.2,x,a1,x)',advance='no')
+     $           (s33lab(i,i),i=1,3),s33lab(1,2),'|'
+         endif
          call inplane_rot(th,s33lab,s33mat)
-         write(*,'(4f7.2,x,a1,x)',advance='no')
-     $        (s33mat(i,i),i=1,3),s33mat(1,2),'|'
+         if (iverbose.eq.1) then
+            write(*,'(4f7.2,x,a1,x)',advance='no')
+     $           (s33mat(i,i),i=1,3),s33mat(1,2),'|'
+         endif
          call inplane_rot(th*(-1d0),s33mat,s33lab)
-         write(*,'(4f7.2,x,a1,x)',advance='no')
-     $        (s33lab(i,i),i=1,3),s33lab(1,2),'|'
+         if (iverbose.eq.1) then
+            write(*,'(4f7.2,x,a1,x)',advance='no')
+     $           (s33lab(i,i),i=1,3),s33lab(1,2),'|'
+         endif
          call voigt1(s33mat,s6mat)
          call reduce_6to3(s6mat,s3mat)
          call hah(iyld_choice,s3mat,phim,dphi,d2phi,
@@ -174,13 +192,20 @@ c     local variables.
             call exit(-1)
          endif
 !        dphi in material axes
-         write(*,'(4f7.2,x,a1,x)',advance='no')
-     $        (dphi33m(i,i),i=1,3),dphi33m(1,2),'|'
+         if (iverbose.eq.1) then
+            write(*,'(4f7.2,x,a1,x)',advance='no')
+     $           (dphi33m(i,i),i=1,3),dphi33m(1,2),'|'
+         endif
          call inplane_rot(th*(-1.d0),dphi33m,dphi33l)
          rv =-dphi33l(2,2)/(dphi33l(1,1)+dphi33l(2,2))
-         write(*,'(4f7.2,x,a1,x,2f7.2)',advance='no')
-     $        (dphi33l(i,i),i=1,3),dphi33l(1,2),'|',rv,phim
-         write(*,*)
+         if (iverbose.eq.1) then
+            write(*,'(4f7.2,x,a1,x)',advance='no')
+     $           (dphi33l(i,i),i=1,3),dphi33l(1,2),'|'
+         endif
+         if(iverbose.ge.0) then
+            write(*,'(2f7.2)',advance='no') rv,phim
+            write(*,*)
+         endif
  10   continue
       call cpu_time(time1)
       return
@@ -205,10 +230,12 @@ c     Arguments passed into
 c     Local variables.
       dimension d2phi(ntens),smat(ntens),dphi(ntens)
       real*8 dphi,d2phi,pi,th,time0,time1,phim,q,smat
-      integer nth,i,j,imsg
-      parameter(nth=361)
+      integer nth,i,j,imsg,iverbose
+      parameter(nth=17)
       logical idiaw
-      imsg=0
+      imsg = 0
+      iverbose=0  ! (0: fully verbose)
+                  ! (1:)
       idiaw = .true.
 
       call cpu_time(time0)
@@ -218,10 +245,15 @@ c     pi and yield surface exponent q stored in yldc
       pi=4.d0*datan(1.d0)
       q = yldc(9)
 
+      write(*,*)
+      write(*,*)
+      write(*,*)
 c$$$      write(*,'(a11,x,(4a9,x,a1,x),2(4a11,x,a1,x,a11,x))')'th',
 c$$$     $     's1_m', 's2_m', 's3_m', 's6_m', '|',
 c$$$     $     'e11_m','e22_m','e33_m','e12_m','|','phim',
 c$$$     $     's1_m', 's2_m', 's3_m', 's6_m', '|','phim'
+
+      write(*,'(5a7)')'s1','s2','e1','e2','phi'
 
       do 10 j=1,nth
          th = 4*pi/(nth-1)*(j-1)
@@ -268,3 +300,17 @@ c         call w_chr(imsg,'|')
       close(1)
       return
       end subroutine hah_locus
+c--------------------------------------------------------------------------------
+c     Test one stress state
+      subroutine one(iyld_choice,nyldc,nyldp,ntens,yldc,yldp,stress,
+     $     d2phi,dphi,phi)
+      implicit none
+c     Arguments passed into
+      integer iyld_choice,nyldc,nyldp,ntens
+      dimension yldc(nyldc),yldp(nyldp),stress(ntens),
+     $     d2phi(ntens,ntens),dphi(ntens)
+      real*8 yldc,yldp,stress,d2phi,dphi,phi
+      call hah(iyld_choice,stress,phi,dphi,d2phi,yldc,yldp,nyldc,nyldp,
+     $     ntens)
+      return
+      end subroutine one

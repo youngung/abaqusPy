@@ -106,10 +106,11 @@ c$$$c     test
       dphi(:)=dphi_chi(:)
       d2phi(:,:)=d2phi_chi(:,:)
 
+c     calling hah_calc_ref stores (sqrt(phi(so)**2+phi(sdp)**2))**q to ref
       call hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)
-
       call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
-     $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
+     $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi,
+     $     .false.)
 
       return
       end subroutine hah
@@ -134,8 +135,6 @@ c$$$         call fill_line(imsg,'*',72)
 c$$$         call w_chr(imsg,'Exiting subroutine hah')
 c$$$         call fill_line(imsg,'*',72)
 c$$$      endif
-
-
 
 
 c      call exit(-1)
