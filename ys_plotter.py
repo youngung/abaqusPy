@@ -13,6 +13,7 @@ def comb(fns):
 
     ax.grid()
     ax.legend(fontsize=6,ncol=4,bbox_to_anchor=(1,1.1))
+    ax.set_aspect('equal')
     fnPdf='all_ys.pdf'
     fig.savefig(fnPdf,bbox_inches='tight')
 
@@ -33,8 +34,8 @@ def main(fn='ys.txt'):
     return fnPdf
 
 if __name__=='__main__':
-    fns=glob.glob('*.txt')
+    fns=glob.glob('hah_*.txt')
     comb(fns)
-    for i in xrange(len(fns)):
-        fnPdf=main(fns[i])
-        print '%s->%s'%(fns[i],fnPdf)
+    # for i in xrange(len(fns)):
+    #     fnPdf=main(fns[i])
+    #     print '%s->%s'%(fns[i],fnPdf)

@@ -1,25 +1,16 @@
 c-----------------------------------------------------------------------
-c     To test if Homogeneoua Anisotropic Hardening implementation
-c
+c     Testing module for the Homogeneoua Anisotropic Hardening model
 c
 c     Youngung Jeong
 c     youngung.jeong@gmail.com
+
+c     Arguments
 c-----------------------------------------------------------------------
       program test
-c     Arguments
-c     iyld_choice - isotropic yield surface kernel
-c     stress      - cauchy stress tensor
-c     phi         - HAH yield surface
-c     dphi        - HAH yield surface 1st derivatives
-c     d2phi       - HAH yield surface 2nd derivatives
-c     yldc        - isotropic yield surface constants
-c     yldp        - HAH yield surface contants/state variables
-c     nyldc       - Len of yldc
-c     nyldp       - Len of yldp
-c     ntens       - Len of stress tensor
       implicit none
-      integer ntens,nyldc,nyldp
-      parameter(ntens=3,nyldc=9,nyldp=30)
+      integer ntens,nyldc,nyldp,narg
+      parameter(ntens=3,nyldc=9,nyldp=30,narg=5)
+      character(len=32) :: arg
       dimension yldc(nyldc),yldp(nyldp),stress(ntens),dphi(ntens),
      $     d2phi(ntens,ntens)
       real*8 yldc,yldp,stress,phi,dphi,d2phi,phi_chi
@@ -39,36 +30,62 @@ c     local - cross hardening parameters
 c     local - gen
       real*8 ref,hydro
 c     local - controlling
-      integer imsg
-      logical idiaw
+      integer imsg,i
+      dimension arg_status(narg)
+      logical idiaw,arg_status
+
+c     arguments
+      real*8 th_emic,pi
+
+      pi = 4d0*datan(1.d0)
 
 c      idiaw=.false.
-      idiaw=.true.
-      imsg=0
+      idiaw = .true.
+      imsg  = 0
 
 c     create a dummy microstructure deviator
-      aux_ten(:)=0d0
-      aux_ten(1)=1d0
+      aux_ten(:) = 0d0
+      aux_ten(1) = 0.5d0
+      aux_ten(2) = 1d0
       call deviat(ntens,aux_ten,emic,hydro)
-c     isotropic conditions
-      gL = 1.5d0
-      gS = 1d0
-      e_ks(:)=1d0               ! k1,k2,k3,k4,k5
-      f_ks(:)=0d0               ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
-      f_ks(1)=1d0               ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
+c     Default state variables (isotropic conditions)
+      gL      = 1d0
+      gS      = 1d0
+      e_ks(:) = 1d0             ! k1,k2,k3,k4,k5
+      f_ks(:) = 0d0             ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
+      f_ks(1) = 0d0             ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
+      emic(:) = 0d0
+
+      do 5 i=1,narg
+         arg_status(i)=.false.
+         call getarg(i,arg)
+         if (arg.ne.'') arg_status(i)=.true.
+c        First argument (th of emic in pi-plane)
+         if    (i.eq.1.and.arg_status(i)) then
+            read(arg,'(f13.9)') th_emic
+            th_emic = th_emic * pi/180d0
+            aux_ten(:)=0d0
+            aux_ten(1)=dcos(th_emic)
+            aux_ten(2)=dsin(th_emic)
+            call deviat(ntens,aux_ten,emic,hydro)
+         elseif(i.eq.2.and.arg_status(i)) then
+            read(arg,'(f13.9)') gL
+         elseif(i.eq.3.and.arg_status(i)) then
+            read(arg,'(f13.9)') gS
+         elseif(i.eq.4.and.arg_status(i)) then
+            read(arg,'(f13.9)') f_ks(1)
+         elseif(i.eq.5.and.arg_status(i)) then
+            read(arg,'(f13.9)') f_ks(2)
+         endif
+ 5    continue
 c      call read_alpha(
 c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
-
       yldc(:8) = 1d0
-      yldc(9) = 8d0
-
-      call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
-     $     gL,ekL,eL,gS,c_ks,ss)
-
+      yldc(9)  = 2d0
+      call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
+     $     eL,gS,c_ks,ss)
       iyld_choice=2             ! yld2000-2d
-
       if (idiaw) call fill_line(imsg,'*',72)
-
       stress(:)=0d0
       stress(1)=1d0
       if (idiaw) then
@@ -77,23 +94,21 @@ c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
          call w_chr(imsg,'yldc')
          call w_dim(imsg,yldc,nyldc,1d0,.true.)
          call fill_line(imsg,'*',72)
-         call w_chr(imsg,'just before entering hah')
          call w_chr(imsg,'cauchy stress')
          call w_dim(imsg,stress,ntens,1d0,.true.)
+         call w_chr(imsg,'just before entering hah')
       endif
-      call hah(iyld_choice,stress,phi,dphi,d2phi,yldc,yldp,nyldc,
-     $     nyldp,ntens)
+      call hah(iyld_choice,stress,phi,dphi,d2phi,yldc,yldp,nyldc,nyldp,
+     $     ntens)
       if (idiaw) then
-         call w_chr(imsg,'right after exit hah')
-c$$$      call w_ival(imsg,'iyld_choice:',iyld_choice)
+         call w_chr( imsg,'right after exit hah')
+         call w_ival(imsg,'iyld_choice:',iyld_choice)
          call w_val( imsg,'phi_chi    :',phi_chi)
          call w_val( imsg,'phi        :',phi)
          call fill_line(imsg,'*',72)
       endif
-
 c      call hah_uten(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
       call hah_locus(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
-
       end program test
 c--------------------------------------------------------------------------------
       subroutine hah_uten(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
@@ -105,8 +120,8 @@ c     Arguments passed into
       integer iyld_choice
 c     local variables.
       dimension dphi(ntens),d2phi(ntens,ntens),s33lab(3,3),s33mat(3,3),
-     $     s6mat(6),dphi33m(3,3),s3mat(3),emic(ntens),
-     $     dphi33l(3,3),s6lab(6),dphi6(6)
+     $     s6mat(6),dphi33m(3,3),s3mat(3),emic(ntens),dphi33l(3,3),
+     $     s6lab(6),dphi6(6)
       real*8 dphi,d2phi,pi,th,s33lab,s33mat,s6mat,time0,time1,
      $     dphi33m,s3mat,dphi33l,rv,dphi6,s6lab,phim,emic
       integer nth,i,j,iverbose
@@ -139,16 +154,14 @@ c     local - gen
       write(*,*)
 
 c     isotropic conditions
-      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
-     $     gL,ekL,eL,gS,c_ks,ss)
-      gL = 1d0
-      gS = 1.0d0
-      e_ks(:)=1d0               ! k1,k2,k3,k4,k5
-      f_ks(:)=0d0               ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
-
-      call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
-     $     gL,ekL,eL,gS,c_ks,ss)
-
+c$$$      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
+c$$$     $     eL,gS,c_ks,ss)
+c$$$      gL = 1d0
+c$$$      gS = 1.0d0
+c$$$      e_ks(:)=1d0               ! k1,k2,k3,k4,k5
+c$$$      f_ks(:)=0d0               ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
+c$$$      call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
+c$$$     $     eL,gS,c_ks,ss)
       if (iverbose.eq.1)  then
          write(*,'(a7,5(4a7,x,a1,x),2a7)')'th',
      $        's11_l','s22_l','s33_l','s12_l','|',
@@ -228,10 +241,10 @@ c     Arguments passed into
       real*8, intent(in) :: yldc
       real*8 yldp
 c     Local variables.
-      dimension d2phi(ntens),smat(ntens),dphi(ntens)
-      real*8 dphi,d2phi,pi,th,time0,time1,phim,q,smat
+      dimension d2phi(ntens),smat(ntens),dphi(ntens),sdev(6)
+      real*8 dphi,d2phi,pi,th,time0,time1,phim,q,smat,sdev,hydro,s1,s2
       integer nth,i,j,imsg,iverbose
-      parameter(nth=17)
+      parameter(nth=1000)
       logical idiaw
       imsg = 0
       iverbose=0  ! (0: fully verbose)
@@ -256,7 +269,7 @@ c$$$     $     's1_m', 's2_m', 's3_m', 's6_m', '|','phim'
       write(*,'(5a7)')'s1','s2','e1','e2','phi'
 
       do 10 j=1,nth
-         th = 4*pi/(nth-1)*(j-1)
+         th = 2*pi/(nth-1)*(j-1)
 c         write(*,'(f7.1,a)',advance='no') th*180.d0/pi,'|'
          if (ntens.eq.3) then
             smat(1)   = dcos(th)
@@ -284,10 +297,16 @@ c         call w_chrc(imsg,'|')
          smat(:) = smat(:)/phim
          call hah(iyld_choice,smat,phim,dphi,d2phi,
      $        yldc,yldp,nyldc,nyldp,ntens)
+
+         call reduce_3to6(smat,sdev)
+         call deviat(6,smat,sdev,hydro)
+         call pi_proj(sdev,s1,s2)
+
          write(*,'(2f7.3)',advance='no') (smat(i),i=1,2)
          write(*,'(3f7.3)',advance='no') (dphi(i),i=1,2),phim
          write(1,'(2f7.3)',advance='no') (smat(i),i=1,2)
          write(1,'(2f9.5)',advance='no') (dphi(i),i=1,2)
+         write(1,'(2f9.5)',advance='no') s1,s2
 c         call w_dim(imsg,smat,ntens,1d0,.false.)
 c         call w_chr(imsg,'|')
          write(*,*)

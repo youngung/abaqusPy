@@ -123,7 +123,7 @@ c     decompose deviatoric stress
          call w_chr(imsg,'so')
          call w_dim(imsg,so,ntens,1d0,.true.)
          call fill_line(imsg,'-',23)
-c     call exit(-1)
+c         call exit(-1)
       endif
 
 c---  anisotropic yield surface with isotropic hardening / phi_isoh

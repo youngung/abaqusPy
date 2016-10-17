@@ -72,7 +72,7 @@ c     Refer to eq 1 in Ref [1]
 cf2py intent(in)  H,tensor6
 cf2py intent(out) tensor6_hat
 c***  it should be a deviator
-      call deviat(tensor6,tensor6d,hydro)
+      call deviat6(tensor6,tensor6d,hydro)
 c***  calculate dotproducts
       dotproducts=0d0
       do 5 i=1,6
@@ -176,9 +176,9 @@ c     local
 c     HAH yield surface/state variables (and a few constants if any)
 c***  equivalent plastic strain (cumulative)
          eeq     = yldp(1)
-c***  reference size
+c***  Reference size
          ref     = yldp(2)
-c***  microstructure deviator
+c***  Microstructure deviator
          do 5 i=1,ntens
             emic(i) = yldp(i+2)
  5       continue
@@ -202,12 +202,12 @@ c     diagnose
             call exit(-1)
          endif
       elseif (iopt.eq.1) then   ! state variables -> yldp
-
 c     HAH yield surface/state variables (and a few constants if any)
 c***  equivalent plastic strain (cumulative)
          yldp(1)   = eeq
+c***  Reference size
          yldp(2)   = ref
-c***  microstructure deviator
+c***  Microstructure deviator
          do 15 i=1,ntens
             yldp(i+2) = emic(i)
  15      continue
@@ -226,7 +226,6 @@ c***  cross hardening
          yldp(ntens+16) = c_ks
          yldp(ntens+17) = ss
       endif
-
 c     yield surface constants
       return
       end subroutine hah_io
