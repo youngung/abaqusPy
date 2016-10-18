@@ -12,18 +12,26 @@ c     Youngung Jeong
 c     youngung.jeong@gmail.com
 c------------------------------------------------------------------------
 c     subroutine that calculates fk parameter for HAH
-c         --   Eq 7 in Ref. [1]
-      subroutine calc_fk(gk,H,q,fk)
+c     Refer to Eq 7 in Ref. [1]
+c     The equation in Ref. [1] has a typo: missing exponent q
+c     to the value of g_k
+      subroutine calc_fk(gk,H,q,fk,dfk)
 c     Arguments
 c     gk
 c     H
 c     q  : the exponent
-c     fk
+c     fk :f value
+c     dfk: \partial(fk)/\partial(gk)
       implicit none
-      real*8 gk,H,q,fk
-cf2py intent(in) gk,H
-cf2py intent(out) fk
-      fk = (dsqrt(H)/4d0 * (1d0/gk-1 )  ) ** (1d0/q)
+      real*8, intent(in) ::gk,H,q
+      real*8, intent(out)::fk,dfk
+      real*8, c
+cf2py intent(in) gk,H,q
+cf2py intent(out) fk,dfk
+      c = dsqrt(6d0*H)/4d0
+      fk  = (c * (1d0/(gk**q)-1d0)) ** (1d0/q)
+c     d(fk)/d(gk) - to be used for derivative of yield surface
+      dfk = c**(1d0/q) * (- gk**(-q-1d0) * fk **(1d0-q))
       return
       end subroutine
 c------------------------------------------------------------------------
@@ -72,9 +80,9 @@ c     Arguments passed into
       dimension target(ntens)
       dimension gs(4)
       dimension e_ks(5)
-      dimension fks(2)
+      dimension fks(2),dfks(2) ! dfks : dfk/dgk
       dimension gs_new(4)
-      real*8 e_mic,target,gs,e_ks,fks,gs_new
+      real*8 e_mic,target,gs,e_ks,fks,dfks,gs_new
       real*8 q,ys_iso,ys_hah,debar
 c     locals
       dimension dgs(4)
@@ -91,6 +99,7 @@ c***  index k depends on the sign of (mic:target)
          k = 2
       endif
 c***  Eqs 14&15 in Ref. [1]
+      dgs(:)=0d0
       if (k.eq.1) then
          dgs(1) = e_ks(2) * (e_ks(3) * ys_iso/ys_hah - gs(1))
          dgs(2) = e_ks(1) * (  gs(3) - gs(2)) / gs(2)
@@ -106,7 +115,7 @@ c***  Eqs 14&15 in Ref. [1]
          gs_new(i) = gs(i) + dgs(i) * debar
  10   continue
       do 20 i=1,2
-         call calc_fk(gs_new(i),8d0/3d0,q,fks(i))
+         call calc_fk(gs_new(i),8d0/3d0,q,fks(i),dfks(i))
  20   continue
       return
       end subroutine calc_bau

@@ -1,0 +1,229 @@
+\documentclass[12pt]{amsart}
+%\usepackage[intlimits]{amsmath}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{subfigure}
+\usepackage{listings}
+\usepackage{color}
+%\usepackage[nomarkers,figuresonly]{endfloat}
+\usepackage{geometry} % see geometry.pdf on how to lay out the page. There's lots.
+\usepackage{paralist}
+\usepackage{lscape}
+\usepackage{caption}
+\usepackage{lineno}
+%\linenumbers
+
+\usepackage{pgf}
+\usepackage{tikz}
+\usepackage{pgfplots}
+%\usepackage{harvard}
+\usetikzlibrary{shapes,arrows,chains,automata,fit}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes.geometric,intersections}
+
+\author{Youngung Jeong}
+% \address{
+%   International Center for Automotive Research
+%   Clemson University
+% }
+\email[Y. Jeong]{youngung.jeong@gmail.com}
+
+%\usepackage{authblk}
+\geometry{a4paper} % or letter or a5paper or ... etc
+% \geometry{landscape} % rotated page geometry
+\hypersetup{
+  colorlinks,%
+  citecolor=blue,%,black
+  filecolor=blue,%
+  linkcolor=blue,%
+  urlcolor=blue
+}
+
+\doublespacing
+
+%% Custom colors
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+%\definecolor{lime}(0,255,0)
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{lightgray}{rgb}{0.83, 0.83, 0.83}
+\definecolor{lightergray}{rgb}{0.90, 0.90, 0.90}
+\definecolor{verylightgray}{rgb}{0.95, 0.95, 0.95}
+
+%% not working
+% \colorlet{lcfree}{Green3}
+% \colorlet{lcnorm}{Blue3}
+% \colorlet{lccong}{Red3}
+
+% -------------------------------------------------
+% Set up a new layer for the debugging marks, and make sure it is on
+% top
+\pgfdeclarelayer{marx}
+\pgfsetlayers{main,marx}
+
+
+%% custom lst styles
+\lstdefinestyle{numbers} {numbers=left, stepnumber=1, numberstyle=\tiny, numbersep=10pt}
+\lstdefinestyle{MyFrame}{backgroundcolor=\color{yellow},frame=shadowbox}
+
+\lstdefinestyle{Fortran} {
+  language=Fortran,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=true,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=left,
+  numberstyle=\tiny\color{red},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=shadowbox,
+  backgroundcolor=\color{verylightgray},
+  tabsize=3
+  }
+
+\lstdefinestyle{sh} {
+  language=bash,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=true,
+  columns=flexible,
+  basicstyle={\tiny\ttfamily},
+  numbers=left,
+  numberstyle=\tiny\color{blue},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=shadowbox,
+  backgroundcolor=\color{lightergray},
+  tabsize=3
+  }
+
+\lstdefinestyle{Python} {
+  language=Python,
+  aboveskip=3mm,
+  frame=shadowbox,
+  belowskip=3mm,
+  showstringspaces=true,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=left,
+  numberstyle=\tiny\color{red},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=shadowbox,
+  backgroundcolor=\color{lightgray},
+  tabsize=3}
+
+\lstdefinestyle{inp} {
+  language=bash,
+  aboveskip=3mm,
+  frame=shadowbox,
+  belowskip=3mm,
+  showstringspaces=true,
+  columns=flexible,
+  basicstyle={\tiny\ttfamily\scriptsize},
+  numbers=left,
+  numberstyle=\tiny\color{red},
+  keywordstyle=\color{black},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=shadowbox,
+  backgroundcolor=\color{lightgray},
+  tabsize=3
+  }
+
+\lstdefinestyle{txt} {
+  aboveskip=3mm,
+  frame=shadowbox,
+  belowskip=3mm,
+  showstringspaces=true,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{red},
+  keywordstyle=\color{black},
+  commentstyle=\color{black},
+  stringstyle=\color{black},
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=shadowbox,
+  backgroundcolor=\color{lightgray},
+  tabsize=3
+  }
+
+\DeclareCaptionFormat{listing}{\rule{\dimexpr\textwidth+17pt\relax}{0.4pt}\par\vskip1pt#1#2#3}
+\captionsetup[lstlisting]{format=listing,singlelinecheck=false, margin=0pt, font={sf},labelsep=space,labelfont=bf}
+
+\renewcommand\lstlistingname{Code}
+% \lstset{language=Fortran,frame=none}
+% \lstset{language=bash,frame=none}
+% \lstset{language=Python,frame=none}
+
+%% tikz customization
+\tikzset{state/.style={rectangle,rounded corners,draw=black, very thick,
+    minimum height=2em,inner sep=2pt,text centered}}
+\tikzset{decision/.style={diamond,aspect=2,draw=black,very thick,
+    minimum height=2em,inner sep=2pt,text centered}}
+\tikzset{process/.style={circle,draw=black,very thick,
+    minimum height=2em,inner sep=2pt,text centered}}
+\tikzset{dot/.style={circle,draw=black,thick,
+    inner sep=0pt,minimum size=4pt}}
+
+\title{Manual for VPSC-FLD (Version 2.1.3)}
+%\date{} % delete this line to display the current date
+
+%%% BEGIN DOCUMENT
+
+\begin{document}
+
+\section{derivatives}
+
+\begin{eqnarray}
+  \label{eq:dbau1}
+  \frac{\partial{f_k^q}}{\partial{\mathbf{\sigma}}} = q f_k^{q-1} \frac{\partial{f_k}}{\partial{g_k}}   \frac{\partial{g_k}}{\partial{\bar{\varepsilon}}}   \frac{\partial{\bar{\varepsilon}}}{\partial{\mathbf{\sigma}}}\\
+  \text{ where      }\ \ \  \frac{\partial{f_k}}{\partial{g_k}} = -g_k^{-q-1} f_k ^{1-q}
+\end{eqnarray}
+
+The term $  \partial{g_k}/\partial{\bar{\varepsilon}} $ depends on the sign of $\hat{\mathbf{h}}:\mathbf{s}$.
+
+For the case of $g_1$ and when  $\hat{\mathbf{h}}:\mathbf{s}<0$:
+\begin{eqnarray}
+  \label{eq:dbau2}
+\frac{\partial{g_1}}{\partial{\bar{\varepsilon}}}=k_1 \frac{g_4-g_1}{g_1}
+\end{eqnarray}
+whereas, if $\hat{\mathbf{h}}:\mathbf{s}\ge0$,
+\begin{eqnarray}
+  \label{eq:dbau3}
+\frac{\partial{g_1}}{\partial{\bar{\varepsilon}}}=k_2 (k_3 H(0)/H(\bar{\varepsilon})-g_1)
+\end{eqnarray}
+
+
+$g_2$ follows a similar rule as follows:
+when  $\hat{\mathbf{h}}:\mathbf{s}<0$:
+\begin{eqnarray}
+  \label{eq:dbau4}
+  \frac{\partial{g_2}}{\partial{\bar{\varepsilon}}}=k_2 (k_3 H(0)/H(\bar{\varepsilon})-g_2)
+\end{eqnarray}
+whereas, if $\hat{\mathbf{h}}:\mathbf{s}\ge0$,
+\begin{eqnarray}
+  \label{eq:dbau5}
+\frac{\partial{g_2}}{\partial{\bar{\varepsilon}}}=k_1 \frac{g_3-g_2}{g_2}
+\end{eqnarray}
+
+Eqs \ref{eq:dbau1}-\ref{eq:dbau5} are located in \verb$bauschinger.f$.
+The term $\partial{\bar{\varepsilon}}/\partial{\mathbf{\sigma}}$ should be obtained elsewhere - through an iterative procedure.
+
+\end{document}
