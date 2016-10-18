@@ -161,15 +161,18 @@ c---  anisotropic yield surface with full HAH
       call bauschinger(ntens,ndi,nshr,emic,sdev,f_ks,yldp(9),phi_bs(1),
      $     phi_bs(2))
       fht = phi_lat_norm+phi_bs(1)+phi_bs(2)
-      phi = (fht)**(1d0/yldp(9))
+c      phi = (1.d0/fht)**(1d0/yldp(9))
+      phi = (ref/fht)**(1d0/yldp(9))
       if (idiaw) then
          call w_chr(imsg,'phi_bs (Bauschinger)')
          call w_dim(imsg,phi_bs,2,1d0,.true.)
          call w_val(imsg,'fht          :',fht)
+         call w_val(imsg,'ref          :',ref)
          call w_val(imsg,'rah          :',rah)
          call w_val(imsg,'phi          :',phi)
          call w_chr(imsg,'cauchy stress:')
          call w_dim(imsg,cauchy,ntens,1d0,.true.)
+         call w_empty_lines(imsg,2)
 c         call exit(-1)
       endif
 

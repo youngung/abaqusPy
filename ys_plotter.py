@@ -19,7 +19,7 @@ def comb(fns):
     fns
     """
 
-    ls=['-','-','-','-','--',':']
+    ls=['-','-','-','-','--',':','--','-','--']
 
     fig=plt.figure(figsize=(7,3))
     ax1=fig.add_subplot(121)

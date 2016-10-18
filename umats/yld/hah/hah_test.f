@@ -36,13 +36,15 @@ c     local - controlling
 c     arguments
       real*8 th_emic,pi
       pi = 4d0*datan(1.d0)
-c      idiaw=.false.
-      idiaw = .true.
+      idiaw=.false.
+c      idiaw = .true.
       imsg  = 0
 c     create a dummy microstructure deviator
       aux_ten(:) = 0d0
       aux_ten(1) = 1d0
+      aux_ten(1) = 1d0
       call deviat(ntens,aux_ten,emic,hydro)
+      call dev_norm(ntens,ndi,nshr,emic)
 c     Default state variables (isotropic conditions)
       gL      = 1d0
       gS      = 1d0
@@ -62,6 +64,7 @@ c        First argument (th of emic in pi-plane)
             aux_ten(1)=dcos(th_emic)
             aux_ten(2)=dsin(th_emic)
             call deviat(ntens,aux_ten,emic,hydro)
+            call dev_norm(ntens,ndi,nshr,emic)
          elseif(i.eq.2.and.arg_status(i)) then
             read(arg,'(f13.9)') gL
          elseif(i.eq.3.and.arg_status(i)) then
@@ -75,7 +78,7 @@ c        First argument (th of emic in pi-plane)
 c      call read_alpha(
 c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
       yldc(:8) = 1d0
-      yldc(9)  = 6d0
+      yldc(9)  = 4d0
       call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
      $     eL,gS,c_ks,ss)
       iyld_choice=2             ! yld2000-2d
@@ -101,8 +104,11 @@ c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
          call w_val( imsg,'phi        :',phi)
          call fill_line(imsg,'*',72)
       endif
-      call hah_uten(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,yldc,yldp)
+
+c      call hah_uten(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,yldc,yldp)
       call hah_locus(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,yldc,yldp)
+c      call one(iyld_choice,nyldc,nyldp,yldc,yldp)
+
       end program test
 c--------------------------------------------------------------------------------
       subroutine hah_uten(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,yldc,
@@ -230,7 +236,7 @@ c     Local variables.
       dimension d2phi(ntens),smat(ntens),dphi(ntens),sdev(6)
       real*8 dphi,d2phi,pi,th,time0,time1,phim,q,smat,sdev,hydro,s1,s2
       integer nth,i,j,imsg,iverbose
-      parameter(nth=40)
+      parameter(nth=400)
       logical idiaw
       imsg = 0
       iverbose=0  ! (0: fully verbose)
@@ -280,7 +286,7 @@ c         call w_dim(imsg,dphi,ntens,1d0,.false.)
 c         call w_chrc(imsg,'|')
 c         call w_valsc(imsg,phim)
 c         call w_chrc(imsg,'|')
-         smat(:) = (smat(:)/phim)**yldp(9)
+         smat(:) = smat(:)*phim
          call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,smat,yldc,yldp,
      $        phim,dphi,d2phi)
          call reduce_3to6(smat,sdev)
@@ -305,16 +311,38 @@ c         call w_chrc(imsg,'|')
       return
       end subroutine hah_locus
 c--------------------------------------------------------------------------------
-c$$$c     Test one stress state
-c$$$      subroutine one(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,stress,yldc,yldp,
-c$$$     $     phi,dphi,d2phi)
-c$$$      implicit none
-c$$$c     Arguments passed into
-c$$$      integer, intent(in)::iyld_choice,nyldc,nyldp,ntens,ndi,nshr
-c$$$      dimension yldc(nyldc),yldp(nyldp),stress(ntens),
-c$$$     $     d2phi(ntens,ntens),dphi(ntens)
-c$$$      real*8 yldc,yldp,stress,d2phi,dphi,phi
-c$$$      call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,smat,yldc,yldp,
-c$$$     $     phim,dphi,d2phi)
-c$$$      return
-c$$$      end subroutine one
+c     Test one stress state
+      subroutine one(iyld_choice,nyldc,nyldp,yldc,yldp)
+      implicit none
+c     Arguments passed into
+      integer ntens,ndi,nshr
+      parameter(ntens=3,ndi=2,nshr=1)
+      integer, intent(in)::iyld_choice,nyldc,nyldp
+      dimension yldc(nyldc),yldp(nyldp),
+     $     d2phi(ntens,ntens),dphi(ntens),aux_ten(ntens),emic(ntens)
+      real*8 yldc,yldp,d2phi,dphi,phi,cauchy(ntens),aux_ten,emic,hydro
+
+c     microstructure deviator
+      aux_ten(:) = 0d0
+      aux_ten(1) = 1d0
+      aux_ten(1) = 1d0
+      call deviat(ntens,aux_ten,emic,hydro)
+      call dev_norm(ntens,ndi,nshr,emic)
+      call w_chr(0,'microstructure deviator:')
+      call w_dim(0,emic,ntens,1d0,.true.)
+
+c     Uniaxial tension along axial 1
+      cauchy(:)=0
+      cauchy(1)=1.
+      call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,cauchy,yldc,yldp,
+     $     phi,dphi,d2phi)
+
+      call exit(-1)
+
+c     Uniaxial tension along axial 2
+      cauchy(:)=0
+      cauchy(2)=1.
+      call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,cauchy,yldc,yldp,
+     $     phi,dphi,d2phi)
+      return
+      end subroutine one

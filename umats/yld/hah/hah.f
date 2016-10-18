@@ -53,11 +53,13 @@ c     HAH yield surface depends on the deviatoric stress
       d2phi_chi(:,:)=0d0
 
       if (idiaw) then
-         call w_ival(imsg,'ntens:',ntens)
-         call w_chr(imsg,'cauchy stress passed to subroutine HAH')
-         call w_dim(imsg,cauchy,ntens,1d0,.false.)
-         call w_chr(imsg,'In hah.f')
-         call w_ival(imsg,'iyld_choice:',iyld_choice)
+         call w_empty_lines(imsg,1)
+         call fill_line(imsg,'-',57)
+         call w_chr(imsg,'Beginning of subroutine HAH')
+         call w_ival(imsg,'** ntens:',ntens)
+         call w_chr(imsg,'** cauchy stress')
+         call w_dim(imsg,cauchy,ntens,1d0,.true.)
+         call w_ival(imsg,'** iyld_choice:',iyld_choice)
 c         call exit(-1)
       endif
 
@@ -71,18 +73,18 @@ c     These are saved to phi_chi, dphi_chi, d2phi_chi
             call exit(-1)
          endif
          if (idiaw) then
-            call w_chr(imsg,'cauchy before yld2000_2d')
-            call w_dim(imsg,cauchy,ntens,1.d0,.false.)
+            call w_chr(imsg,'** cauchy before yld2000_2d')
+            call w_dim(imsg,cauchy,ntens,1.d0,.true.)
          endif
 
          call yld2000_2d(cauchy,phi_chi,dphi_chi,d2phi_chi,yldc)
 
          if (idiaw) then
-            call w_chr(imsg,'cauchy before yld2000_2d')
-            call w_dim(imsg,cauchy,ntens,1.d0,.false.)
+            call w_chr(imsg,'** cauchy after yld2000_2d')
+            call w_dim(imsg,cauchy,ntens,1.d0,.true.)
             call w_val(imsg,'phi_chi:',phi_chi)
             call w_chr(imsg,'dphi_chi:')
-            call w_dim(imsg,dphi_chi,ntens,1d0,.false.)
+            call w_dim(imsg,dphi_chi,ntens,1d0,.true.)
             call w_chr(imsg,'d2phi_chi:')
             call w_mdim(imsg,d2phi_chi,ntens,1d0,.false.)
          endif

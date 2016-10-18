@@ -17,7 +17,7 @@ c     Arguments
 c     ntens        : Len of <tensor>
 c     ndi          : Number of normal components
 c     nshr         : Number of shear components
-c     tensor       : subjected tensor
+c     tensor       : subjected tensor (deviatoric)
 c     emic         : microstructure deviator
 c     tensor_colin : colinear component of <tensor>
 c     tensor_ortho : orthogonal component of <tensor>
@@ -27,7 +27,8 @@ c     tensor_ortho : orthogonal component of <tensor>
      $     emic(ntens)
       real*8,intent(in) ::tensor,emic
       real*8,intent(out)::tensor_colin,tensor_ortho
-      real*8 dot_prod,H,dd
+      dimension aux6(6),bux6(6)
+      real*8 dot_prod,H,dd,aux6,bux6
       integer imsg
       logical idiaw
 cf2py intent(in) ntens,ndi,nshr,tensor, emic
@@ -38,12 +39,12 @@ c      idiaw=.true.
       imsg = 0
       if (idiaw) then
          call w_empty_lines(imsg,2)
-         call fill_line(imsg,'#',52)
-         call w_chr(imsg,'Enter HAH_DEDCOMPOSE')
+         call fill_line(imsg,'-',52)
+         call w_chr(imsg,'Beginning of subroutine HAH_DEDCOMPOSE')
          call w_chr(imsg,'Given <tensor>')
-         call w_dim(imsg,tensor,ntens,1d0,.false.)
+         call w_dim(imsg,tensor,ntens,1d0,.true.)
          call w_chr(imsg,'Given microstructure deviator <emic>')
-         call w_dim(imsg,emic,ntens,1d0,.false.)
+         call w_dim(imsg,emic,ntens,1d0,.true.)
       endif
       H  = 8d0/3d0
       dd = dot_prod(ntens,ndi,nshr,tensor,emic)
@@ -53,7 +54,7 @@ c     Eqs 4&5 in Ref [1]
       tensor_ortho(:) = tensor(:) - tensor_colin(:)
       if (idiaw) then
          call w_chr(imsg,'Exit HAH_DEDCOMPOSE')
-         call fill_line(imsg,'#',52)
+         call fill_line(imsg,'-',52)
          call w_empty_lines(imsg,1)
       endif
       return
@@ -110,7 +111,9 @@ cf2py intent(out) val
       return
       end subroutine calc_cos2chi
 c------------------------------------------------------------------------
-c     double dot product of tensor a and b
+c     double dot product of tensors a and b
+c     In case ntens lt 6, inflate the tensor to its full dimension
+c     (which is 6) then apply the double dot product
       real*8 function dot_prod(ntens,ndi,nshr,a,b)
 c     Arguments
 c     ntens : Len of a and b
@@ -120,22 +123,57 @@ c     a     : tensor in n-dimension
 c     b     : tensor in n-dimension
       implicit none
       integer, intent(in) ::  ntens,ndi,nshr
-      dimension a(ntens)
-      dimension b(ntens)
+      dimension a(ntens),b(ntens),aux6(6),bux6(6)
       real*8, intent(in):: a,b
-      integer i
+      real*8 aux6,bux6
+      integer i,imsg
+      logical idiaw
+      imsg=0
+      idiaw=.false.
       if (ntens.ne.ndi+nshr) then
          write(*,*)'ndi+nshr should be equal to ntens',
      $        ' in hah_lib.dot_prod'
          call exit(-1)
       endif
+
+      if (idiaw) then
+         call fill_line(imsg,'-',52)
+         call w_chr(imsg,'Begin DOT_PROD')
+      endif
+
+      if (ntens.eq.3) then
+         aux6(1)=a(1)
+         aux6(2)=a(2)
+         aux6(3)=-a(1)-a(2)
+         aux6(6)=a(3)
+         bux6(1)=b(1)
+         bux6(2)=b(2)
+         bux6(3)=-b(1)-b(2)
+         bux6(6)=b(3)
+      else if (ntens.eq.6) then
+         aux6(:)=a(:)
+         bux6(:)=b(:)
+      else
+         write(*,*)'NTENS should be either 3 or 6'
+      endif
+
+      if (idiaw) then
+         call w_dim(imsg,aux6,6,1d0,.true.)
+      endif
+
       dot_prod=0d0
-      do 5 i=1,ndi
-         dot_prod = dot_prod + a(i) * b(i)
+      do 5 i=1,3
+         dot_prod = dot_prod + aux6(i) * bux6(i)
  5    continue
-      do 10 i=1,nshr
-         dot_prod = dot_prod + 2d0*a(i+ndi) * b(i+ndi)
+      do 10 i=4,6
+         dot_prod = dot_prod + 2d0*aux6(i) * bux6(i)
  10   continue
+
+      if (idiaw) then
+         call w_chr(imsg,'Exit DOT_PROD')
+         call fill_line(imsg,'-',52)
+      endif
+
       end function dot_prod
 c------------------------------------------------------------------------
       subroutine pi_proj(sdev,s1,s2)
@@ -270,15 +308,13 @@ c     locals
       call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
      $     gL,ekL,eL,gS,c_ks,ss)
 
+c     Reference stress state: uniaxial tension along axis 1
       cauchy_ref(:)=0d0
       cauchy_ref(1)=1d0
-c     cauchy_ref(2)=1d0
 c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
-c$$$      call latent(iyld_choice,ntens,nyldp,nyldc,cauchy_ref,yldp,yldc,
-c$$$     $     phi)
       call latent(iyld_choice,ntens,ndi,nshr,nyldp,nyldc,
      $     cauchy_ref,yldp,yldc,phi)
-      ref = phi**(1d0/yldp(9))
+      ref = phi**yldp(9)
 c      call w_val(imsg,'ref',ref)
 c     save ref to yldp
       call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,

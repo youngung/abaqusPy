@@ -47,6 +47,40 @@ c     p       : hydrostatic pressure
       return
       end subroutine deviat
 c-----------------------------------------------------------------------
+c     Calculate normalized deviatoric part
+      subroutine dev_norm(ntens,ndi,nshr,dev)
+c     Arguments
+c     ntens   : Len of <cauchy> and <sdev>
+c     ndi     : Number normal components
+c     nshr    : Number shear components
+c     dev     : deviator
+      implicit none
+      integer, intent(in):: ntens,ndi,nshr
+      dimension dev(ntens),aux(ntens)
+      real*8, intent(inout) :: dev
+      real*8 aux,H,f
+      integer i
+      H=8d0/3d0
+      aux(:)=dev(:)*1d0
+      f=0d0
+      do 5  i=1,ndi
+         f = f +     dev(i)**2
+ 5    continue
+      do 10 i=ndi+1,ndi+nshr
+         f = f + 2d0*dev(i)**2
+ 10   continue
+c      call exit(-1)
+      if (f.eq.0) then
+         write(*,*)'dev:',dev
+         write(*,*)'f should not be zero',f
+         call exit(-1)
+      endif
+      f = dsqrt(H*f)
+      dev(:)=0d0
+      dev(:) = aux(:)/f
+      return
+      end subroutine dev_norm
+c-----------------------------------------------------------------------
 c     Calculate deviator and hydrostatic pressure
       subroutine deviat6(s,sd,p)
 c     Arguments
