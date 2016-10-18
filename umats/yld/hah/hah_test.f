@@ -8,8 +8,8 @@ c     Arguments
 c-----------------------------------------------------------------------
       program test
       implicit none
-      integer ntens,nyldc,nyldp,narg
-      parameter(ntens=3,nyldc=9,nyldp=30,narg=5)
+      integer ntens,ndi,nshr,nyldc,nyldp,narg
+      parameter(ntens=3,ndi=2,nshr=1,nyldc=9,nyldp=30,narg=5)
       character(len=32) :: arg
       dimension yldc(nyldc),yldp(nyldp),stress(ntens),dphi(ntens),
      $     d2phi(ntens,ntens)
@@ -92,8 +92,8 @@ c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
          call w_dim(imsg,stress,ntens,1d0,.true.)
          call w_chr(imsg,'just before entering hah')
       endif
-      call hah(iyld_choice,stress,phi,dphi,d2phi,yldc,yldp,nyldc,nyldp,
-     $     ntens)
+      call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,stress,yldc,yldp,
+     $     phi,dphi,d2phi)
       if (idiaw) then
          call w_chr( imsg,'right after exit hah')
          call w_ival(imsg,'iyld_choice:',iyld_choice)
@@ -101,14 +101,15 @@ c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
          call w_val( imsg,'phi        :',phi)
          call fill_line(imsg,'*',72)
       endif
-c      call hah_uten(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
-      call hah_locus(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
+      call hah_uten(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,yldc,yldp)
+      call hah_locus(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,yldc,yldp)
       end program test
 c--------------------------------------------------------------------------------
-      subroutine hah_uten(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
+      subroutine hah_uten(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,yldc,
+     $     yldp)
       implicit none
 c     Arguments passed into
-      integer ntens,nyldc,nyldp
+      integer ntens,ndi,nshr,nyldc,nyldp
       dimension yldc(nyldc),yldp(nyldp)
       real*8 yldc,yldp
       integer iyld_choice
@@ -175,8 +176,8 @@ c     local - gen
          endif
          call voigt1(s33mat,s6mat)
          call reduce_6to3(s6mat,s3mat)
-         call hah(iyld_choice,s3mat,phim,dphi,d2phi,
-     $        yldc,yldp,nyldc,nyldp,ntens)
+         call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,
+     $        s3mat,yldc,yldp,phim,dphi,d2phi)
          if (ntens.eq.3) then
             call reduce_3to6(dphi,dphi6)
             dphi6(3) = -dphi(1)-dphi(2)
@@ -207,18 +208,21 @@ c     local - gen
       end subroutine hah_uten
 c-----------------------------------------------------------------------
 c     Subroutine to draw yield locus
-      subroutine hah_locus(iyld_choice,yldc,nyldc,yldp,nyldp,ntens)
+      subroutine hah_locus(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,
+     $     yldc,yldp)
 c     Arguments
 c     iyld_choice: yield function choice
-c     yldc       : yield function constants
-c     nyldc      : Len of yldc
-c     yldp       : yield function parameters
-c     nyldp      : Len of yldp
 c     ntens      : Len of tensor
+c     ndi        : Number of normal components
+c     nshr       : Number of shear components
+c     nyldc      : Len of yldc
+c     nyldp      : Len of yldp
+c     yldc       : yield function constants
+c     yldp       : yield function parameters
       implicit none
 c     Arguments passed into
       integer, intent(in) :: iyld_choice
-      integer, intent(in) :: ntens,nyldc,nyldp
+      integer, intent(in) :: ntens,ndi,nshr,nyldc,nyldp
       dimension yldc(nyldc),yldp(nyldp)
       real*8, intent(in) :: yldc
       real*8 yldp
@@ -269,18 +273,16 @@ c         write(*,'(f7.1,a)',advance='no') th*180.d0/pi,'|'
 
 c         call w_dim(imsg,smat,ntens,1d0,.false.)
 c         call w_chrc(imsg,'|')
-         call hah(iyld_choice,smat,phim,dphi,d2phi,
-     $        yldc,yldp,nyldc,nyldp,ntens)
+         call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,smat,yldc,yldp,
+     $        phim,dphi,d2phi)
 c         call w_dim(0,smat,ntens,1d0,.false.)
 c         call w_dim(imsg,dphi,ntens,1d0,.false.)
 c         call w_chrc(imsg,'|')
 c         call w_valsc(imsg,phim)
 c         call w_chrc(imsg,'|')
-
          smat(:) = (smat(:)/phim)**yldp(9)
-         call hah(iyld_choice,smat,phim,dphi,d2phi,
-     $        yldc,yldp,nyldc,nyldp,ntens)
-
+         call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,smat,yldc,yldp,
+     $        phim,dphi,d2phi)
          call reduce_3to6(smat,sdev)
          call deviat(6,smat,sdev,hydro)
          call pi_proj(sdev,s1,s2)
@@ -303,16 +305,16 @@ c         call w_chrc(imsg,'|')
       return
       end subroutine hah_locus
 c--------------------------------------------------------------------------------
-c     Test one stress state
-      subroutine one(iyld_choice,nyldc,nyldp,ntens,yldc,yldp,stress,
-     $     d2phi,dphi,phi)
-      implicit none
-c     Arguments passed into
-      integer iyld_choice,nyldc,nyldp,ntens
-      dimension yldc(nyldc),yldp(nyldp),stress(ntens),
-     $     d2phi(ntens,ntens),dphi(ntens)
-      real*8 yldc,yldp,stress,d2phi,dphi,phi
-      call hah(iyld_choice,stress,phi,dphi,d2phi,yldc,yldp,nyldc,nyldp,
-     $     ntens)
-      return
-      end subroutine one
+c$$$c     Test one stress state
+c$$$      subroutine one(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,stress,yldc,yldp,
+c$$$     $     phi,dphi,d2phi)
+c$$$      implicit none
+c$$$c     Arguments passed into
+c$$$      integer, intent(in)::iyld_choice,nyldc,nyldp,ntens,ndi,nshr
+c$$$      dimension yldc(nyldc),yldp(nyldp),stress(ntens),
+c$$$     $     d2phi(ntens,ntens),dphi(ntens)
+c$$$      real*8 yldc,yldp,stress,d2phi,dphi,phi
+c$$$      call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,smat,yldc,yldp,
+c$$$     $     phim,dphi,d2phi)
+c$$$      return
+c$$$      end subroutine one

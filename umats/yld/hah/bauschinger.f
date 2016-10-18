@@ -48,7 +48,7 @@ c         --   Eqs 7/8 in Ref. [1]
      $     fks,gs_new)
 c     Arguments
 c     e_mic  : microstructure deviator
-c     target : the target directino towards which the microstructure
+c     target : the target direction towards which the microstructure
 c              deviator aims to realign.
 c     gs     : state variables that quantifies the <flattening>
 c     e_ks   : k1,k2,k3,k4,k5 parameters that controls the evolunary
@@ -66,8 +66,10 @@ c     Use <bauschinger_lib.f / hat> to convert a tensor
 c     to its hatted property.
       implicit none
 c     Arguments passed into
-      dimension e_mic(6)
-      dimension target(6)
+      integer ntens,ndi,nshr
+      parameter(ntens=6,ndi=3,nshr=3)
+      dimension e_mic(ntens)
+      dimension target(ntens)
       dimension gs(4)
       dimension e_ks(5)
       dimension fks(2)
@@ -81,7 +83,7 @@ c     locals
       integer i
 cf2py intent(in) e_mic,target,gs,e_ks,ys_iso,ys_hah
 cf2py intent(out) fks,gs_new
-      dd = dot_prod(e_mic,target,6)
+      dd = dot_prod(ntens,ndi,nshr,e_mic,target)
 c***  index k depends on the sign of (mic:target)
       if (sign(1d0,dd).ge.0) then
          k = 1
@@ -112,22 +114,26 @@ c------------------------------------------------------------------------
 c     phib1 = f1**q  *  |dotp - |dotp||**q
 c     phib1 = f2**q  *  |dotp + |dotp||**q
 c     phib2
-      subroutine bauschinger(f_ks,q,emic,sdev,ntens,phib1,phib2)
+      subroutine bauschinger(ntens,ndi,nshr,emic,sdev,f_ks,q,phib1,
+     $     phib2)
 c     Arguments
-c     f_ks : f1, f2 parameters
-c     q    : yield function exponent
+c     ntens: Len of sdev, emic
+c     ndi   : Number of normal components
+c     nshr  : Number of shear components
 c     emic : microstructure deviator
 c     sdev : deviatoric stress
-c     ntens: Len of sdev, emic
+c     f_ks : f1, f2 parameters
+c     q    : yield function exponent
       implicit none
-      integer ntens
+      integer, intent(in) :: ntens,ndi,nshr
       dimension f_ks(2),emic(ntens),sdev(ntens)
-      real*8 f_ks,q,emic,sdev,phib1,phib2
+      real*8, intent(in)  :: emic,sdev,f_ks,q
+      real*8, intent(out) :: phib1,phib2
 c     locals
       real*8 dotp,dot_prod
 cf2py intent(in) f_ks,q,emic,sdev,ntens
 cf2py intent(out) f1,f2
-      dotp = dot_prod(emic,sdev,ntens)
+      dotp = dot_prod(ntens,ndi,nshr,emic,sdev)
       phib1 = (f_ks(1)**q) * (dabs(dotp-dabs(dotp))**q)
       phib2 = (f_ks(2)**q) * (dabs(dotp+dabs(dotp))**q)
       return

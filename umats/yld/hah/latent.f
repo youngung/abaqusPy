@@ -12,35 +12,36 @@ c     Youngung Jeong
 c     youngung.jeong@gmail.com
 c------------------------------------------------------------------------
 c     calculate incremental gL (dgL)
-      subroutine latent_update(eL,gL,ekL,ys_iso,ys_hah,emic,target,
-     $     ntens,debar,dgL)
+      subroutine latent_update(ntens,ndi,nshr,emic,target,eL,gL,ekL,
+     $     ys_iso,ys_hah,debar,dgL)
 c     Arguments
+c     ntens  : Len of <emic> and <target>
+c     ndi    : Number of normal components
+c     nshr   : Number of shear components
+c     target : the target direction, with which the microstructure
+c               deviator aims to realign.
 c     eL     : L parameter
 c     gL     : gL parameter at step n
 c     ekL    : kL constant
 c     ys_iso : \bar{\sigma}(0) - the initial yield surface (without HAH effect)
 c     ys_hah : \bar{\sigma}(\bar{\varepsilon}) - current yield surface
 c     emic   : microstructure deviator
-c     target : the target directino towards which the microstructure
-c               deviator aims to realign.
-c     ntens  : Len of <emic> and <target>
 c     debar  : incremental equivalent strain
 c               (used as multiplier when updating the state variables...)
 c     dgL    : incremental gL
       implicit none
 c     Arguments of subroutine
-      real*8 eL,gL,ekL,ys_iso,ys_hah,emic,target
-      integer ntens
-      real*8 debar,dgL
+      integer, intent(in):: ntens,ndi,nshr
       dimension emic(ntens),target(ntens)
+      real*8, intent(in) :: emic,target,eL,gL,ekL,ys_iso,ys_hah,debar
+      real*8, intent(out):: dgL
 c     Local variables
       real*8 cos2chi,term
 cf2py intent(in) eL,gL,ekL,ys_iso,ys_hah,emic,target,ntens,debar
 cf2py intent(out) dgL
 cf2py depend(ntens) emic,target
 
-      call calc_cos2chi(emic,target,ntens,cos2chi)
-
+      call calc_cos2chi(ntens,ndi,nshr,target,emic,cos2chi)
 c     Eq 16 --
       term = dsqrt(eL * (1d0-cos2chi) + cos2chi)-1d0
       dgL = ekL *( (ys_hah-ys_iso) / ys_hah * term  + 1d0 - gL )
@@ -52,10 +53,13 @@ c     Eq 16 --
 c------------------------------------------------------------------------
 c     Latent hardening effect accounted and saved to phi
 c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
-      subroutine latent(iyld_law,ntens,nyldp,nyldc,cauchy,yldp,yldc,phi)
+      subroutine latent(iyld_law,ntens,ndi,nshr,nyldp,nyldc,cauchy,yldp,
+     $     yldc,phi)
 c     Arguments
 c     iyld_law : type of yield function
 c     ntens    : Len of sdev, emic
+c     ndi      : Number of normal components
+c     nshr     : Number of shear components
 c     nyldp    : Len of yldp
 c     nyldc    : Len of yldc
 c     cauchy   : cauchy stress
@@ -64,7 +68,7 @@ c     yldc     : yldc
 c     phi      : (phi1**2+phi2**2)**(1/2)
       implicit none
 c     Arguments passed
-      integer,intent(in) :: iyld_law,ntens,nyldp,nyldc
+      integer,intent(in) :: iyld_law,ntens,ndi,nshr,nyldp,nyldc
       dimension cauchy(ntens),yldp(nyldp),yldc(nyldc)
       real*8, intent(inout) ::  yldp,yldc
       real*8, intent(in)  :: cauchy
@@ -95,7 +99,7 @@ c**   Apply linear transformation to stress deviator
 c     1. deviator
       call deviat(ntens,cauchy,sdev,hydro)
 c     2. Obtain orthogonal / collinear components
-      call hah_decompose(sdev,ntens,emic,sc,so)
+      call hah_decompose(ntens,ndi,nshr,sdev,emic,sc,so)
 c     3. Transform to allow extension along so (double prime s)
       sdp = sc(:) + so(:) / gL
 c     4. sp = 4(1-g_s) s_o

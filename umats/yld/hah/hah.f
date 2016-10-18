@@ -10,22 +10,24 @@ c     read_alpha: yld2000_2d.f
 c     yld2000_2d: yld2000_2d.f
 c     hah_yieldsurface: yld_yieldsurface.f
 c-----------------------------------------------------------------------
-      subroutine hah(iyld_choice,cauchy,phi,dphi,d2phi,
-     $     yldc,yldp,nyldc,nyldp,ntens)
+      subroutine hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,
+     $     cauchy,yldc,yldp,phi,dphi,d2phi)
 c     Arguments
-c     iyld_choice - isotropic yield surface kernel
-c     cauchy      - cauchy stress tensor
-c     phi         - HAH yield surface
-c     dphi        - HAH yield surface 1st derivatives
-c     d2phi       - HAH yield surface 2nd derivatives
-c     yldc        - isotropic yield surface constants
-c     yldp        - HAH yield surface contants/state variables
-c     nyldc       - Len of yldc
-c     nyldp       - Len of yldp
-c     ntens       - Len of stress tensor
+c     iyld_choice : isotropic yield surface kernel
+c     cauchy      : cauchy stress tensor
+c     phi         : HAH yield surface
+c     dphi        : HAH yield surface 1st derivatives
+c     d2phi       : HAH yield surface 2nd derivatives
+c     yldc        : isotropic yield surface constants
+c     yldp        : HAH yield surface contants/state variables
+c     nyldc       : Len of yldc
+c     nyldp       : Len of yldp
+c     ntens       : Len of stress tensor
+c     ndi         : Number of normal components
+c     nshr        : Number of shear components
       implicit none
 c     Arguments
-      integer, intent(in):: iyld_choice,ntens,nyldc,nyldp
+      integer, intent(in):: iyld_choice,ntens,ndi,nshr,nyldc,nyldp
       dimension yldc(nyldc),yldp(nyldp),cauchy(ntens)
       dimension dphi(ntens),d2phi(ntens,ntens),sdev(ntens)
       real*8, intent(in)::yldc
@@ -103,9 +105,10 @@ c$$$c     test
       d2phi(:,:)=d2phi_chi(:,:)
 
 c     calling hah_calc_ref stores (sqrt(phi(so)**2+phi(sdp)**2))**q to ref
-      call hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)
-      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
-     $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi,
-     $     .false.)
+      call hah_calc_ref(ntens,ndi,nshr,nyldp,nyldc,yldp,yldc,
+     $     iyld_choice)
+      call hah_yieldsurface(ntens,ndi,nshr,iyld_choice,nyldc,
+     $     nyldp,yldc,yldp,cauchy,phi_chi,dphi_chi,d2phi_chi,
+     $     phi,dphi,d2phi,.false.)
       return
       end subroutine hah

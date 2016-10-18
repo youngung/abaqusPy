@@ -11,16 +11,18 @@ c-----------------------------------------------------------------------
 c     Decompose a stress tensor to the orthogonal and collinear
 c     components with respect to the microstructure deviator <emic>
 c     Refer to Eqs 4&5 in Ref [1]
-      subroutine hah_decompose(tensor,ntens,emic,
-     $     tensor_colin,tensor_ortho)
+      subroutine hah_decompose(ntens,ndi,nshr,tensor,emic,tensor_colin,
+     $     tensor_ortho)
 c     Arguments
-c     tensor       : subjected tensor
 c     ntens        : Len of <tensor>
+c     ndi          : Number of normal components
+c     nshr         : Number of shear components
+c     tensor       : subjected tensor
 c     emic         : microstructure deviator
 c     tensor_colin : colinear component of <tensor>
 c     tensor_ortho : orthogonal component of <tensor>
       implicit none
-      integer, intent(in)::ntens
+      integer, intent(in)::ntens,ndi,nshr
       dimension tensor(ntens),tensor_colin(ntens),tensor_ortho(ntens),
      $     emic(ntens)
       real*8,intent(in) ::tensor,emic
@@ -28,7 +30,7 @@ c     tensor_ortho : orthogonal component of <tensor>
       real*8 dot_prod,H,dd
       integer imsg
       logical idiaw
-cf2py intent(in) tensor, ntens, emic
+cf2py intent(in) ntens,ndi,nshr,tensor, emic
 cf2py intent(out) tensor_colin, tensor_ortho
 cf2py depend(ntens) tensor,emic,tensor_colin,tensor_ortho
 c      idiaw=.true.
@@ -43,20 +45,17 @@ c      idiaw=.true.
          call w_chr(imsg,'Given microstructure deviator <emic>')
          call w_dim(imsg,emic,ntens,1d0,.false.)
       endif
-
       H  = 8d0/3d0
-      dd = dot_prod(tensor,emic,ntens)
+      dd = dot_prod(ntens,ndi,nshr,tensor,emic)
       if (idiaw) call w_val(imsg,'dd',dd)
 c     Eqs 4&5 in Ref [1]
       tensor_colin(:) = H * dd * emic(:)
       tensor_ortho(:) = tensor(:) - tensor_colin(:)
-
       if (idiaw) then
          call w_chr(imsg,'Exit HAH_DEDCOMPOSE')
          call fill_line(imsg,'#',52)
          call w_empty_lines(imsg,1)
       endif
-
       return
       end subroutine hah_decompose
 c-----------------------------------------------------------------------
@@ -89,11 +88,14 @@ c------------------------------------------------------------------------
 c     Calculate cos2chi value using the two given hat tensors, <a> and <b>
       subroutine calc_cos2chi(ntens,ndi,nshr,a,b,val)
 c     Arguments
+c     ntens : Len of a and b
+c     ndi   : Number of normal components
+c     nshr  : Number of shear components
 c     a   : tensor in 6d (it should be a hat property)
 c     b   : tensor in 6d (it should be a hat property)
 c     val : value to be returned
       implicit none
-      integer,intent(in)::
+      integer,intent(in)::ntens,ndi,nshr
       dimension a(ntens),b(ntens)
       real*8, intent(in)::a,b
       real*8, intent(out)::val
@@ -101,7 +103,7 @@ c     val : value to be returned
 cf2py intent(in) a,b,ntens
 cf2py intent(out) val
       H = 8d0/3d0
-      val = dot_prod(a,b,ntens) * H
+      val = dot_prod(ntens,ndi,nshr,a,b) * H
       if (abs(val).gt.1d0) then
          write(*,*)'Something went wrong in calc_cos2chi'
       endif
@@ -109,29 +111,28 @@ cf2py intent(out) val
       end subroutine calc_cos2chi
 c------------------------------------------------------------------------
 c     double dot product of tensor a and b
-      real*8 function dot_prod(a,b,ntens,ndi,nshr)
+      real*8 function dot_prod(ntens,ndi,nshr,a,b)
 c     Arguments
-c     a     : tensor in n-dimension
-c     b     : tensor in n-dimension
 c     ntens : Len of a and b
 c     ndi   : Number of normal components
 c     nshr  : Number of shear components
+c     a     : tensor in n-dimension
+c     b     : tensor in n-dimension
       implicit none
+      integer, intent(in) ::  ntens,ndi,nshr
       dimension a(ntens)
       dimension b(ntens)
       real*8, intent(in):: a,b
-      integer, intent(in):: n
       integer i
-
       if (ntens.ne.ndi+nshr) then
          write(*,*)'ndi+nshr should be equal to ntens',
      $        ' in hah_lib.dot_prod'
          call exit(-1)
       endif
       dot_prod=0d0
-      do 10 i=1,ndi
+      do 5 i=1,ndi
          dot_prod = dot_prod + a(i) * b(i)
- 10   continue
+ 5    continue
       do 10 i=1,nshr
          dot_prod = dot_prod + 2d0*a(i+ndi) * b(i+ndi)
  10   continue
@@ -243,17 +244,20 @@ c     yield surface constants
       return
       end subroutine hah_io
 c-----------------------------------------------------------------------
-c     Calculate referece size of yield surface and save it to yldp
-      subroutine hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)
+c     Calculate the referece size of yield surface and save it to yldp
+      subroutine hah_calc_ref(ntens,ndi,nshr,nyldp,nyldc,yldp,yldc,
+     $     iyld_choice)
       implicit none
 c     Arguments
 c     ntens       : Len of stress
+c     ndi         : Number of normal components
+c     nshr        : Number of shear components
 c     nyldp       : Len of yldp
 c     nyldc       : Len of yldc
 c     yldp        : Yield function parameters
 c     yldc        : Yield function constants
 c     iyld_choice : yield surface choice
-      integer, intent(in) :: ntens,nyldp,nyldc,iyld_choice
+      integer, intent(in) :: ntens,nyldp,nyldc,ndi,nshr,iyld_choice
       dimension yldp(nyldp),yldc(nyldc)
       real*8 yldp,yldc
 c     hah_io
@@ -270,8 +274,10 @@ c     locals
       cauchy_ref(1)=1d0
 c     cauchy_ref(2)=1d0
 c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
-      call latent(iyld_choice,ntens,nyldp,nyldc,cauchy_ref,yldp,yldc,
-     $     phi)
+c$$$      call latent(iyld_choice,ntens,nyldp,nyldc,cauchy_ref,yldp,yldc,
+c$$$     $     phi)
+      call latent(iyld_choice,ntens,ndi,nshr,nyldp,nyldc,
+     $     cauchy_ref,yldp,yldc,phi)
       ref = phi**(1d0/yldp(9))
 c      call w_val(imsg,'ref',ref)
 c     save ref to yldp
