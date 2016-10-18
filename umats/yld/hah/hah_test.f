@@ -5,6 +5,12 @@ c     Youngung Jeong
 c     youngung.jeong@gmail.com
 
 c     Arguments
+c     1st argument: the ccw angle that defines the
+c                     microstructure deviator in the pi-plane
+c     2nd argument: gL
+c     3rd argument: gS
+c     4th argument: f1
+c     5th argument: f2
 c-----------------------------------------------------------------------
       program test
       implicit none
@@ -78,7 +84,7 @@ c        First argument (th of emic in pi-plane)
 c      call read_alpha(
 c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
       yldc(:8) = 1d0
-      yldc(9)  = 4d0
+      yldc(9)  = 6d0
       call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
      $     eL,gS,c_ks,ss)
       iyld_choice=2             ! yld2000-2d
@@ -236,7 +242,7 @@ c     Local variables.
       dimension d2phi(ntens),smat(ntens),dphi(ntens),sdev(6)
       real*8 dphi,d2phi,pi,th,time0,time1,phim,q,smat,sdev,hydro,s1,s2
       integer nth,i,j,imsg,iverbose
-      parameter(nth=400)
+      parameter(nth=1000)
       logical idiaw
       imsg = 0
       iverbose=0  ! (0: fully verbose)
