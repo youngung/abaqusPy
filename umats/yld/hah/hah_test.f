@@ -33,20 +33,15 @@ c     local - controlling
       integer imsg,i
       dimension arg_status(narg)
       logical idiaw,arg_status
-
 c     arguments
       real*8 th_emic,pi
-
       pi = 4d0*datan(1.d0)
-
 c      idiaw=.false.
       idiaw = .true.
       imsg  = 0
-
 c     create a dummy microstructure deviator
       aux_ten(:) = 0d0
-      aux_ten(1) = 0.5d0
-      aux_ten(2) = 1d0
+      aux_ten(1) = 1d0
       call deviat(ntens,aux_ten,emic,hydro)
 c     Default state variables (isotropic conditions)
       gL      = 1d0
@@ -54,7 +49,6 @@ c     Default state variables (isotropic conditions)
       e_ks(:) = 1d0             ! k1,k2,k3,k4,k5
       f_ks(:) = 0d0             ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
       f_ks(1) = 0d0             ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
-      emic(:) = 0d0
 
       do 5 i=1,narg
          arg_status(i)=.false.
@@ -81,7 +75,7 @@ c        First argument (th of emic in pi-plane)
 c      call read_alpha(
 c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
       yldc(:8) = 1d0
-      yldc(9)  = 2d0
+      yldc(9)  = 6d0
       call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
      $     eL,gS,c_ks,ss)
       iyld_choice=2             ! yld2000-2d
@@ -135,9 +129,7 @@ c     local - gen
       parameter(nth=10,iverbose=0)
 
       pi=4.d0*datan(1.d0)
-
       call cpu_time(time0)
-
       if (ntens.ne.3) then
          write(*,*)' *********************************************'
          write(*,*)' Warning: case that ntens not equal 3 was not '
@@ -145,7 +137,6 @@ c     local - gen
          write(*,*)' *********************************************'
          call exit(-1)
       endif
-
       s6lab(:)=0d0
       s6lab(1)=1d0
       call voigt2(s6lab,s33lab)
@@ -153,15 +144,6 @@ c     local - gen
       write(*,*)
       write(*,*)
 
-c     isotropic conditions
-c$$$      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
-c$$$     $     eL,gS,c_ks,ss)
-c$$$      gL = 1d0
-c$$$      gS = 1.0d0
-c$$$      e_ks(:)=1d0               ! k1,k2,k3,k4,k5
-c$$$      f_ks(:)=0d0               ! f1, f2 that are functions of (k1,k2,k3,k4,k5)
-c$$$      call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
-c$$$     $     eL,gS,c_ks,ss)
       if (iverbose.eq.1)  then
          write(*,'(a7,5(4a7,x,a1,x),2a7)')'th',
      $        's11_l','s22_l','s33_l','s12_l','|',
@@ -244,7 +226,7 @@ c     Local variables.
       dimension d2phi(ntens),smat(ntens),dphi(ntens),sdev(6)
       real*8 dphi,d2phi,pi,th,time0,time1,phim,q,smat,sdev,hydro,s1,s2
       integer nth,i,j,imsg,iverbose
-      parameter(nth=1000)
+      parameter(nth=40)
       logical idiaw
       imsg = 0
       iverbose=0  ! (0: fully verbose)
@@ -258,15 +240,16 @@ c     pi and yield surface exponent q stored in yldc
       pi=4.d0*datan(1.d0)
       q = yldc(9)
 
-      write(*,*)
-      write(*,*)
-      write(*,*)
-c$$$      write(*,'(a11,x,(4a9,x,a1,x),2(4a11,x,a1,x,a11,x))')'th',
-c$$$     $     's1_m', 's2_m', 's3_m', 's6_m', '|',
-c$$$     $     'e11_m','e22_m','e33_m','e12_m','|','phim',
-c$$$     $     's1_m', 's2_m', 's3_m', 's6_m', '|','phim'
-
-      write(*,'(5a7)')'s1','s2','e1','e2','phi'
+      if (idiaw) then
+         write(*,*)
+         write(*,*)
+         write(*,*)
+         write(*,'(5a7)')'s1','s2','e1','e2','phi'
+      endif
+c$$$         write(*,'(a11,x,(4a9,x,a1,x),2(4a11,x,a1,x,a11,x))')'th',
+c$$$     $        's1_m', 's2_m', 's3_m', 's6_m', '|',
+c$$$     $        'e11_m','e22_m','e33_m','e12_m','|','phim',
+c$$$     $        's1_m', 's2_m', 's3_m', 's6_m', '|','phim'
 
       do 10 j=1,nth
          th = 2*pi/(nth-1)*(j-1)
@@ -294,7 +277,7 @@ c         call w_chrc(imsg,'|')
 c         call w_valsc(imsg,phim)
 c         call w_chrc(imsg,'|')
 
-         smat(:) = smat(:)/phim
+         smat(:) = (smat(:)/phim)**yldp(9)
          call hah(iyld_choice,smat,phim,dphi,d2phi,
      $        yldc,yldp,nyldc,nyldp,ntens)
 
@@ -302,19 +285,19 @@ c         call w_chrc(imsg,'|')
          call deviat(6,smat,sdev,hydro)
          call pi_proj(sdev,s1,s2)
 
-         write(*,'(2f7.3)',advance='no') (smat(i),i=1,2)
-         write(*,'(3f7.3)',advance='no') (dphi(i),i=1,2),phim
+         if (idiaw) then
+            write(*,'(2f7.3)',advance='no') (smat(i),i=1,2)
+            write(*,'(3f7.3)',advance='no') (dphi(i),i=1,2),phim
+            write(*,*)
+         endif
          write(1,'(2f7.3)',advance='no') (smat(i),i=1,2)
          write(1,'(2f9.5)',advance='no') (dphi(i),i=1,2)
          write(1,'(2f9.5)',advance='no') s1,s2
-c         call w_dim(imsg,smat,ntens,1d0,.false.)
-c         call w_chr(imsg,'|')
-         write(*,*)
          write(1,*)
  10   continue
 
       call cpu_time(time1)
-      write(*,'(a,f7.1)') 'Elapsed time: [\mu s]',
+      write(*,'(a,f9.1)') 'Elapsed time: [\mu s]',
      $     (time1-time0)*1e6
       close(1)
       return

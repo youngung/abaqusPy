@@ -33,10 +33,7 @@ c     Arguments
       real*8 yldp,cauchy,sdev
 
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
-      real*8 phi_chi,dphi_chi,d2phi_chi
-      integer i
-
-      real*8 hydro
+      real*8 phi_chi,dphi_chi,d2phi_chi,hydro
 c     local controls
       integer imsg
       logical idiaw
@@ -48,7 +45,6 @@ c      idiaw=.true.
       d2phi(:,:)=d2phi(:,:)*1d0
 
 c     HAH yield surface depends on the deviatoric stress
-
       call deviat(ntens,cauchy,sdev,hydro)
 
       dphi_chi(:)   =0d0
@@ -111,60 +107,5 @@ c     calling hah_calc_ref stores (sqrt(phi(so)**2+phi(sdp)**2))**q to ref
       call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
      $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi,
      $     .false.)
-
       return
       end subroutine hah
-
-c$$$      call exit(-1)
-c$$$      do 10 i=1,ntens
-c$$$      do 10 j=1,ntens
-c$$$         write(*,*)i,j
-c$$$         d2phi(i,j)=d2phi_chi(i,j)
-c$$$ 10   continue
-c$$$      call exit(-1)
-
-c     call exit(-1)
-
-c$$$c**   saves ref to yldp
-c$$$      call hah_calc_ref(ntens,nyldp,nyldc,yldp,yldc,iyld_choice)
-c$$$
-c$$$      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
-c$$$     $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
-c$$$      if (idiaw) then
-c$$$         call fill_line(imsg,'*',72)
-c$$$         call w_chr(imsg,'Exiting subroutine hah')
-c$$$         call fill_line(imsg,'*',72)
-c$$$      endif
-
-
-c      call exit(-1)
-
-c$$$      !call deviat(cauchy_test,ntens,sdev_test)
-c$$$      call deviat(ntens,cauchy_test,ntens,sdev_test)
-c$$$
-c$$$c     idiaw=.true.
-c$$$
-c$$$      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
-c$$$     $     sdev_test,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
-c$$$
-c$$$      q   = yldp(9)
-c$$$      ref = (1d0/phi)**(1d0/q)
-c$$$      if (idiaw) then
-c$$$         call w_val(imsg,'ref:',ref)
-c$$$      endif
-c$$$      do i=1,ntens
-c$$$         sdev_ref(i) = sdev(i)/ref
-c$$$      enddo
-c$$$      call hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
-c$$$     $     sdev_ref,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi)
-c$$$      if (idiaw) then
-c$$$         call w_val(imsg,'phi:',phi)
-c$$$         call w_chr(imsg,'right after hah_yieldsurface')
-c$$$      endif
-
-c      call exit(-1)
-
-
-
-c      include '/home/younguj/repo/abaqusPy/umats/yld/yld.f'
-c      include '/home/younguj/repo/abaqusPy/umats/yld/hah/hah_lib.f'

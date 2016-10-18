@@ -83,8 +83,8 @@ c      idiaw=.true.
       idiaw=.false.
 
 c**   restore parameters from yldp
-      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
-     $     gL,ekL,eL,gS,c_ks,ss)
+      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
+     $     eL,gS,c_ks,ss)
 
       if (idiaw) then
          call w_val(imsg,'gL:',gL)
@@ -96,12 +96,10 @@ c     1. deviator
       call deviat(ntens,cauchy,sdev,hydro)
 c     2. Obtain orthogonal / collinear components
       call hah_decompose(sdev,ntens,emic,sc,so)
-c     3. Transform to allow extension along so
+c     3. Transform to allow extension along so (double prime s)
       sdp = sc(:) + so(:) / gL
-
-c     sp = 4(1-g_s) s_o
+c     4. sp = 4(1-g_s) s_o
       sp(:) = 4d0*(1d0-gS) * so(:)
-
       if (idiaw) then
          call w_chr(imsg,'cauchy')
          call w_dim(imsg,cauchy,ntens,1d0,.false.)
@@ -118,7 +116,6 @@ c     sp = 4(1-g_s) s_o
          call w_chr(imsg,'sp')
          call w_dim(imsg,sp, ntens,1d0,.false.)
       endif
-
       if (iyld_law.eq.2) then
          call yld2000_2d_dev(sdp,phis(1),dphi,d2phi,yldc)
          call yld2000_2d_dev(sp, phis(2),dphi,d2phi,yldc)

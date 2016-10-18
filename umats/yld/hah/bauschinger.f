@@ -109,6 +109,9 @@ c***  Eqs 14&15 in Ref. [1]
       return
       end subroutine calc_bau
 c------------------------------------------------------------------------
+c     phib1 = f1**q  *  |dotp - |dotp||**q
+c     phib1 = f2**q  *  |dotp + |dotp||**q
+c     phib2
       subroutine bauschinger(f_ks,q,emic,sdev,ntens,phib1,phib2)
 c     Arguments
 c     f_ks : f1, f2 parameters
@@ -120,24 +123,13 @@ c     ntens: Len of sdev, emic
       integer ntens
       dimension f_ks(2),emic(ntens),sdev(ntens)
       real*8 f_ks,q,emic,sdev,phib1,phib2
-
 c     locals
       real*8 dotp,dot_prod
 cf2py intent(in) f_ks,q,emic,sdev,ntens
 cf2py intent(out) f1,f2
-
       dotp = dot_prod(emic,sdev,ntens)
       phib1 = (f_ks(1)**q) * (dabs(dotp-dabs(dotp))**q)
       phib2 = (f_ks(2)**q) * (dabs(dotp+dabs(dotp))**q)
-
       return
       end subroutine bauschinger
 c------------------------------------------------------------------------
-c$$$      include "bauschinger_lib.f"
-
-c$$$      subroutine bauschinger(k1,k2)
-c$$$      implicit none
-c$$$      real*8 k1,k2
-c$$$cf2py intent(in) k1,k2
-c$$$      return
-c$$$      end subroutine bauschinger

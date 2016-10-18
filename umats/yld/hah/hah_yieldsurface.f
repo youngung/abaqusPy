@@ -10,6 +10,10 @@ c     hah_io in hah_lib.f
 c     hah_decompose in hah_lib.f
 c     yld in  ../yld.f
 c-----------------------------------------------------------------------
+c     hah yield function that is composed two components: phi, phi_b.
+c     yield surface =[phi^q+phi_b^q]^(1/q).
+c     phi is a homogeneous function of first degree.
+
       subroutine hah_yieldsurface(iyld_choice,yldc,nyldc,yldp,nyldp,
      $     cauchy,phi_chi,dphi_chi,d2phi_chi,ntens,phi,dphi,d2phi,idiaw)
 c     Arguments
@@ -38,7 +42,7 @@ c     HAH yield surface
       dimension dphi(ntens),d2phi(ntens,ntens)
       real*8,intent(out):: phi,dphi,d2phi
 c     local - microstructure deviator
-      dimension emic(6)
+      dimension emic(ntens)
       real*8 emic
 c     local - Bauschinger parameters
       dimension gk(4),e_ks(5),f_ks(2),target(ntens),phi_bs(2)
@@ -61,32 +65,30 @@ c     local-bau
       real*8 phibs
 c     local-control
       integer imsg
-      logical idiaw
-      real*8 phi_chi_ref, phi_isoh, hydro, fht, rah
+      logical, intent(in)::idiaw
+      real*8 phi_isoh, hydro, fht, rah
 cf2py intent(in) iyld_choice,yldc,nyldc,yldp,nylpd
 cf2py intent(in) sdev,phi_chi,dphi_chi,d2phi_chi,ntens
 cf2py intent(out) phi,dphi,d2phi
 
 c-----------------------------------------------------------------------
       imsg = 0
-c      idiaw=.true.
-c      idiaw=.false.
 
 c     Fooling the compiler - by-pass warning of unused arguments.
-      d2phi(:,:)=d2phi(:,:)
-      d2phi_chi(:,:)=d2phi_chi(:,:)
-      d2phi_lat(:,:)=d2phi_lat(:,:)
-      d2phi_x(:,:)=d2phi_x(:,:)
-      dphi(:)=dphi(:)
-      dphi_chi(:)=dphi_chi(:)
-      dphi_lat(:)=dphi_lat(:)
-      dphi_x(:)=dphi_x(:)
-      phi_omega=phi_omega
-      phi_x=phi_x
-      phibs(:)=phibs(:)
-      sdp(:)=sdp(:)
-      sp(:)=sp(:)
-      target(:)=target(:)
+      d2phi(:,:)     = d2phi(:,:)
+      d2phi_chi(:,:) = d2phi_chi(:,:)
+      d2phi_lat(:,:) = d2phi_lat(:,:)
+      d2phi_x(:,:)   = d2phi_x(:,:)
+      dphi(:)        = dphi(:)
+      dphi_chi(:)    = dphi_chi(:)
+      dphi_lat(:)    = dphi_lat(:)
+      dphi_x(:)      = dphi_x(:)
+      phi_omega      = phi_omega
+      phi_x          = phi_x
+      phibs(:)       = phibs(:)
+      sdp(:)         = sdp(:)
+      sp(:)          = sp(:)
+      target(:)      = target(:)
 c -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
 c$$$c     obtain deviatoric stress
       call deviat(ntens,cauchy,sdev,hydro)
@@ -103,9 +105,8 @@ c     call exit(-1)
 c-----------------------------------------------------------------------
 c     Restore yldp into state variables/parameters
 c      write(*,*)'ref:',ref
-      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
-     $     gL,ekL,eL,gS,c_ks,ss)
-c      call exit(-1)
+      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
+     $     eL,gS,c_ks,ss)
 
 c     calculate yield surface
 c     decompose deviatoric stress
@@ -114,14 +115,14 @@ c     decompose deviatoric stress
       endif
       call hah_decompose(sdev,ntens,emic,sc,so)
       if (idiaw) then
-         call w_chr(imsg,'deviatoric Stress decomposition')
+         call w_chr(imsg,'deviatoric stress decomposition')
          call w_dim(imsg,sdev,ntens,1d0,.true.)
          call w_chr(imsg,'emic')
          call w_dim(imsg,emic,ntens,1d0,.true.)
          call w_chr(imsg,'sc')
-         call w_dim(imsg,sc,ntens,1d0,.true.)
+         call w_dim(imsg,sc,  ntens,1d0,.true.)
          call w_chr(imsg,'so')
-         call w_dim(imsg,so,ntens,1d0,.true.)
+         call w_dim(imsg,so,  ntens,1d0,.true.)
          call fill_line(imsg,'-',23)
 c         call exit(-1)
       endif
@@ -139,10 +140,11 @@ c         call exit(-1)
 c      call exit(-1)
 
 c---  anisotropic yield surface with latent hardening + cross hardening
-c     (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
-      call latent(iyld_choice,ntens,nyldp,nyldc,cauchy,
-     $     yldp,yldc,phi_lat)
-      phi_lat_norm = phi_lat**(1d0/yldp(9)) !! homogeneous function of degree 1.
+c     phi_lat = sqrt(phi(sp)**2 + phi(sdp)**2)
+c     phi_lat being the homogeneous function of degree 1.
+      call latent(iyld_choice,ntens,nyldp,nyldc,cauchy,yldp,yldc,
+     $     phi_lat)
+      phi_lat_norm = phi_lat**yldp(9)
       if (idiaw) then
          call w_val(imsg,'phi_lat     :',phi_lat)
          call w_val(imsg,'phi_lat_norm:',phi_lat_norm)
@@ -152,8 +154,7 @@ c         call exit(-1)
 
 c---  anisotropic yield surface with full HAH
       call bauschinger(f_ks,yldp(9),emic,sdev,ntens,phi_bs(1),phi_bs(2))
-      fht = (phi_lat_norm/ref)**yldp(9)+
-     $     phi_bs(1)**yldp(9) + phi_bs(2)**yldp(9)
+      fht = phi_lat_norm+phi_bs(1)+phi_bs(2)
       phi = (fht)**(1d0/yldp(9))
       if (idiaw) then
          call w_chr(imsg,'phi_bs (Bauschinger)')

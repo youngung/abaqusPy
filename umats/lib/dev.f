@@ -34,7 +34,8 @@ c     p       : hydrostatic pressure
       implicit none
       integer, intent(in):: ntens
       dimension cauchy(ntens),sdev(ntens)
-      real*8 cauchy,sdev,p
+      real*8, intent(in)  :: cauchy
+      real*8, intent(out) :: sdev,p
       if (ntens.eq.3) then
          call deviat3(cauchy,sdev,p)
       elseif(ntens.eq.6) then
@@ -46,10 +47,16 @@ c     p       : hydrostatic pressure
       return
       end subroutine deviat
 c-----------------------------------------------------------------------
+c     Calculate deviator and hydrostatic pressure
       subroutine deviat6(s,sd,p)
+c     Arguments
+c     s   : cauchy stress under plane stress space (s11,s22,s12 with s33=0)
+c     sd  : stress deviator
+c     p   : hydrostatic pressure
       implicit none
-      real*8 s(6),sd(6),p
-      p = (s(1)+s(2)+s(3))/3.
+      real*8, intent(in) ::s(6)
+      real*8, intent(out)::sd(6),p
+      p = (s(1)+s(2)+s(3))/3d0
       sd(1) = s(1)-p
       sd(2) = s(2)-p
       sd(3) = s(3)-p
@@ -66,8 +73,9 @@ c     s   : cauchy stress under plane stress space (s11,s22,s12 with s33=0)
 c     sd  : stress deviator
 c     p   : hydrostatic pressure
       implicit none
-      real*8 s(3),sd(3),p
-      p = (s(1)+s(2))/3.
+      real*8, intent(in) ::s(3)
+      real*8, intent(out)::sd(3),p
+      p = (s(1)+s(2))/3d0
       sd(1) = s(1)-p
       sd(2) = s(2)-p
       sd(3) = s(3)              !! shear component s12
@@ -76,6 +84,9 @@ c     p   : hydrostatic pressure
 c-----------------------------------------------------------------------
 c     Given array a33, find deviatoric part and its trace
       subroutine deviat33(a,ad,amean)
+c     a    : cauchy stress under plane stress space (s11,s22,s12 with s33=0)
+c     ad   : stress deviator
+c     amean: hydrostatic pressure
       implicit none
       real*8 a(3,3),ad6(6),ad(3,3),amean,a6(6)
       call voigt1(a,a6)

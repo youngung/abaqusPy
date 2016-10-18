@@ -8,6 +8,9 @@ c     [2] Jeong et al., IJP, 2016 (in press)
 c     Youngung Jeong
 c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
+c     Decompose a stress tensor to the orthogonal and collinear
+c     components with respect to the microstructure deviator <emic>
+c     Refer to Eqs 4&5 in Ref [1]
       subroutine hah_decompose(tensor,ntens,emic,
      $     tensor_colin,tensor_ortho)
 c     Arguments
@@ -17,11 +20,9 @@ c     emic         : microstructure deviator
 c     tensor_colin : colinear component of <tensor>
 c     tensor_ortho : orthogonal component of <tensor>
       implicit none
-      integer, intent(in):: ntens
-      dimension tensor(ntens)
-      dimension tensor_colin(ntens)
-      dimension tensor_ortho(ntens)
-      dimension emic(ntens)
+      integer, intent(in)::ntens
+      dimension tensor(ntens),tensor_colin(ntens),tensor_ortho(ntens),
+     $     emic(ntens)
       real*8,intent(in) ::tensor,emic
       real*8,intent(out)::tensor_colin,tensor_ortho
       real*8 dot_prod,H,dd
@@ -30,7 +31,7 @@ c     tensor_ortho : orthogonal component of <tensor>
 cf2py intent(in) tensor, ntens, emic
 cf2py intent(out) tensor_colin, tensor_ortho
 cf2py depend(ntens) tensor,emic,tensor_colin,tensor_ortho
-
+c      idiaw=.true.
       idiaw=.false.
       imsg = 0
       if (idiaw) then
@@ -43,7 +44,7 @@ cf2py depend(ntens) tensor,emic,tensor_colin,tensor_ortho
          call w_dim(imsg,emic,ntens,1d0,.false.)
       endif
 
-      H = 8d0/3d0
+      H  = 8d0/3d0
       dd = dot_prod(tensor,emic,ntens)
       if (idiaw) call w_val(imsg,'dd',dd)
 c     Eqs 4&5 in Ref [1]
@@ -86,13 +87,13 @@ c***  normalization.
       end subroutine hat
 c------------------------------------------------------------------------
 c     Calculate cos2chi value using the two given hat tensors, <a> and <b>
-      subroutine calc_cos2chi(a,b,ntens,val)
+      subroutine calc_cos2chi(ntens,ndi,nshr,a,b,val)
 c     Arguments
 c     a   : tensor in 6d (it should be a hat property)
 c     b   : tensor in 6d (it should be a hat property)
 c     val : value to be returned
       implicit none
-      integer,intent(in):: ntens
+      integer,intent(in)::
       dimension a(ntens),b(ntens)
       real*8, intent(in)::a,b
       real*8, intent(out)::val
@@ -107,20 +108,32 @@ cf2py intent(out) val
       return
       end subroutine calc_cos2chi
 c------------------------------------------------------------------------
-      real*8 function dot_prod(a,b,n)
+c     double dot product of tensor a and b
+      real*8 function dot_prod(a,b,ntens,ndi,nshr)
 c     Arguments
-c     a   : tensor in n-dimension
-c     b   : tensor in n-dimension
-c     n   : Len of a and b
+c     a     : tensor in n-dimension
+c     b     : tensor in n-dimension
+c     ntens : Len of a and b
+c     ndi   : Number of normal components
+c     nshr  : Number of shear components
       implicit none
-      dimension a(n)
-      dimension b(n)
+      dimension a(ntens)
+      dimension b(ntens)
       real*8, intent(in):: a,b
       integer, intent(in):: n
       integer i
+
+      if (ntens.ne.ndi+nshr) then
+         write(*,*)'ndi+nshr should be equal to ntens',
+     $        ' in hah_lib.dot_prod'
+         call exit(-1)
+      endif
       dot_prod=0d0
-      do 10 i=1,n
+      do 10 i=1,ndi
          dot_prod = dot_prod + a(i) * b(i)
+ 10   continue
+      do 10 i=1,nshr
+         dot_prod = dot_prod + 2d0*a(i+ndi) * b(i+ndi)
  10   continue
       end function dot_prod
 c------------------------------------------------------------------------
@@ -252,6 +265,7 @@ c     locals
 
       call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
      $     gL,ekL,eL,gS,c_ks,ss)
+
       cauchy_ref(:)=0d0
       cauchy_ref(1)=1d0
 c     cauchy_ref(2)=1d0
