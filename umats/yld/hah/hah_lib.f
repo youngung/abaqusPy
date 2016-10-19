@@ -27,8 +27,8 @@ c     tensor_ortho : orthogonal component of <tensor>
      $     emic(ntens)
       real*8,intent(in) ::tensor,emic
       real*8,intent(out)::tensor_colin,tensor_ortho
-      dimension aux6(6),bux6(6)
-      real*8 dot_prod,H,dd,aux6,bux6
+c      dimension aux6(6),bux6(6)
+      real*8 dot_prod,H,dd!,aux6,bux6
       integer imsg
       logical idiaw
 cf2py intent(in) ntens,ndi,nshr,tensor, emic

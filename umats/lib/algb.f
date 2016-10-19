@@ -48,11 +48,15 @@ c-----------------------------------------------------------------------
 c     Apply tensor inner dot
 c     ci = aij x bj
       subroutine mult_array(aij,bj,ntens,ci)
-c     intent(int) aij,bj,ntens
-c     intent(out) ci
       implicit none
-      integer i,j,ntens
-      real*8 aij(ntens,ntens),bj(ntens),ci(ntens)
+      integer, intent(in) :: ntens
+      dimension aij(ntens,ntens),bj(ntens),ci(ntens)
+      real*8, intent(in)  :: aij,bj
+      real*8, intent(out) :: ci
+      integer i,j
+cf2py intent(in) aij, bj, ntens
+cf2py intent(out) ci
+cf2py depend(ntens) aij, bj
       ci(:) = 0.d0
       do 10 i=1,ntens
       do 10 j=1,ntens

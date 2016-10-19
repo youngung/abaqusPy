@@ -4,8 +4,8 @@ CMP=gfortran
 
 # -fno-automatic
 
-FLAGS=-g -Wall -fcheck=all -Waliasing -Warray-bounds\
-	-fbacktrace -fstack-arrays -finit-local-zero -Winteger-division
+FLAGS=-g -Wall -fcheck=all -Waliasing -Warray-bounds -O\
+	-fbacktrace -fstack-arrays -finit-local-zero # -Winteger-division
 
 # FLAGS=-g -Wall -fcheck=all -Waliasing -Warray-bounds \
 #	-fbacktrace -fstack-arrays -finit-local-zero -Winteger-division

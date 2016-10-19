@@ -127,18 +127,17 @@ c     Arguments passed into
       integer iyld_choice
 c     local variables.
       dimension dphi(ntens),d2phi(ntens,ntens),s33lab(3,3),s33mat(3,3),
-     $     s6mat(6),dphi33m(3,3),s3mat(3),emic(ntens),dphi33l(3,3),
+     $     s6mat(6),dphi33m(3,3),s3mat(3),dphi33l(3,3),
      $     s6lab(6),dphi6(6)
       real*8 dphi,d2phi,pi,th,s33lab,s33mat,s6mat,time0,time1,
-     $     dphi33m,s3mat,dphi33l,rv,dphi6,s6lab,phim,emic
+     $     dphi33m,s3mat,dphi33l,rv,dphi6,s6lab,phim
       integer nth,i,j,iverbose
 c     local - Latent hardening parameters
-      dimension e_ks(5),f_ks(2),gk(4)
-      real*8 gL,ekL,eL,e_ks,f_ks,gk
+c      dimension e_ks(5),f_ks(2),gk(4)
+c      real*8 gL,ekL,eL,e_ks,f_ks,gk
 c     local - cross hardening parameters
-      real*8 gS,c_ks,ss,eeq
+c      real*8 gS,c_ks,ss,eeq
 c     local - gen
-      real*8 ref
       parameter(nth=10,iverbose=0)
 
       pi=4.d0*datan(1.d0)
