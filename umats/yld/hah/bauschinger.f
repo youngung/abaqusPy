@@ -25,7 +25,7 @@ c     dfk: \partial(fk)/\partial(gk)
       implicit none
       real*8, intent(in) ::gk,H,q
       real*8, intent(out)::fk,dfk
-      real*8, c
+      real*8  c
 cf2py intent(in) gk,H,q
 cf2py intent(out) fk,dfk
       c = dsqrt(6d0*H)/4d0
@@ -52,10 +52,11 @@ c$$$      end subroutine calc_gk
 c------------------------------------------------------------------------
 c     subroutine that calculates gk parameter for HAH
 c         --   Eqs 7/8 in Ref. [1]
-      subroutine calc_bau(e_mic,target,gs,e_ks,q,ys_iso,ys_hah,debar,
-     $     fks,gs_new)
+c     Also, some derivatives
+      subroutine calc_bau(ntens,ndi,nshr,emic,target,gs,e_ks,q,ys_iso,
+     $     ys_hah,debar,fks,gs_new)
 c     Arguments
-c     e_mic  : microstructure deviator
+c     emic   : microstructure deviator
 c     target : the target direction towards which the microstructure
 c              deviator aims to realign.
 c     gs     : state variables that quantifies the <flattening>
@@ -74,24 +75,22 @@ c     Use <bauschinger_lib.f / hat> to convert a tensor
 c     to its hatted property.
       implicit none
 c     Arguments passed into
-      integer ntens,ndi,nshr
-      parameter(ntens=6,ndi=3,nshr=3)
-      dimension e_mic(ntens)
-      dimension target(ntens)
+      integer, intent(in) :: ntens,ndi,nshr
+      dimension emic(ntens),target(ntens)
+      real*8, intent(in) ::  emic,target
       dimension gs(4)
       dimension e_ks(5)
       dimension fks(2),dfks(2) ! dfks : dfk/dgk
       dimension gs_new(4)
-      real*8 e_mic,target,gs,e_ks,fks,dfks,gs_new
-      real*8 q,ys_iso,ys_hah,debar
+      real*8 gs,e_ks,fks,dfks,gs_new,q,ys_iso,ys_hah,debar
 c     locals
       dimension dgs(4)
       real*8 dot_prod,dd,dgs
       integer k
       integer i
-cf2py intent(in) e_mic,target,gs,e_ks,ys_iso,ys_hah
+cf2py intent(in) emic,target,gs,e_ks,ys_iso,ys_hah
 cf2py intent(out) fks,gs_new
-      dd = dot_prod(ntens,ndi,nshr,e_mic,target)
+      dd = dot_prod(ntens,ndi,nshr,emic,target)
 c***  index k depends on the sign of (mic:target)
       if (sign(1d0,dd).ge.0) then
          k = 1
@@ -117,6 +116,7 @@ c***  Eqs 14&15 in Ref. [1]
       do 20 i=1,2
          call calc_fk(gs_new(i),8d0/3d0,q,fks(i),dfks(i))
  20   continue
+
       return
       end subroutine calc_bau
 c------------------------------------------------------------------------

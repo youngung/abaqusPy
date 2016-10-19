@@ -137,6 +137,7 @@ c        4:      12
       a4(4) = a6(6)
       return
       end subroutine reduce_6to4
+c-----------------------------------------------------------------------
       subroutine reduce_4to6(a4,a6)
       dimension a6(6),a4(4)
       real*8 a6,a4

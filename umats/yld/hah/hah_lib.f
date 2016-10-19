@@ -98,7 +98,7 @@ c     val : value to be returned
       implicit none
       integer,intent(in)::ntens,ndi,nshr
       dimension a(ntens),b(ntens)
-      real*8, intent(in)::a,b
+      real*8, intent(in) ::a,b
       real*8, intent(out)::val
       real*8  H,dot_prod
 cf2py intent(in) a,b,ntens
@@ -135,12 +135,10 @@ c     b     : tensor in n-dimension
      $        ' in hah_lib.dot_prod'
          call exit(-1)
       endif
-
       if (idiaw) then
          call fill_line(imsg,'-',52)
          call w_chr(imsg,'Begin DOT_PROD')
       endif
-
       if (ntens.eq.3) then
          aux6(1)=a(1)
          aux6(2)=a(2)

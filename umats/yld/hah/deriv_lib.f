@@ -4,6 +4,7 @@ c     model
 
 c     General references
 c     [1] Lee et al., IJP 29, (2012) p 13-41
+c     [2] Lee et al., Comput. Methods. Appl. Mech. Engrg. 247 (2012) p73-92
 c     [3] Lee et al., Comput. Methods. Appl. Mech. Engrg. 286 (2015) p63-86
       subroutine deriv_generals_exp(emic,gS,f1,f2)
       integer ntens
