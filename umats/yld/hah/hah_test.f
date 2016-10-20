@@ -84,7 +84,7 @@ c        First argument (th of emic in pi-plane)
 c      call read_alpha(
 c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
       yldc(:8) = 1d0
-      yldc(9)  = 6d0
+      yldc(9)  = 2d0
       call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
      $     eL,gS,c_ks,ss)
       iyld_choice=2             ! yld2000-2d
@@ -302,20 +302,21 @@ c         call w_chrc(imsg,'|')
             call deviat(6,aux6,sdev,hydro)
          elseif (ntens.eq.6) then
             call deviat(6,smat,sdev,hydro)
-            call pi_proj(sdev,s1,s2)
+
          else
             write(*,*)'unexpected case of ntens in hah_locus'
             call exit(-1)
          endif
 
+         call pi_proj(sdev,s1,s2)
+
          if (idiaw) then
- 1          write(*,'(2f9.5)',advance='no') (smat(i),i=1,2)
+            write(*,'(2f9.5)',advance='no') (smat(i),i=1,2)
             write(*,'(3f9.5)',advance='no') (dphi(i),i=1,2),phim
             write(*,*)
          endif
-         write(1,'(2f7.3)',advance='no') (smat(i),i=1,2)
-         write(1,'(2f9.5)',advance='no') (dphi(i),i=1,2)
-         write(1,'(2f9.5)',advance='no') s1,s2
+         write(1,'(6f7.3)',advance='no') smat(1),smat(2),dphi(1),
+     $        dphi(2),s1,s2
          write(1,*)
  10   continue
 
