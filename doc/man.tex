@@ -43,14 +43,14 @@
 
 \doublespacing
 
-%% Custom colors
-\definecolor{dkgreen}{rgb}{0,0.6,0}
-%\definecolor{lime}(0,255,0)
-\definecolor{gray}{rgb}{0.5,0.5,0.5}
-\definecolor{mauve}{rgb}{0.58,0,0.82}
-\definecolor{lightgray}{rgb}{0.83, 0.83, 0.83}
-\definecolor{lightergray}{rgb}{0.90, 0.90, 0.90}
-\definecolor{verylightgray}{rgb}{0.95, 0.95, 0.95}
+% %% Custom colors
+% \definecolor{dkgreen}{rgb}{0,0.6,0}
+% \definecolor{lime}(0,255,0)
+% \definecolor{gray}{rgb}{0.5,0.5,0.5}
+% \definecolor{mauve}{rgb}{0.58,0,0.82}
+% \definecolor{lightgray}{rgb}{0.83, 0.83, 0.83}
+% \definecolor{lightergray}{rgb}{0.90, 0.90, 0.90}
+% \definecolor{verylightgray}{rgb}{0.95, 0.95, 0.95}
 
 %% not working
 % \colorlet{lcfree}{Green3}
@@ -60,134 +60,136 @@
 % -------------------------------------------------
 % Set up a new layer for the debugging marks, and make sure it is on
 % top
-\pgfdeclarelayer{marx}
-\pgfsetlayers{main,marx}
+% \pgfdeclarelayer{marx}
+% \pgfsetlayers{main,marx}
 
 
 %% custom lst styles
-\lstdefinestyle{numbers} {numbers=left, stepnumber=1, numberstyle=\tiny, numbersep=10pt}
-\lstdefinestyle{MyFrame}{backgroundcolor=\color{yellow},frame=shadowbox}
+% \lstdefinestyle{numbers} {numbers=left, stepnumber=1, numberstyle=\tiny, numbersep=10pt}
+% \lstdefinestyle{MyFrame}{backgroundcolor=\color{yellow},frame=shadowbox}
 
-\lstdefinestyle{Fortran} {
-  language=Fortran,
-  aboveskip=3mm,
-  belowskip=3mm,
-  showstringspaces=true,
-  columns=flexible,
-  basicstyle={\small\ttfamily},
-  numbers=left,
-  numberstyle=\tiny\color{red},
-  keywordstyle=\color{blue},
-  commentstyle=\color{dkgreen},
-  stringstyle=\color{mauve},
-  breaklines=true,
-  breakatwhitespace=true,
-  frame=shadowbox,
-  backgroundcolor=\color{verylightgray},
-  tabsize=3
-  }
+% \lstdefinestyle{Fortran} {
+%   language=Fortran,
+%   aboveskip=3mm,
+%   belowskip=3mm,
+%   showstringspaces=true,
+%   columns=flexible,
+%   basicstyle={\small\ttfamily},
+%   numbers=left,
+%   numberstyle=\tiny\color{red},
+%   keywordstyle=\color{blue},
+%   commentstyle=\color{dkgreen},
+%   stringstyle=\color{mauve},
+%   breaklines=true,
+%   breakatwhitespace=true,
+%   frame=shadowbox,
+%   backgroundcolor=\color{verylightgray},
+%   tabsize=3
+%   }
 
-\lstdefinestyle{sh} {
-  language=bash,
-  aboveskip=3mm,
-  belowskip=3mm,
-  showstringspaces=true,
-  columns=flexible,
-  basicstyle={\tiny\ttfamily},
-  numbers=left,
-  numberstyle=\tiny\color{blue},
-  keywordstyle=\color{blue},
-  commentstyle=\color{dkgreen},
-  stringstyle=\color{mauve},
-  breaklines=true,
-  breakatwhitespace=true,
-  frame=shadowbox,
-  backgroundcolor=\color{lightergray},
-  tabsize=3
-  }
+% \lstdefinestyle{sh} {
+%   language=bash,
+%   aboveskip=3mm,
+%   belowskip=3mm,
+%   showstringspaces=true,
+%   columns=flexible,
+%   basicstyle={\tiny\ttfamily},
+%   numbers=left,
+%   numberstyle=\tiny\color{blue},
+%   keywordstyle=\color{blue},
+%   commentstyle=\color{dkgreen},
+%   stringstyle=\color{mauve},
+%   breaklines=true,
+%   breakatwhitespace=true,
+%   frame=shadowbox,
+%   backgroundcolor=\color{lightergray},
+%   tabsize=3
+%   }
 
-\lstdefinestyle{Python} {
-  language=Python,
-  aboveskip=3mm,
-  frame=shadowbox,
-  belowskip=3mm,
-  showstringspaces=true,
-  columns=flexible,
-  basicstyle={\small\ttfamily},
-  numbers=left,
-  numberstyle=\tiny\color{red},
-  keywordstyle=\color{blue},
-  commentstyle=\color{dkgreen},
-  stringstyle=\color{mauve},
-  breaklines=true,
-  breakatwhitespace=true,
-  frame=shadowbox,
-  backgroundcolor=\color{lightgray},
-  tabsize=3}
+% \lstdefinestyle{Python} {
+%   language=Python,
+%   aboveskip=3mm,
+%   frame=shadowbox,
+%   belowskip=3mm,
+%   showstringspaces=true,
+%   columns=flexible,
+%   basicstyle={\small\ttfamily},
+%   numbers=left,
+%   numberstyle=\tiny\color{red},
+%   keywordstyle=\color{blue},
+%   commentstyle=\color{dkgreen},
+%   stringstyle=\color{mauve},
+%   breaklines=true,
+%   breakatwhitespace=true,
+%   frame=shadowbox,
+%   backgroundcolor=\color{lightgray},
+%   tabsize=3}
 
-\lstdefinestyle{inp} {
-  language=bash,
-  aboveskip=3mm,
-  frame=shadowbox,
-  belowskip=3mm,
-  showstringspaces=true,
-  columns=flexible,
-  basicstyle={\tiny\ttfamily\scriptsize},
-  numbers=left,
-  numberstyle=\tiny\color{red},
-  keywordstyle=\color{black},
-  commentstyle=\color{dkgreen},
-  stringstyle=\color{mauve},
-  breaklines=true,
-  breakatwhitespace=true,
-  frame=shadowbox,
-  backgroundcolor=\color{lightgray},
-  tabsize=3
-  }
+% \lstdefinestyle{inp} {
+%   language=bash,
+%   aboveskip=3mm,
+%   frame=shadowbox,
+%   belowskip=3mm,
+%   showstringspaces=true,
+%   columns=flexible,
+%   basicstyle={\tiny\ttfamily\scriptsize},
+%   numbers=left,
+%   numberstyle=\tiny\color{red},
+%   keywordstyle=\color{black},
+%   commentstyle=\color{dkgreen},
+%   stringstyle=\color{mauve},
+%   breaklines=true,
+%   breakatwhitespace=true,
+%   frame=shadowbox,
+%   backgroundcolor=\color{lightgray},
+%   tabsize=3
+%   }
 
-\lstdefinestyle{txt} {
-  aboveskip=3mm,
-  frame=shadowbox,
-  belowskip=3mm,
-  showstringspaces=true,
-  columns=flexible,
-  basicstyle={\small\ttfamily},
-  numbers=none,
-  numberstyle=\tiny\color{red},
-  keywordstyle=\color{black},
-  commentstyle=\color{black},
-  stringstyle=\color{black},
-  breaklines=true,
-  breakatwhitespace=true,
-  frame=shadowbox,
-  backgroundcolor=\color{lightgray},
-  tabsize=3
-  }
+% \lstdefinestyle{txt} {
+%   aboveskip=3mm,
+%   frame=shadowbox,
+%   belowskip=3mm,
+%   showstringspaces=true,
+%   columns=flexible,
+%   basicstyle={\small\ttfamily},
+%   numbers=none,
+%   numberstyle=\tiny\color{red},
+%   keywordstyle=\color{black},
+%   commentstyle=\color{black},
+%   stringstyle=\color{black},
+%   breaklines=true,
+%   breakatwhitespace=true,
+%   frame=shadowbox,
+%   backgroundcolor=\color{lightgray},
+%   tabsize=3
+%   }
 
-\DeclareCaptionFormat{listing}{\rule{\dimexpr\textwidth+17pt\relax}{0.4pt}\par\vskip1pt#1#2#3}
-\captionsetup[lstlisting]{format=listing,singlelinecheck=false, margin=0pt, font={sf},labelsep=space,labelfont=bf}
+% \DeclareCaptionFormat{listing}{\rule{\dimexpr\textwidth+17pt\relax}{0.4pt}\par\vskip1pt#1#2#3}
+% \captionsetup[lstlisting]{format=listing,singlelinecheck=false, margin=0pt, font={sf},labelsep=space,labelfont=bf}
 
-\renewcommand\lstlistingname{Code}
-% \lstset{language=Fortran,frame=none}
-% \lstset{language=bash,frame=none}
-% \lstset{language=Python,frame=none}
+% \renewcommand\lstlistingname{Code}
+% % \lstset{language=Fortran,frame=none}
+% % \lstset{language=bash,frame=none}
+% % \lstset{language=Python,frame=none}
 
-%% tikz customization
-\tikzset{state/.style={rectangle,rounded corners,draw=black, very thick,
-    minimum height=2em,inner sep=2pt,text centered}}
-\tikzset{decision/.style={diamond,aspect=2,draw=black,very thick,
-    minimum height=2em,inner sep=2pt,text centered}}
-\tikzset{process/.style={circle,draw=black,very thick,
-    minimum height=2em,inner sep=2pt,text centered}}
-\tikzset{dot/.style={circle,draw=black,thick,
-    inner sep=0pt,minimum size=4pt}}
+% %% tikz customization
+% \tikzset{state/.style={rectangle,rounded corners,draw=black, very thick,
+%     minimum height=2em,inner sep=2pt,text centered}}
+% \tikzset{decision/.style={diamond,aspect=2,draw=black,very thick,
+%     minimum height=2em,inner sep=2pt,text centered}}
+% \tikzset{process/.style={circle,draw=black,very thick,
+%     minimum height=2em,inner sep=2pt,text centered}}
+% \tikzset{dot/.style={circle,draw=black,thick,
+%     inner sep=0pt,minimum size=4pt}}
 
-\title{Manual for VPSC-FLD (Version 2.1.3)}
+\title{Manual for abaqusPy}
 %\date{} % delete this line to display the current date
 
 %%% BEGIN DOCUMENT
 
 \begin{document}
+\pgfplotsset{compat=1.14}
+
 
 \section{derivatives}
 
@@ -223,7 +225,186 @@ whereas, if $\hat{\mathbf{h}}:\mathbf{s}\ge0$,
 \frac{\partial{g_2}}{\partial{\bar{\varepsilon}}}=k_1 \frac{g_3-g_2}{g_2}
 \end{eqnarray}
 
-Eqs \ref{eq:dbau1}-\ref{eq:dbau5} are located in \verb$bauschinger.f$.
+Eqs. \ref{eq:dbau1}-\ref{eq:dbau5} are located in \verb$bauschinger.f.$
 The term $\partial{\bar{\varepsilon}}/\partial{\mathbf{\sigma}}$ should be obtained elsewhere - through an iterative procedure.
+
+
+
+
+\section{Yield surface derivative}
+The yield surface of HAH model is decomposed into two contributions: the homogeneous and fluctuating terms that are $\phi_h$ and $\phi_b$.
+\begin{eqnarray}
+  \label{eq:hah_def}
+  \Phi(\mathbf{\sigma})=\{\phi_h^q + \phi_b^q \}^{1/q}
+\end{eqnarray}
+
+The homogeneous term is further decomposed into two contributions:
+\begin{eqnarray}
+  \label{eq:hah_homo}
+  \phi_h = \big(\psi(\mathbf{s}^{\prime\prime})^2+\psi(\mathbf{s_p})^2\big)^{1/2}
+\end{eqnarray}
+
+Whereas, the fluctuating term is defined as:
+\begin{eqnarray}
+    \label{eq:fluc}
+\phi_b  = f_1|\hat{\mathbf{h}}:\mathbf{s} - |\hat{\mathbf{h}}:\mathbf{s}||    + f_2|\hat{\mathbf{h}}:\mathbf{s} + |\hat{\mathbf{h}}:\mathbf{s}||.
+\end{eqnarray}
+
+The derivative of the HAH yield surface is:
+\begin{eqnarray}
+  \label{eq:hah_deriv}
+  \frac{\partial\Phi}{\partial\mathbf{\sigma}} &=&\frac{1}{q}\Phi^{(1-q)} \bigg\{                  \frac{\partial{\phi_h^q}}{\partial{\sigma}}  +                 \frac{\partial{\phi_b^q}}{\partial{\sigma}}         \bigg\}\\
+                                               &=&\frac{1}{q}\Phi^{(1-q)} \bigg\{  q \phi_h^{(q-1)}\frac{\partial{\phi_h}  }{\partial{\sigma}}  + q \phi_b^{(q-1)}\frac{\partial{\phi_b}  }{\partial{\sigma}}         \bigg\}
+\end{eqnarray}
+
+The terms $\frac{\partial{\phi_h}  }{\partial{\mathbf{\sigma}}}$ and $\frac{\partial{\phi_b}  }{\partial{\mathbf{\sigma}}}$ are obtained in the following sections.
+
+
+
+\subsection{Derivatives of homogeneous term}
+\label{sec:2.1}
+
+The derivative of the homogeneous term is obtained using the chain rule as follows:
+\begin{eqnarray}
+  \label{eq:derv1}
+  \frac{\partial{\phi_h}  }{\partial{\mathbf{\sigma}}}  =   \frac{\partial{\phi_h}}{\partial{\mathbf{s}}} \frac{\partial{\mathbf{s}}}{\partial{\mathbf{\sigma}}}.
+\end{eqnarray}
+
+The term $\frac{\partial{\phi_h}  }{\partial{s}} $ is obtained using Eq. \ref{eq:hah_homo}:
+\begin{eqnarray}
+  \label{eq:derv2}
+  \frac{\partial{\phi_h}  }{\partial{\mathbf{s}}} = \frac{1}{2\phi_h}\bigg\{ 2\psi(\mathbf{s}^{\prime\prime})\frac{\partial{\psi(\mathbf{s}^{\prime\prime})}}{\partial{\mathbf{s}^{\prime\prime}}}  \frac{\partial\mathbf{s}^{\prime\prime}}{\partial \mathbf{s}}  +  2\psi(\mathbf{s}_p) \frac{\partial{\psi(\mathbf{s}_p)}}{\partial{\mathbf{s}_p}} \frac{\partial{\mathbf{s}_p}}{\partial{\mathbf{s}}}\bigg\}
+\end{eqnarray}
+
+By combining Eqs. \ref{eq:derv1} and \ref{eq:derv2}, below equation is obtained:
+\begin{eqnarray}
+  \label{eq:derv3}
+  \frac{\partial{\phi_h}  }{\partial{\mathbf{\sigma}}} = \frac{1}{2\phi_h}\bigg\{  2\psi(\mathbf{s}^{\prime\prime})\frac{\partial{\psi(\mathbf{s}^{\prime\prime})}}{\partial{\mathbf{s}^{\prime\prime}}}  \frac{\partial\mathbf{s}^{\prime\prime}}{\partial \mathbf{s}} + 2\psi(\mathbf{s}_p) \frac{\partial{\psi(\mathbf{s}_p)}}{\partial{\mathbf{s}_p}} \frac{\partial{\mathbf{s}_p}}{\partial{\mathbf{s}}}\bigg\} \frac{\partial{s}}{\partial{\sigma}}.
+\end{eqnarray}
+
+
+\subsection{Derivatives of fluctuating term $\frac{\partial{\phi_b}  }{\partial{\mathbf{\sigma}}}$}
+\label{sec:2.2}
+
+
+Likewise, the derivative of the fluctuating term is obtained using the chain rule as follows:
+\begin{eqnarray}
+  \label{eq:derv4}
+  \frac{\partial{\phi_b}  }{\partial{\mathbf{\sigma}}}  =   \frac{\partial{\phi_b}}{\partial{\mathbf{s}}} \frac{\partial{\mathbf{s}}}{\partial{\mathbf{\sigma}}}.
+\end{eqnarray}
+
+$\phi_b$ depends on the sign of $\hat{\mathbf{h}}:\mathbf{s}$ as shown in Eq. \ref{eq:fluc}.
+
+When $\hat{\mathbf{h}}:\mathbf{s}\ge0$, Eq. \ref{eq:fluc} reduces to
+\begin{eqnarray}
+    \label{eq:fluc1}
+\phi_b  =f_2|2\hat{\mathbf{h}}:\mathbf{s}|.
+\end{eqnarray}
+
+
+When $\hat{\mathbf{h}}:\mathbf{s}<0$, Eq. \ref{eq:fluc} reduces to
+\begin{eqnarray}
+    \label{eq:fluc1}
+\phi_b  =f_1|2\hat{\mathbf{h}}:\mathbf{s}|.
+\end{eqnarray}
+
+Generally,
+\begin{eqnarray}
+    \label{eq:fluc1}
+\phi_b  =f_k|2\hat{\mathbf{h}}:\mathbf{s}|.
+\end{eqnarray}
+with the index $k$ depends on the sign of $\hat{\mathbf{h}}:\mathbf{s}$.
+The derivative $\frac{\partial{\phi_b}}{\partial{\mathbf{s}}}$ can be expressed as:
+\begin{eqnarray}
+    \label{eq:dphib1}
+\frac{\partial{\phi_b}}{\partial{\mathbf{s}}} = 2\frac{\partial{f_k}}{\partial{\mathbf{s}}} |\hat{\mathbf{h}}:\mathbf{s}| + 2 f_k \frac{\partial{|\hat{\mathbf{h}}:\mathbf{s}|}}{\partial{\mathbf{s}}}
+\end{eqnarray}
+
+
+The term $\frac{\partial{|\hat{\mathbf{h}}:\mathbf{s}|}}{\partial{\mathbf{s}}}$ takes on either the below depending on the sign of $\hat{\mathbf{h}}:\mathbf{s}$.
+\begin{eqnarray}
+  \label{eq:dphib2}
+  \frac{\partial{|\hat{\mathbf{h}}:\mathbf{s}|}}{\partial{\mathbf{s}}} &=&  \frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}}   \text{  when } \hat{\mathbf{h}}:\mathbf{s}\ge0\\
+                                                                       &=& -\frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}}   \text{  when } \hat{\mathbf{h}}:\mathbf{s} < 0
+\end{eqnarray}
+
+The derivative  $\frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}}$ is obtained as:
+\begin{eqnarray}
+  \label{eq:dphib3}
+\frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}}   =   \frac{\partial{\hat{\mathbf{h}}}}{\partial{\mathbf{s}}} : \mathbf{s} +\hat{\mathbf{h}}:\mathbf{I}
+\end{eqnarray}
+
+The term $ \frac{\partial{\hat{\mathbf{h}}}}{\partial{\mathbf{s}}} $ can be obtained through:
+\begin{eqnarray}
+  \label{eq:dphib4}
+\frac{\partial{\hat{\mathbf{h}}}}{\partial{\mathbf{s}}}=\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}}   \frac{\partial{\bar{\varepsilon}}}{\partial{\mathbf{\sigma}}}    \frac{\partial{\mathbf{\sigma}}}{\partial{\mathbf{s}}}
+\end{eqnarray}
+
+$\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}} $ can be obtained using the evolutionary rule of $\hat{\mathbf{h}}$.
+Note that $\frac{\partial{\bar{\mathbf{\varepsilon}}}}{\partial{\mathbf{\sigma}}}$ can be obtained using the normality rule:
+\begin{eqnarray}
+  \label{eq:dphib5}
+\frac{\partial{\mathbf{\sigma}}}{\partial{\bar{\varepsilon}}} = - \mathbb{C} : \frac{\partial{\bar{\sigma}}}{\partial{\mathbf{\sigma}}},
+\end{eqnarray}
+which leads to
+\begin{eqnarray}
+  \label{eq:dphib6}
+\frac{\partial{\hat{\mathbf{h}}}}{\partial{\mathbf{s}}}=\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}}  \otimes \bigg\{ \Big\{- \mathbb{C} : \frac{\partial{\bar{\sigma}}}{\partial{\mathbf{\sigma}}}\Big\}^{-1} :  \frac{\partial{\mathbf{\sigma}}}{\partial{\mathbf{s}}}\bigg\}
+\end{eqnarray}
+Substitute Eq. \ref{eq:dphib6} to Eq. \ref{eq:dphib3} to have
+\begin{eqnarray}
+  \label{eq:dphib6_1}
+\frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}} =\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}}  \otimes \bigg\{ \Big\{- \mathbb{C} : \frac{\partial{\bar{\sigma}}}{\partial{\mathbf{\sigma}}}\Big\}^{-1} :  \frac{\partial{\mathbf{\sigma}}}{\partial{\mathbf{s}}}\bigg\}:\mathbf{s} + \hat{\mathbf{h}}:\mathbf{I}
+\end{eqnarray}
+
+
+
+The term $\frac{\partial{f_k}}{\partial{\mathbf{s}}}$ depends on the evolutionary behavior of $f_k$ with respect to equivalent strain $\bar{\varepsilon}$.
+This allows the application of the chain rule such as
+\begin{eqnarray}
+  \label{eq:dphib7}
+\frac{\partial{f_k}}{\partial{\mathbf{s}}}=\frac{\partial{f_k}}{\partial{\bar{\varepsilon}}} \frac{\partial{\bar{\varepsilon}}}{\partial\mathbf{\sigma}} \frac{\partial\mathbf{\sigma}}{\partial\mathbf{s}}
+\end{eqnarray}
+
+
+Likewise, using Eq. \ref{eq:dphib5},
+
+\begin{eqnarray}
+  \label{eq:dphib8}
+\frac{\partial{f_k}}{\partial{\mathbf{s}}}=\frac{\partial{f_k}}{\partial{\bar{\varepsilon}}}     \otimes \bigg\{ \Big\{- \mathbb{C} : \frac{\partial{\bar{\sigma}}}{\partial{\mathbf{\sigma}}}\Big\}^{-1} :  \frac{\partial{\mathbf{\sigma}}}{\partial{\mathbf{s}}}\bigg\}
+\end{eqnarray}
+
+
+
+\subsection{Misc derivatives}
+\label{sec:misc}
+
+
+
+There are a few stress tensor transformation used in HAH formalism.
+In the original model of HAH, the stress tensor is decomposed into two contributions: namely, co-linear and orthogonal components with respect to the microstructure deviator.
+\begin{eqnarray}
+  \label{eq:decomp1}
+  \mathbf{s_c} = \frac{8}{3} (\mathbf{s}:\hat{\mathbf{h}}) \mathbf{h}
+\end{eqnarray}
+The derivative of $\mathbf{s_c}$ with respect to $\mathbf{s}$ is
+\begin{eqnarray}
+  \label{eq:decomp2}
+  \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}} = \frac{8}{3}\bigg\{ \frac{\partial(\mathbf{s}:\hat{\mathbf{h}})}{\partial\mathbf{s}} \hat{\mathbf{h}}+ (\mathbf{s}:\hat{\mathbf{h}}) \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{s}}  \bigg\}
+\end{eqnarray}
+
+The above can make use of Eqs. \ref{eq:dphib6_1} and \ref{eq:dphib6}.
+
+The orthogonal component is defined as:
+\begin{eqnarray}
+  \label{eq:decomp3}
+  \mathbf{s_o} = \mathbf{s} - \mathbf{s}_c.
+\end{eqnarray}
+The derivative is then
+\begin{eqnarray}
+  \label{eq:decomp4}
+  \frac{\partial\mathbf{s_o}}{\partial\mathbf{s}} = \mathbf{I} -   \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}}
+\end{eqnarray}
+
 
 \end{document}

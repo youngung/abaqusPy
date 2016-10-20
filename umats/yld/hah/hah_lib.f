@@ -4,7 +4,7 @@ c     General references
 
 c     [1] Barlat et al., IJP 58, 2014 p201-218
 c     [2] Jeong et al., IJP, 2016 (in press)
-
+c     [3] The manual of abaqusPy
 c     Youngung Jeong
 c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
@@ -52,6 +52,14 @@ c      idiaw=.true.
 c     Eqs 4&5 in Ref [1]
       tensor_colin(:) = H * dd * emic(:)
       tensor_ortho(:) = tensor(:) - tensor_colin(:)
+
+      if (.true.) then
+!         calculate dsc_ds (i.e., partial tensor_colin / tensor)
+c         if emic is not dependent on 'stress' (original case)
+c
+      endif
+
+
       if (idiaw) then
          call w_chr(imsg,'Exit HAH_DEDCOMPOSE')
          call fill_line(imsg,'-',52)

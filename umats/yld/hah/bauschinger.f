@@ -6,7 +6,7 @@ c       www.github.com/youngung/abaqusPy
 c
 c     General references
 c     [1] Barlat et al. IJP 58, 2014 p201-218
-c     [2] Jeong et al., IJP, 2016 (in press)
+c     [2] Lee et al., Comput. Methods. Appl. Mech. Engrg. 286 (2015) p63-86
 
 c     Youngung Jeong
 c     youngung.jeong@gmail.com
@@ -116,13 +116,12 @@ c***  Eqs 14&15 in Ref. [1]
       do 20 i=1,2
          call calc_fk(gs_new(i),8d0/3d0,q,fks(i),dfks(i))
  20   continue
-
       return
       end subroutine calc_bau
 c------------------------------------------------------------------------
 c     phib1 = f1**q  *  |dotp - |dotp||**q
-c     phib1 = f2**q  *  |dotp + |dotp||**q
-c     phib2
+c     phib2 = f2**q  *  |dotp + |dotp||**q
+c     Also, calculate the derivative-associated terms
       subroutine bauschinger(ntens,ndi,nshr,emic,sdev,f_ks,q,phib1,
      $     phib2)
 c     Arguments

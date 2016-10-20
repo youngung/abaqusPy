@@ -75,8 +75,8 @@ c     Arguments passed
       real*8, intent(out) :: phi
 c     locals
       dimension sdev(ntens),so(ntens), sc(ntens), sdp(ntens),
-     $     emic(ntens),dphi(ntens),d2phi(ntens)
-      real*8 sdev,so,sc,sdp,emic,dphi,d2phi
+     $     emic(ntens),dphis(2,ntens),d2phi(ntens),aux1(ntens)
+      real*8 sdev,so,sc,sdp,emic,dphis,d2phi,aux1
 c     variables to be stored from yldp
       dimension gk(4),e_ks(5),f_ks(2),sp(ntens),phis(2)
       real*8 gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,sp,phis,hydro
@@ -121,13 +121,17 @@ c     4. sp = 4(1-g_s) s_o
          call w_dim(imsg,sp, ntens,1d0,.false.)
       endif
       if (iyld_law.eq.2) then
-         call yld2000_2d_dev(sdp,phis(1),dphi,d2phi,yldc)
-         call yld2000_2d_dev(sp, phis(2),dphi,d2phi,yldc)
+         call yld2000_2d_dev(sdp,phis(1),aux1,d2phi,yldc)
+         dphis(1,:)=aux1(:)
+         call yld2000_2d_dev(sp, phis(2),aux1,d2phi,yldc)
+         dphis(2,:)=aux1(:)
          phi = dsqrt(phis(1)**2 + phis(2)**2)
       else
          call w_chr(imsg,'** iyld_law not expected in latent')
          call exit(-1)
       endif
+
+c**   Calculate derivative (i.e., \frac{\partial\phi_h}{\partial\cauchy})
 
       return
       end subroutine latent

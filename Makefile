@@ -7,14 +7,11 @@ CMP=gfortran
 FLAGS=-g -Wall -fcheck=all -Waliasing -Warray-bounds \
 	-fbacktrace -fstack-arrays -finit-local-zero -Winteger-division
 
-# FLAGS=-g -Wall -fcheck=all -Waliasing -Warray-bounds \
-#	-fbacktrace -fstack-arrays -finit-local-zero -Winteger-division
-
 objects_hah_test=hah_test.o bauschinger_lib.o \
 	hah_lib.o bauschinger.o hah.o \
 	hah_yieldsurface.o yld.o vm.o cnv.o hill48.o yld2000_2d.o\
 	hah_update.o algb.o dev.o lib_write.o is.o lib.o yld_lib.o\
-	latent.o
+	latent.o microd.o
 objects_yld_test=yld.o yld_uten_test.o yld2000_2d.o bauschinger.o \
 	hah.o hah_update.o dev.o algb.o cnv.o vm.o hill48.o \
 	hah_yieldsurface.o hah_lib.o lib_write.o is.o lib.o latent.o
@@ -28,6 +25,8 @@ yld_test: $(objects_yld_test)
 	$(CMP) $(FLAGS) $(objects_yld_test) -o yld_test
 ######################################################################
 
+microd.o: umats/yld/hah/microd.f
+	$(CMP) $(FLAGS) -c umats/yld/hah/microd.f  -o microd.o
 yld_uten_test.o: umats/yld/test.f
 	$(CMP) $(FLAGS) -c umats/yld/test.f -o yld_uten_test.o
 yld.o: umats/yld/yld.f
