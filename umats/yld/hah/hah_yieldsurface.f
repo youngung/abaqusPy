@@ -149,7 +149,7 @@ c     phi_lat = sqrt(phi(sp)**2 + phi(sdp)**2)
 c     phi_lat being the homogeneous function of degree 1.
       call latent(iyld_choice,ntens,ndi,nshr,nyldp,nyldc,
      $     cauchy,yldp,yldc,phi_lat)
-      phi_lat_norm = phi_lat**yldp(9)
+      phi_lat_norm = phi_lat**yldc(9)
       if (idiaw) then
          call w_val(imsg,'phi_lat     :',phi_lat)
          call w_val(imsg,'phi_lat_norm:',phi_lat_norm)
@@ -158,11 +158,11 @@ c         call exit(-1)
       endif
 
 c---  anisotropic yield surface with full HAH
-      call bauschinger(ntens,ndi,nshr,emic,sdev,f_ks,yldp(9),phi_bs(1),
+      call bauschinger(ntens,ndi,nshr,emic,sdev,f_ks,yldc(9),phi_bs(1),
      $     phi_bs(2))
       fht = phi_lat_norm+phi_bs(1)+phi_bs(2)
-c      phi = (1.d0/fht)**(1d0/yldp(9))
-      phi = (ref/fht)**(1d0/yldp(9))
+c      phi = (1.d0/fht)**(1d0/yldc(9))
+      phi = (ref/fht)**(1d0/yldc(9))
       if (idiaw) then
          call w_chr(imsg,'phi_bs (Bauschinger)')
          call w_dim(imsg,phi_bs,2,1d0,.true.)

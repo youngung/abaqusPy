@@ -48,7 +48,7 @@ c      idiaw = .true.
 c     create a dummy microstructure deviator
       aux_ten(:) = 0d0
       aux_ten(1) = 1d0
-      aux_ten(1) = 1d0
+c      aux_ten(1) = 1d0
       call deviat(ntens,aux_ten,emic,hydro)
       call dev_norm(ntens,ndi,nshr,emic)
 c     Default state variables (isotropic conditions)
@@ -238,8 +238,9 @@ c     Arguments passed into
       real*8, intent(in) :: yldc
       real*8 yldp
 c     Local variables.
-      dimension d2phi(ntens),smat(ntens),dphi(ntens),sdev(6)
-      real*8 dphi,d2phi,pi,th,time0,time1,phim,q,smat,sdev,hydro,s1,s2
+      dimension d2phi(ntens),smat(ntens),dphi(ntens),sdev(6),aux6(6)
+      real*8 dphi,d2phi,pi,th,time0,time1,phim,q,smat,sdev,hydro,s1,s2,
+     $     aux6
       integer nth,i,j,imsg,iverbose
       parameter(nth=1000)
       logical idiaw
@@ -291,16 +292,25 @@ c         call w_dim(imsg,dphi,ntens,1d0,.false.)
 c         call w_chrc(imsg,'|')
 c         call w_valsc(imsg,phim)
 c         call w_chrc(imsg,'|')
-         smat(:) = smat(:)*phim
+         do i=1,ntens
+            smat(i) = smat(i)*phim
+         enddo
          call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,smat,yldc,yldp,
      $        phim,dphi,d2phi)
-         call reduce_3to6(smat,sdev)
-         call deviat(6,smat,sdev,hydro)
-         call pi_proj(sdev,s1,s2)
+         if (ntens.eq.3) then
+            call reduce_3to6(smat,aux6)
+            call deviat(6,aux6,sdev,hydro)
+         elseif (ntens.eq.6) then
+            call deviat(6,smat,sdev,hydro)
+            call pi_proj(sdev,s1,s2)
+         else
+            write(*,*)'unexpected case of ntens in hah_locus'
+            call exit(-1)
+         endif
 
          if (idiaw) then
-            write(*,'(2f7.3)',advance='no') (smat(i),i=1,2)
-            write(*,'(3f7.3)',advance='no') (dphi(i),i=1,2),phim
+ 1          write(*,'(2f9.5)',advance='no') (smat(i),i=1,2)
+            write(*,'(3f9.5)',advance='no') (dphi(i),i=1,2),phim
             write(*,*)
          endif
          write(1,'(2f7.3)',advance='no') (smat(i),i=1,2)

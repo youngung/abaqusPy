@@ -4,8 +4,8 @@ CMP=gfortran
 
 # -fno-automatic
 
-FLAGS=-g -Wall -fcheck=all -Waliasing -Warray-bounds -O\
-	-fbacktrace -fstack-arrays -finit-local-zero # -Winteger-division
+FLAGS=-g -Wall -fcheck=all -Waliasing -Warray-bounds \
+	-fbacktrace -fstack-arrays -finit-local-zero -Winteger-division
 
 # FLAGS=-g -Wall -fcheck=all -Waliasing -Warray-bounds \
 #	-fbacktrace -fstack-arrays -finit-local-zero -Winteger-division
@@ -22,7 +22,7 @@ objects_yld_test=yld.o yld_uten_test.o yld2000_2d.o bauschinger.o \
 ######################################################################
 # Fortran executables
 hah_test: $(objects_hah_test)
-	$(CMP) $(FLAGS) $(objects_hah_test) -o hah_test
+	$(CMP) $(FLAGS) -O3 $(objects_hah_test) -o hah_test
 
 yld_test: $(objects_yld_test)
 	$(CMP) $(FLAGS) $(objects_yld_test) -o yld_test

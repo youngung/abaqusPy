@@ -103,7 +103,7 @@ c     2. Obtain orthogonal / collinear components
 c     3. Transform to allow extension along so (double prime s)
       sdp = 1d0*sc(:) + so(:)/gL !! orthogonal distortion
 c     4. sp = 4(1-g_s) s_o
-      sp(:) = 4d0*(1d0-gS) * so(:)/gL
+      sp(:) = 4d0*(1d0-gS) * so(:)
       if (idiaw) then
          call w_chr(imsg,'cauchy')
          call w_dim(imsg,cauchy,ntens,1d0,.false.)

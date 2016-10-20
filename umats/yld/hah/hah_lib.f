@@ -312,7 +312,7 @@ c     Reference stress state: uniaxial tension along axis 1
 c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
       call latent(iyld_choice,ntens,ndi,nshr,nyldp,nyldc,
      $     cauchy_ref,yldp,yldc,phi)
-      ref = phi**yldp(9)
+      ref = phi**yldc(9)
 c      call w_val(imsg,'ref',ref)
 c     save ref to yldp
       call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
