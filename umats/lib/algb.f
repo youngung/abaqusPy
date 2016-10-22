@@ -126,3 +126,155 @@ c-----------------------------------------------------------------------
          a(i,i) = 1d0
  10   continue
       end subroutine get_idx
+
+c-----------------------------------------------------------------------
+      SUBROUTINE LU_INVERSE (A,N)
+C *** INVERTS A MATRIX USING LU DECOMPOSITION
+      DIMENSION A(N,N),Y(N,N),INDX(N)      ! MAY CHOKE SOME COMPILERS
+C     DIMENSION A(5,5),Y(5,5),INDX(5)
+
+C **************************************************************
+C *** BLOCK ADDED 03/DEC/05 TO AVOID NUMERICALLY SINGULAR MATRIX
+      AMAX=0.D0
+      DO I=1,N
+      DO J=1,N
+        DUM=ABS(A(I,J))
+        IF(DUM .GT. AMAX) AMAX=DUM
+      ENDDO
+      ENDDO
+      DO I=1,N
+      DO J=1,N
+        A(I,J)=A(I,J)/AMAX      ! normalize the matrix
+      ENDDO
+      ENDDO
+C **************************************************************
+
+      DO I=1,N
+        DO J=1,N
+          Y(I,J)=0.
+        ENDDO
+        Y(I,I)=1.
+      ENDDO
+
+      CALL LUDCMP(A,N,N,INDX,D,ISINGULAR)
+      IF(ISINGULAR.EQ.1) THEN
+        WRITE(*,*) ' *** SINGULAR MATRIX IN LU_INVERSE !!'
+        STOP -1
+      ENDIF
+
+      DO J=1,N
+        CALL LUBKSB(A,N,N,INDX,Y(1,J))
+      ENDDO
+
+      DO I=1,N
+      DO J=1,N
+        A(I,J)=Y(I,J) /AMAX      ! renormalize the inverse
+      ENDDO
+      ENDDO
+
+      RETURN
+      END
+c-----------------------------------------------------------------------
+      SUBROUTINE ludcmp(a,n,np,indx,d,isingular)
+      INTEGER n,np,indx(n),NMAX
+      REAL d,a(np,np),TINY
+      PARAMETER (NMAX=500,TINY=1.0e-20)
+      INTEGER i,imax,j,k,isingular
+      REAL aamax,dum,sum,vv(NMAX)
+      d=1.
+      do 12 i=1,n
+        aamax=0.
+        do 11 j=1,n
+          if (abs(a(i,j)).gt.aamax) aamax=abs(a(i,j))
+11      continue
+c
+c        if (aamax.eq.0.) pause 'singular matrix in ludcmp'
+c
+        if(aamax.eq.0.) then
+        isingular=1
+        return
+        endif
+c
+        vv(i)=1./aamax
+12    continue
+      do 19 j=1,n
+        do 14 i=1,j-1
+          sum=a(i,j)
+          do 13 k=1,i-1
+            sum=sum-a(i,k)*a(k,j)
+13        continue
+          a(i,j)=sum
+14      continue
+        aamax=0.
+
+        do 16 i=j,n
+          sum=a(i,j)
+          do 15 k=1,j-1
+            sum=sum-a(i,k)*a(k,j)
+15        continue
+          a(i,j)=sum
+          dum=vv(i)*abs(sum)
+          if (dum.ge.aamax) then
+            imax=i
+            aamax=dum
+          endif
+16      continue
+        if (j.ne.imax)then
+          do 17 k=1,n
+            dum=a(imax,k)
+            a(imax,k)=a(j,k)
+            a(j,k)=dum
+17        continue
+          d=-d
+          vv(imax)=vv(j)
+        endif
+        indx(j)=imax
+
+        if(a(j,j).eq.0.) a(j,j)=TINY
+
+c       if(a(j,j).eq.0.) then
+c       isingular=1
+c       return
+c       endif
+
+        if(j.ne.n)then
+          dum=1./a(j,j)
+          do 18 i=j+1,n
+            a(i,j)=a(i,j)*dum
+18        continue
+        endif
+19    continue
+c
+      isingular=0
+c
+      return
+      END subroutine ludcmp
+c-----------------------------------------------------------------------
+      SUBROUTINE lubksb(a,n,np,indx,b)
+      INTEGER n,np,indx(n)
+      REAL a(np,np),b(n)
+      INTEGER i,ii,j,ll
+      REAL sum
+      ii=0
+      do 12 i=1,n
+        ll=indx(i)
+        sum=b(ll)
+        b(ll)=b(i)
+        if (ii.ne.0)then
+          do 11 j=ii,i-1
+            sum=sum-a(i,j)*b(j)
+11        continue
+        else if (sum.ne.0.) then
+          ii=i
+        endif
+        b(i)=sum
+12    continue
+      do 14 i=n,1,-1
+        sum=b(i)
+        do 13 j=i+1,n
+          sum=sum-a(i,j)*b(j)
+13      continue
+        b(i)=sum/a(i,i)
+14    continue
+      return
+      END

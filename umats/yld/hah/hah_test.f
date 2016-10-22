@@ -15,15 +15,15 @@ c-----------------------------------------------------------------------
       program test
       implicit none
       integer ntens,ndi,nshr,nyldc,nyldp,narg
-      parameter(ntens=3,ndi=2,nshr=1,nyldc=9,nyldp=30,narg=5)
+      parameter(ntens=3,ndi=2,nshr=1,nyldc=9,nyldp=36,narg=5)
       character(len=32) :: arg
       dimension yldc(nyldc),yldp(nyldp),stress(ntens),dphi(ntens),
      $     d2phi(ntens,ntens)
       real*8 yldc,yldp,stress,phi,dphi,d2phi,phi_chi
       integer iyld_choice
 c     local - microstructure deviator
-      dimension emic(ntens)
-      real*8 emic
+      dimension emic(ntens),demic(ntens),krs(4),target(ntens)
+      real*8 emic,demic,krs,target,dgr
 c     local - Bauschinger parameters
       dimension gk(4)
       dimension e_ks(5),aux_ten(ntens)
@@ -85,8 +85,8 @@ c      call read_alpha(
 c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
       yldc(:8) = 1d0
       yldc(9)  = 2d0
-      call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
-     $     eL,gS,c_ks,ss)
+      call hah_io(1,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
+     $     ref,gL,ekL,eL,gS,c_ks,ss,krs,target)
       iyld_choice=2             ! yld2000-2d
       if (idiaw) call fill_line(imsg,'*',72)
       stress(:)=0d0

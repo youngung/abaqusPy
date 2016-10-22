@@ -94,8 +94,8 @@ c***  normalization.
       return
       end subroutine hat
 c------------------------------------------------------------------------
-c     Calculate cos2chi value using the two given hat tensors, <a> and <b>
-      subroutine calc_cos2chi(ntens,ndi,nshr,a,b,val)
+c     Calculate coschi value using the two given hat tensors, <a> and <b>
+      subroutine calc_coschi(ntens,ndi,nshr,a,b,val)
 c     Arguments
 c     ntens : Len of a and b
 c     ndi   : Number of normal components
@@ -114,10 +114,10 @@ cf2py intent(out) val
       H = 8d0/3d0
       val = dot_prod(ntens,ndi,nshr,a,b) * H
       if (abs(val).gt.1d0) then
-         write(*,*)'Something went wrong in calc_cos2chi'
+         write(*,*)'Something went wrong in calc_coschi'
       endif
       return
-      end subroutine calc_cos2chi
+      end subroutine calc_coschi
 c------------------------------------------------------------------------
 c     double dot product of tensors a and b
 c     In case ntens lt 6, inflate the tensor to its full dimension
@@ -200,8 +200,8 @@ c-----------------------------------------------------------------------
 c     subroutine that converts back and forth
 c     Used to convert/restore yldp of HAH case.
 c     When yldp is used for HAH model, this subroutine must be used.
-      subroutine hah_io(iopt,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
-     $     gL,ekL,eL,gS,c_ks,ss)
+      subroutine hah_io(iopt,nyldp,ntens,yldp,emic,demic,dgR,gk,e_ks,
+     $     f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,krs,target)
 c     Arguments
 c     iopt  :  if 0, state variables <- yldp
 c              if 1, state variables -> yldp
@@ -209,6 +209,8 @@ c     nyldp : Len of yldp
 c     ntens : Len of stress tensor and <emic>
 c     yldp  : yield surface state variables
 c     emic  : microstructure deviator
+c     demic : \frac{\partial \hat{h}}{\partial \bar{\varepsilon}}
+c     dgR   : \frac{\partial g_R}{\partial \bar{\varepsilon}}
 c     eeq   : equivalent plastic strain
 c     ref   : yield surface reference sizen
 c             used to renormalized yield surface
@@ -221,13 +223,17 @@ c     eL    : L  latent hardening parameter
 c     gS    : gS parameter for cross hardening
 c     c_ks  : ks parameter for cross hardening
 c     ss    : S  parameter for cross hardening
+c     krs   : Parameters that control the rotation rate of microstructure
+c             deviator
+c     target: target with which microstructure deviator tries to align
       implicit none
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c**   Arguments passed
       integer, intent(in)::iopt,nyldp,ntens
-      dimension yldp(nyldp),emic(ntens),gk(4),e_ks(5),f_ks(2)
-      real*8, intent(inout):: yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,
-     $     gS,c_ks,ss
+      dimension yldp(nyldp),emic(ntens),demic(ntens),gk(4),e_ks(5),
+     $     f_ks(2),krs(5),target(ntens)
+      real*8, intent(inout):: yldp,emic,demic,dgR,gk,e_ks,f_ks,eeq,ref,
+     $     gL,ekL,eL,gS,c_ks,ss,krs,target
 c     local
       integer i
       if (iopt.eq.0) then       ! state variables <- yldp
@@ -238,22 +244,27 @@ c***  Reference size
          ref     = yldp(2)
 c***  Microstructure deviator
          do 5 i=1,ntens
-            emic(i) = yldp(i+2)
+            emic(i)  = yldp(i+2)
+            demic(i) = yldp(i+2+ntens)
  5       continue
+         dgR = yldp(ntens*2+3)
 c***  Bauschinger effect
-         gk(:)   = yldp(ntens+2:ntens+5)   ! state variables
-         e_ks(:) = yldp(ntens+5:ntens+9)  ! k1,k2,k3,k4,k5 constants
+         gk(:)   = yldp(ntens*2+4:ntens*2+7)   ! state variables
+         e_ks(:) = yldp(ntens*2+8:ntens*2+12)  ! k1,k2,k3,k4,k5 constants
          do 10 i=1,2
-            f_ks(i) = yldp(ntens+9+i) ! f_k state parameters
+            f_ks(i) = yldp(ntens*2+12+i) ! f_k state parameters
  10      continue
-c***  Latent hardening
-         gL      = yldp(ntens+12)
-         ekL     = yldp(ntens+13)
-         eL      = yldp(ntens+14)
+***  Latent hardening
+         gL        = yldp(ntens*2+15)
+         ekL       = yldp(ntens*2+16)
+         eL        = yldp(ntens*2+17)
 c***  cross hardening
-         gS      = yldp(ntens+15)
-         c_ks    = yldp(ntens+16)
-         ss      = yldp(ntens+17)
+         gS        = yldp(ntens*2+18)
+         c_ks      = yldp(ntens*2+19)
+         ss        = yldp(ntens*2+20)
+c***  microstructure deviator rotation
+         krs(:)    = yldp(ntens*2+21:ntens*2+25)
+         target(:) = yldp(ntens*2+26:ntens*3+25)
 c     diagnose
          if (dabs(gL).lt.1e-3) then
             write(*,*)'gL is too small'
@@ -267,22 +278,28 @@ c***  Reference size
          yldp(2)   = ref
 c***  Microstructure deviator
          do 15 i=1,ntens
-            yldp(i+2) = emic(i)
+            yldp(i+2)       = emic(i)
+            yldp(i+2+ntens) = demic(i)
  15      continue
+         yldp(ntens*2+3) = dgR
 c***  Bauschinger effect
-         yldp(ntens+2:ntens+5) = gk(:)      ! state variables
-         yldp(ntens+5:ntens+9) = e_ks(:)  ! k1,k2,k3,k4,k5 constants
+         yldp(ntens*2+4:ntens*2+7) = gk(:)      ! state variables
+         yldp(ntens*2+8:ntens*2+12) = e_ks(:)  ! k1,k2,k3,k4,k5 constants
          do 20 i=1,2
-            yldp(ntens+9+i) = f_ks(i) ! f_k state parameters
+            yldp(ntens*2+12+i) = f_ks(i) ! f_k state parameters
  20      continue
 c***  Latent hardening
-         yldp(ntens+12) = gL
-         yldp(ntens+13) = ekL
-         yldp(ntens+14) = eL
+         yldp(ntens*2+15) = gL
+         yldp(ntens*2+16) = ekL
+         yldp(ntens*2+17) = eL
 c***  cross hardening
-         yldp(ntens+15) = gS
-         yldp(ntens+16) = c_ks
-         yldp(ntens+17) = ss
+         yldp(ntens*2+18) = gS
+
+         yldp(ntens*2+19) = c_ks
+         yldp(ntens*2+20) = ss
+c***  microstructure deviator rotation
+         yldp(ntens*2+21:ntens*2+25) = krs(:)
+         yldp(ntens*2+26:ntens*3+25) = target(:)
       endif
 c     yield surface constants
       return
@@ -305,14 +322,14 @@ c     iyld_choice : yield surface choice
       dimension yldp(nyldp),yldc(nyldc)
       real*8 yldp,yldc
 c     hah_io
-      dimension emic(ntens),gk(4),e_ks(5),f_ks(2)
-      real*8 emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss
+      dimension emic(ntens),demic(ntens),gk(4),e_ks(5),f_ks(2),krs(5)
+      real*8 emic,demic,gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,krs
 c     locals
-      dimension cauchy_ref(ntens)
-      real*8 cauchy_ref,phi
+      dimension cauchy_ref(ntens),target(ntens)
+      real*8 cauchy_ref,phi,target,dgr
 
-      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
-     $     gL,ekL,eL,gS,c_ks,ss)
+      call hah_io(0,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
+     $     ref,gL,ekL,eL,gS,c_ks,ss,krs,target)
 
 c     Reference stress state: uniaxial tension along axis 1
       cauchy_ref(:)=0d0
@@ -323,8 +340,8 @@ c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
       ref = phi**yldc(9)
 c      call w_val(imsg,'ref',ref)
 c     save ref to yldp
-      call hah_io(1,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,
-     $     gL,ekL,eL,gS,c_ks,ss)
+      call hah_io(1,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
+     $     ref,gL,ekL,eL,gS,c_ks,ss,krs,target)
       return
       end subroutine hah_calc_ref
 c-----------------------------------------------------------------------

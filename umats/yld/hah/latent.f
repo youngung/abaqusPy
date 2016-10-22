@@ -36,20 +36,19 @@ c     Arguments of subroutine
       real*8, intent(in) :: emic,target,eL,gL,ekL,ys_iso,ys_hah,debar
       real*8, intent(out):: dgL
 c     Local variables
-      real*8 cos2chi,term
+      real*8 coschi,term
 cf2py intent(in) eL,gL,ekL,ys_iso,ys_hah,emic,target,ntens,debar
 cf2py intent(out) dgL
 cf2py depend(ntens) emic,target
 
-      call calc_cos2chi(ntens,ndi,nshr,target,emic,cos2chi)
+      call calc_coschi(ntens,ndi,nshr,target,emic,coschi)
 c     Eq 16 --
-      term = dsqrt(eL * (1d0-cos2chi) + cos2chi)-1d0
+      term = dsqrt(eL * (1d0-coschi*coschi) + coschi*coschi)-1d0
       dgL = ekL *( (ys_hah-ys_iso) / ys_hah * term  + 1d0 - gL )
       dgL = dgL * debar
 
       return
       end subroutine latent_update
-
 c------------------------------------------------------------------------
 c     Latent hardening effect accounted and saved to phi
 c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
@@ -75,8 +74,9 @@ c     Arguments passed
       real*8, intent(out) :: phi
 c     locals
       dimension sdev(ntens),so(ntens), sc(ntens), sdp(ntens),
-     $     emic(ntens),dphis(2,ntens),d2phi(ntens),aux1(ntens)
-      real*8 sdev,so,sc,sdp,emic,dphis,d2phi,aux1
+     $     emic(ntens),demic(ntens),krs(4),target(ntens),dphis(2,ntens),
+     $     d2phi(ntens),aux1(ntens)
+      real*8 sdev,so,sc,sdp,emic,demic,dgr,krs,target,dphis,d2phi,aux1
 c     variables to be stored from yldp
       dimension gk(4),e_ks(5),f_ks(2),sp(ntens),phis(2)
       real*8 gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,sp,phis,hydro
@@ -87,8 +87,8 @@ c      idiaw=.true.
       idiaw=.false.
 
 c**   restore parameters from yldp
-      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
-     $     eL,gS,c_ks,ss)
+      call hah_io(0,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
+     $     ref,gL,ekL,eL,gS,c_ks,ss,krs,target)
 
       if (idiaw) then
          call w_val(imsg,'gL:',gL)

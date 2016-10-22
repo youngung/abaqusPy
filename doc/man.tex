@@ -228,8 +228,17 @@ whereas, if $\hat{\mathbf{h}}:\mathbf{s}\ge0$,
 Eqs. \ref{eq:dbau1}-\ref{eq:dbau5} are located in \verb$bauschinger.f.$
 The term $\partial{\bar{\varepsilon}}/\partial{\mathbf{\sigma}}$ should be obtained elsewhere - through an iterative procedure.
 
-
-
+\section{Microstructure deviator}
+The evolutionary behavior of the microstructure deviator is written with respect to the equivalent strain increment such that
+\begin{eqnarray}
+  \label{eq:dmicro1}
+  d\hat{\mathbf{h}} = k_{R1}\ \text{sgn}(\cos\chi)\big[|\frac{\cos\chi}{H}|^{1/k_{R2}} +g_R \big] \big(\hat{\mathbf{t}}-\cos\chi \hat{\mathbf{h}}\big)d\bar{\varepsilon}
+\end{eqnarray}
+where $g_R$ evolves according to
+\begin{eqnarray}
+  \label{eq:dmicro2}
+\frac{dg_R}{d\bar{\varepsilon}} = k_{R3} \big[k_{R4} (1-\cos^2\chi) -g_R \big]
+\end{eqnarray}
 
 \section{Yield surface derivative}
 The yield surface of HAH model is decomposed into two contributions: the homogeneous and fluctuating terms that are $\phi_h$ and $\phi_b$.

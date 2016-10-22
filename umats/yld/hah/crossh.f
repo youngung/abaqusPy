@@ -16,12 +16,12 @@ c     dgS        : incremental gS
       real*8 ks,ss,gS,emic
       real*8 dgS
 c     local
-      real*8 cos2chi
+      real*8 coschi
 c     intent(in) kS,ss,gS,emic,ntens,tensor_ref
 c     intent(out) dgS
 
-      call calc_cos2chi(ntens,ndi,nshr,tensor_ref,mic,cos2chi)
-      dgS = kS * (1d0 + (ss-1d0) * cos2chi - gS)
+      call calc_coschi(ntens,ndi,nshr,tensor_ref,mic,coschi)
+      dgS = kS * (1d0 + (ss-1d0) * (coschi*coschi) - gS)
 
       return
       end subroutine cross_hardening

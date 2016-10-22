@@ -46,11 +46,11 @@ c     HAH yield surface
       dimension dphi(ntens),d2phi(ntens,ntens)
       real*8,intent(out):: phi,dphi,d2phi
 c     local - microstructure deviator
-      dimension emic(ntens)
-      real*8 emic
+      dimension emic(ntens),demic(ntens),krs(4),target(ntens)
+      real*8 emic,demic,krs,target,dgr
 c     local - Bauschinger parameters
-      dimension gk(4),e_ks(5),f_ks(2),target(ntens),phi_bs(2)
-      real*8 gk,e_ks,f_ks,eeq,target,phi_bs
+      dimension gk(4),e_ks(5),f_ks(2),phi_bs(2)
+      real*8 gk,e_ks,f_ks,eeq,phi_bs
 c     local - Latent hardening parameters
       real*8 gL,ekL,eL
 c     local - cross hardening parameters
@@ -109,9 +109,8 @@ c     call exit(-1)
 c-----------------------------------------------------------------------
 c     Restore yldp into state variables/parameters
 c      write(*,*)'ref:',ref
-      call hah_io(0,nyldp,ntens,yldp,emic,gk,e_ks,f_ks,eeq,ref,gL,ekL,
-     $     eL,gS,c_ks,ss)
-
+      call hah_io(0,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,ref
+     $     ,gL,ekL,eL,gS,c_ks,ss,krs,target)
 c     calculate yield surface
 c     decompose deviatoric stress
       if (idiaw) then
