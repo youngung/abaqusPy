@@ -20,7 +20,7 @@ c     Arguments
 c     gk
 c     H
 c     q  : the exponent
-c     fk :f value
+c     fk : f value
 c     dfk: \partial(fk)/\partial(gk)
       implicit none
       real*8, intent(in) ::gk,H,q
@@ -32,8 +32,9 @@ cf2py intent(out) fk,dfk
       fk  = (c * (1d0/(gk**q)-1d0)) ** (1d0/q)
 c     d(fk)/d(gk) - to be used for derivative of yield surface
       dfk = c**(1d0/q) * (- gk**(-q-1d0) * fk **(1d0-q))
+c     dg1/deps
       return
-      end subroutine
+      end subroutine calc_fk
 c------------------------------------------------------------------------
 c$$$c     subroutine that calculates gk parameter for HAH
 c$$$c         --   Eq 8 in Ref. [1]
@@ -54,7 +55,7 @@ c     subroutine that calculates gk parameter for HAH
 c         --   Eqs 7/8 in Ref. [1]
 c     Also, some derivatives
       subroutine calc_bau(ntens,ndi,nshr,emic,target,gs,e_ks,q,ys_iso,
-     $     ys_hah,debar,fks,gs_new)
+     $     ys_hah,debar,fks,gs_new,dfks,dgs)
 c     Arguments
 c     emic   : microstructure deviator
 c     target : the target direction towards which the microstructure
@@ -69,6 +70,8 @@ c     debar  : incremental equivalent strain
 c              (used as multiplier when updating the state variables...)
 c     fks    : fks state variables for n+1 step
 c     gs_new : gs state variables for n+1 step
+c     dfks   : d(fk)/d(gk)
+c     dgs    : d(gk)/d(bar(\varepsilon))
 c     Note
 c     Both arguments should be 'hat' properties.
 c     Use <bauschinger_lib.f / hat> to convert a tensor

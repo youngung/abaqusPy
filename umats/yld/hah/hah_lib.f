@@ -68,6 +68,21 @@ c
       return
       end subroutine hah_decompose
 c-----------------------------------------------------------------------
+c     See eq 31 in Ref [1]
+c     See
+      subroutine calc_sp(ntens,gS,sp,dsp_ds)
+      integer,intent(in) :: ntens
+      dimension sp(ntens),dps_ds(ntens,ntens)
+      real*8, intent(in) :: gS
+      real*8, intent(out) :: sp,dsp_ds
+
+      integer i,j
+
+      sp(:) = 4d0*(1d0-
+
+      return
+      end subroutine calc_sp
+c-----------------------------------------------------------------------
 c     Return a 'hat' property of the given tensor <tensor6>
 c     Refer to eq 1 in Ref [1]
       subroutine hat(H,tensor6,tensor6_hat)
@@ -171,7 +186,7 @@ c     b     : tensor in n-dimension
       do 5 i=1,3
          dot_prod = dot_prod + aux6(i) * bux6(i)
  5    continue
-      do 10 i=4,6
+      do 10 i=4,6 ! shear temrs
          dot_prod = dot_prod + 2d0*aux6(i) * bux6(i)
  10   continue
 
@@ -201,7 +216,7 @@ c     subroutine that converts back and forth
 c     Used to convert/restore yldp of HAH case.
 c     When yldp is used for HAH model, this subroutine must be used.
       subroutine hah_io(iopt,nyldp,ntens,yldp,emic,demic,dgR,gk,e_ks,
-     $     f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,krs,target)
+     $     f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
 c     Arguments
 c     iopt  :  if 0, state variables <- yldp
 c              if 1, state variables -> yldp
@@ -223,17 +238,17 @@ c     eL    : L  latent hardening parameter
 c     gS    : gS parameter for cross hardening
 c     c_ks  : ks parameter for cross hardening
 c     ss    : S  parameter for cross hardening
-c     krs   : Parameters that control the rotation rate of microstructure
-c             deviator
+c     ekrs : Parameters that control the rotation rate of microstructure
+c            deviator - (kr1,kr2,kr3,kr4,gR)
 c     target: target with which microstructure deviator tries to align
       implicit none
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c**   Arguments passed
       integer, intent(in)::iopt,nyldp,ntens
       dimension yldp(nyldp),emic(ntens),demic(ntens),gk(4),e_ks(5),
-     $     f_ks(2),krs(5),target(ntens)
+     $     f_ks(2),ekrs(5),target(ntens)
       real*8, intent(inout):: yldp,emic,demic,dgR,gk,e_ks,f_ks,eeq,ref,
-     $     gL,ekL,eL,gS,c_ks,ss,krs,target
+     $     gL,ekL,eL,gS,c_ks,ss,ekrs,target
 c     local
       integer i
       if (iopt.eq.0) then       ! state variables <- yldp
@@ -263,7 +278,7 @@ c***  cross hardening
          c_ks      = yldp(ntens*2+19)
          ss        = yldp(ntens*2+20)
 c***  microstructure deviator rotation
-         krs(:)    = yldp(ntens*2+21:ntens*2+25)
+         ekrs(:)    = yldp(ntens*2+21:ntens*2+25)
          target(:) = yldp(ntens*2+26:ntens*3+25)
 c     diagnose
          if (dabs(gL).lt.1e-3) then
@@ -298,7 +313,7 @@ c***  cross hardening
          yldp(ntens*2+19) = c_ks
          yldp(ntens*2+20) = ss
 c***  microstructure deviator rotation
-         yldp(ntens*2+21:ntens*2+25) = krs(:)
+         yldp(ntens*2+21:ntens*2+25) = ekrs(:)
          yldp(ntens*2+26:ntens*3+25) = target(:)
       endif
 c     yield surface constants

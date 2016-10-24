@@ -195,7 +195,7 @@
 
 \begin{eqnarray}
   \label{eq:dbau1}
-  \frac{\partial{f_k^q}}{\partial{\mathbf{\sigma}}} = q f_k^{q-1} \frac{\partial{f_k}}{\partial{g_k}}   \frac{\partial{g_k}}{\partial{\bar{\varepsilon}}}   \frac{\partial{\bar{\varepsilon}}}{\partial{\mathbf{\sigma}}}\\
+  \frac{\partial{f_k}}{\partial{\mathbf{s}}} = \frac{\partial{f_k}}{\partial{g_k}}   \frac{\partial{g_k}}{\partial{\bar{\varepsilon}}}   \frac{\partial{\bar{\varepsilon}}}{\partial{\mathbf{\sigma}}} \frac{\partial\mathbf{\sigma}}{\partial\mathbf{s}}\\
   \text{ where      }\ \ \  \frac{\partial{f_k}}{\partial{g_k}} = -g_k^{-q-1} f_k ^{1-q}
 \end{eqnarray}
 
@@ -329,13 +329,20 @@ The derivative $\frac{\partial{\phi_b}}{\partial{\mathbf{s}}}$ can be expressed 
 \frac{\partial{\phi_b}}{\partial{\mathbf{s}}} = 2\frac{\partial{f_k}}{\partial{\mathbf{s}}} |\hat{\mathbf{h}}:\mathbf{s}| + 2 f_k \frac{\partial{|\hat{\mathbf{h}}:\mathbf{s}|}}{\partial{\mathbf{s}}}
 \end{eqnarray}
 
-
 The term $\frac{\partial{|\hat{\mathbf{h}}:\mathbf{s}|}}{\partial{\mathbf{s}}}$ takes on either the below depending on the sign of $\hat{\mathbf{h}}:\mathbf{s}$.
 \begin{eqnarray}
   \label{eq:dphib2}
   \frac{\partial{|\hat{\mathbf{h}}:\mathbf{s}|}}{\partial{\mathbf{s}}} &=&  \frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}}   \text{  when } \hat{\mathbf{h}}:\mathbf{s}\ge0\\
+  \label{eq:dphib2_}
                                                                        &=& -\frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}}   \text{  when } \hat{\mathbf{h}}:\mathbf{s} < 0
 \end{eqnarray}
+
+Substituting Eqs. \ref{eq:dphib2} and \ref{eq:dphib2_} to \ref{eq:dphib1} gives
+\begin{eqnarray}
+  \label{eq:dphib1_}
+  \frac{\partial{\phi_b}}{\partial{\mathbf{s}}} = 2\ \text{sgn}(\hat{\mathbf{h}}:\mathbf{s}) \bigg[  \frac{\partial{f_k}}{\partial{\mathbf{s}}} (\hat{\mathbf{h}}:\mathbf{s}) + f_k \frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}} \bigg]
+\end{eqnarray}
+
 
 The derivative  $\frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}}$ is obtained as:
 \begin{eqnarray}
@@ -389,7 +396,6 @@ Likewise, using Eq. \ref{eq:dphib5},
 \label{sec:misc}
 
 
-
 There are a few stress tensor transformation used in HAH formalism.
 In the original model of HAH, the stress tensor is decomposed into two contributions: namely, co-linear and orthogonal components with respect to the microstructure deviator.
 \begin{eqnarray}
@@ -413,6 +419,65 @@ The derivative is then
 \begin{eqnarray}
   \label{eq:decomp4}
   \frac{\partial\mathbf{s_o}}{\partial\mathbf{s}} = \mathbf{I} -   \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}}
+\end{eqnarray}
+
+
+The latent hardening is accounted for by using a linear-transformation of the deviatoric stress tensor into
+\begin{eqnarray}
+  \label{eq:latent_decompose1}
+  \mathbf{s}^{\prime\prime}=\mathbf{s}_c+\eta \mathbf{s}_o
+\end{eqnarray}
+Its derivative is obtained as
+\begin{eqnarray}
+  \label{eq:latent_decompose2}
+  \frac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{s}} &=&\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} + \eta \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}}\\
+  &=&\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} + \eta \Big\{\mathbf{I} -   \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}}\Big\}
+\end{eqnarray}
+
+
+
+The stress used for cross hardening goes through below transformation.
+\begin{eqnarray}
+  \label{eq:cross_linear1}
+  \mathbf{s}_p = 4(1-g_s)\mathbf{s}_o
+\end{eqnarray}
+Its derivative with respect to the deviatoric stress can be obtained as:
+\begin{eqnarray}
+  \label{eq:cross_linear2}
+\frac{\partial\mathbf{s}_p}{\partial\mathbf{s}} = -4 \frac{\partial g_s}{\partial\mathbf{s}} \mathbf{s}_o + 4(1-g_s) \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}}
+\end{eqnarray}
+
+
+
+\begin{eqnarray}
+  \label{eq:cross_linear3}
+\frac{\partial g_s}{\partial\mathbf{s}}=\frac{\partial g_s}{\partial \bar{\varepsilon}} \frac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}} \frac{\partial\mathbf{\sigma}}{\partial\mathbf{s}}
+\end{eqnarray}
+
+
+\begin{eqnarray}
+  \label{eq:cross_linear4}
+\frac{\partial g_s}{\partial \bar{\varepsilon}} = k_s\big[ 1+ (S-1)\cos^2\chi - g_s\big]
+\end{eqnarray}
+
+
+\subsection{fk evolution}
+
+\begin{eqnarray}
+  \label{eq:fk1}
+  f_k = \bigg[ \frac{\sqrt{6H}}{4}   \Big(  g_k^{-q} - 1  \Big)  \bigg] ^{1/q}
+\end{eqnarray}
+
+
+\begin{eqnarray}
+  \label{eq:fk2}
+  \frac{\partial f_k}{\partial{g_k}} &=& \frac{1}{q}   \bigg(\frac{\sqrt{6H}}{4} \bigg)^{1/q}  (-q) g_k^{-q-1}    f_k^{1-q}\\
+                                     &=&g_k^{-q-1} f_k^{1-q}  \ \text{  if } H=8/3
+\end{eqnarray}
+
+\begin{eqnarray}
+  \label{eq:fk3}
+  \frac{\partial f_k}{\partial \mathbf{s}} = \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial\bar{\varepsilon}} \frac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}}  \frac{\partial\mathbf{\sigma}}{\partial{\mathbf{s}}}
 \end{eqnarray}
 
 

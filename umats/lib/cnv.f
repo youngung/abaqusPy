@@ -111,6 +111,16 @@ cf2py intent(out) a3
       return
       end subroutine reduce_6to3
 c-----------------------------------------------------------------------
+      subroutine cnv_3to6_dev(a,b)
+      dimension a(3),b(6)
+      real*8, intent(in) ::  a
+      real*8, intent(out) ::  b
+      b(1:2) = a(1:2)
+      b(3)   = -b(1)-b(2)
+      b(4:5) = 0d0
+      b(6)   = a(3)
+      end subroutine cnv_3to6_dev
+c-----------------------------------------------------------------------
       subroutine reduce_3to6(a3,a6)
       dimension a6(6),a3(3)
       real*8 a6,a3
