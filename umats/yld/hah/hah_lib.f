@@ -110,23 +110,38 @@ c***  normalization.
       end subroutine hat
 c------------------------------------------------------------------------
 c     Calculate coschi value using the two given hat tensors, <a> and <b>
-      subroutine calc_coschi(ntens,ndi,nshr,a,b,val)
+      subroutine calc_coschi(ntens,a,b,val)
 c     Arguments
 c     ntens : Len of a and b
-c     ndi   : Number of normal components
-c     nshr  : Number of shear components
-c     a   : tensor in 6d (it should be a hat property)
-c     b   : tensor in 6d (it should be a hat property)
-c     val : value to be returned
+c     a     : tensor (deviator)
+c     b     : tensor (deviator)
+c     val   : value to be returned
+
+c     Note
+c     ----
+c     Operation is cummutative
       implicit none
       integer,intent(in)::ntens,ndi,nshr
       dimension a(ntens),b(ntens)
       real*8, intent(in) ::a,b
       real*8, intent(out)::val
-      real*8  H,dot_prod
+      dimension ahat(6),bhat(6),aux6(6),bux6(6)
+      real*8 H,dot_prod,ahat,bhat,aux6
 cf2py intent(in) a,b,ntens
 cf2py intent(out) val
+      if (ntens.eq.6) then
+         aux6(:)=a(:)
+         bux6(:)=b(:)
+      elseif (nten.eq.3) then
+         call cnv_3to6_dev(a,aux6)
+         call cnv_3to6_dev(b,bux6)
+      else
+         write(*,*)'Unexpected case in calc_coschi'
+         call exit(-1)
+      endif
       H = 8d0/3d0
+      call hat(H,aux6,ahat)
+      call hat(H,bux6,bhat)
       val = dot_prod(ntens,ndi,nshr,a,b) * H
       if (abs(val).gt.1d0) then
          write(*,*)'Something went wrong in calc_coschi'

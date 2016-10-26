@@ -41,7 +41,7 @@ cf2py intent(in) eL,gL,ekL,ys_iso,ys_hah,emic,target,ntens,debar
 cf2py intent(out) dgL
 cf2py depend(ntens) emic,target
 
-      call calc_coschi(ntens,ndi,nshr,target,emic,coschi)
+      call calc_coschi(ntens,target,emic,coschi)
 c     Eq 16 --
       term = dsqrt(eL * (1d0-coschi*coschi) + coschi*coschi)-1d0
       dgL = ekL *( (ys_hah-ys_iso) / ys_hah * term  + 1d0 - gL )

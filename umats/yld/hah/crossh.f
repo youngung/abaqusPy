@@ -20,7 +20,7 @@ c     local
 c     intent(in) kS,ss,gS,emic,ntens,tensor_ref
 c     intent(out) dgS
 
-      call calc_coschi(ntens,ndi,nshr,tensor_ref,emic,coschi)
+      call calc_coschi(ntens,tensor_ref,emic,coschi)
       dgS = kS * (1d0 + (ss-1d0) * (coschi*coschi) - gS)
       return
       end subroutine cross_hardening
