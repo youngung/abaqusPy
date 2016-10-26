@@ -1,3 +1,9 @@
+*.orig
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.out
 *.SMAFocus
 *.SMABulk
 *.env
