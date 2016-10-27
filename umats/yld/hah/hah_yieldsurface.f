@@ -57,7 +57,7 @@ c     local - cross hardening parameters
       real*8 gS,c_ks,ss
 c     local
       dimension sc(ntens),so(ntens),sdp(ntens),sp(ntens) ! stress double prime
-      real*8 sc,so,sdp,sp,ref
+      real*8 sc,so,sdp,sp,ref0,ref1
 c     local-latent
       dimension dphi_lat(ntens),d2phi_lat(ntens,ntens)
       real*8 phi_lat,dphi_lat,d2phi_lat,phi_lat_norm
@@ -108,9 +108,8 @@ c     call exit(-1)
 
 c-----------------------------------------------------------------------
 c     Restore yldp into state variables/parameters
-c      write(*,*)'ref:',ref
-      call hah_io(0,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,ref
-     $     ,gL,ekL,eL,gS,c_ks,ss,krs,target)
+      call hah_io(0,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
+     $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,krs,target)
 c     calculate yield surface
 c     decompose deviatoric stress
       if (idiaw) then
@@ -133,9 +132,9 @@ c         call exit(-1)
 
 c---  anisotropic yield surface with isotropic hardening / phi_isoh
 c     phi_chi, dphi_chi, d2phi_chi
-      phi_isoh  = phi_chi/ref
+      phi_isoh  = phi_chi/ref1
       if (idiaw) then
-         call w_val(imsg,'ref (unix)  :',ref)
+         call w_val(imsg,'ref1        :',ref1)
          call w_val(imsg,'phi_chi     :',phi_chi)
          call w_val(imsg,'phi_isoh    :',phi_isoh)
          call fill_line(imsg,'-',23)
@@ -161,12 +160,12 @@ c---  anisotropic yield surface with full HAH
      $     phi_bs(2))
       fht = phi_lat_norm+phi_bs(1)+phi_bs(2)
 c      phi = (1.d0/fht)**(1d0/yldc(9))
-      phi = (ref/fht)**(1d0/yldc(9))
+      phi = (ref1/fht)**(1d0/yldc(9))
       if (idiaw) then
          call w_chr(imsg,'phi_bs (Bauschinger)')
          call w_dim(imsg,phi_bs,2,1d0,.true.)
          call w_val(imsg,'fht          :',fht)
-         call w_val(imsg,'ref          :',ref)
+         call w_val(imsg,'ref1         :',ref1)
          call w_val(imsg,'rah          :',rah)
          call w_val(imsg,'phi          :',phi)
          call w_chr(imsg,'cauchy stress:')

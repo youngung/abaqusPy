@@ -29,13 +29,14 @@ c     Additional local variables to transfer from yldp
       real*8 emic,demic,dgr,emod,ds_dcauchy,aux,aux6,aux33,aux33_inv,
      $     target
       dimension
-      real*8 gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,ekrs,coschi,H
+      real*8 gk,e_ks,f_ks,eeq,ref0,ref1,gL,ekL,eL,gS,c_ks,ss,ekrs,
+     $     coschi,H
       integer i,j
 
       H=8d0/3d0
 c     restore variables from yldp
       call hah_io(0,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
-     $     ref,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
+     $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
 
 c     Calculate coschi using target deviatoric tensor <target>
 c     and current microstructure deviator <sdev>
@@ -49,7 +50,7 @@ c     Calculate dgR:kr3 * [kr4 * ( 1-cos2chi) - kr5]
       dgr = ekrs(3)*(ekrs(4)*(1-coschi*coschi)-ekrs(5))
 c     Save state variables to yldp
       call hah_io(1,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
-     $     ref,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
+     $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
       return
       end subroutine micro_dev_deriv
 c-----------------------------------------------------------------------

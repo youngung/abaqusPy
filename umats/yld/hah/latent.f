@@ -11,41 +11,36 @@ c     [2] Jeong et al., IJP, 2016 (in press)
 c     Youngung Jeong
 c     youngung.jeong@gmail.com
 c------------------------------------------------------------------------
-c     calculate incremental gL (dgL)
-      subroutine latent_update(ntens,ndi,nshr,emic,target,eL,gL,ekL,
-     $     ys_iso,ys_hah,debar,dgL)
+c     calculate incremental gL (dgL_deps)
+      subroutine latent_update(ntens,emic,target,eL,gL,ekL,
+     $     ys_0,ys_hah,dgL_deps)
 c     Arguments
 c     ntens  : Len of <emic> and <target>
-c     ndi    : Number of normal components
-c     nshr   : Number of shear components
 c     target : the target direction, with which the microstructure
 c               deviator aims to realign.
 c     eL     : L parameter
 c     gL     : gL parameter at step n
 c     ekL    : kL constant
-c     ys_iso : \bar{\sigma}(0) - the initial yield surface (without HAH effect)
+c     ys_0   : \bar{\sigma}(0) - the initial yield surface (without HAH effect)
 c     ys_hah : \bar{\sigma}(\bar{\varepsilon}) - current yield surface
 c     emic   : microstructure deviator
-c     debar  : incremental equivalent strain
-c               (used as multiplier when updating the state variables...)
-c     dgL    : incremental gL
+c     dgL_deps
       implicit none
 c     Arguments of subroutine
-      integer, intent(in):: ntens,ndi,nshr
+      integer, intent(in):: ntens
       dimension emic(ntens),target(ntens)
-      real*8, intent(in) :: emic,target,eL,gL,ekL,ys_iso,ys_hah,debar
-      real*8, intent(out):: dgL
+      real*8, intent(in) :: emic,target,eL,gL,ekL,ys_0,ys_hah
+      real*8, intent(out):: dgL_deps
 c     Local variables
       real*8 coschi,term
-cf2py intent(in) eL,gL,ekL,ys_iso,ys_hah,emic,target,ntens,debar
-cf2py intent(out) dgL
+cf2py intent(in) eL,gL,ekL,ys_0,ys_hah,emic,target,ntens
+cf2py intent(out) dgL_deps
 cf2py depend(ntens) emic,target
 
       call calc_coschi(ntens,target,emic,coschi)
-c     Eq 16 --
+c     Eq 16 in Ref [1]
       term = dsqrt(eL * (1d0-coschi*coschi) + coschi*coschi)-1d0
-      dgL = ekL *( (ys_hah-ys_iso) / ys_hah * term  + 1d0 - gL )
-      dgL = dgL * debar
+      dgL_deps = ekL *( (ys_hah-ys_0) / ys_hah * term  + 1d0 - gL )
 
       return
       end subroutine latent_update
@@ -79,7 +74,8 @@ c     locals
       real*8 sdev,so,sc,sdp,emic,demic,dgr,krs,target,dphis,d2phi,aux1
 c     variables to be stored from yldp
       dimension gk(4),e_ks(5),f_ks(2),sp(ntens),phis(2)
-      real*8 gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,sp,phis,hydro
+      real*8 gk,e_ks,f_ks,eeq,ref0,ref1,gL,ekL,eL,gS,c_ks,ss,sp,phis,
+     $     hydro
       logical idiaw
       integer imsg
       imsg=0
@@ -88,7 +84,7 @@ c      idiaw=.true.
 
 c**   restore parameters from yldp
       call hah_io(0,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
-     $     ref,gL,ekL,eL,gS,c_ks,ss,krs,target)
+     $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,krs,target)
 
       if (idiaw) then
          call w_val(imsg,'gL:',gL)

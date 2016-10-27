@@ -34,7 +34,7 @@ c     local - Latent hardening parameters
 c     local - cross hardening parameters
       real*8 gS,c_ks,ss
 c     local - gen
-      real*8 ref,hydro
+      real*8 ref0,ref1,hydro
 c     local - controlling
       integer imsg,i
       dimension arg_status(narg)
@@ -86,7 +86,7 @@ c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
       yldc(:8) = 1d0
       yldc(9)  = 2d0
       call hah_io(1,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
-     $     ref,gL,ekL,eL,gS,c_ks,ss,krs,target)
+     $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,krs,target)
       iyld_choice=2             ! yld2000-2d
       if (idiaw) call fill_line(imsg,'*',72)
       stress(:)=0d0

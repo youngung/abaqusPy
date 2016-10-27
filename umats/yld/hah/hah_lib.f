@@ -231,7 +231,7 @@ c     subroutine that converts back and forth
 c     Used to convert/restore yldp of HAH case.
 c     When yldp is used for HAH model, this subroutine must be used.
       subroutine hah_io(iopt,nyldp,ntens,yldp,emic,demic,dgR,gk,e_ks,
-     $     f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
+     $     f_ks,eeq,ref0,ref1,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
 c     Arguments
 c     iopt  :  if 0, state variables <- yldp
 c              if 1, state variables -> yldp
@@ -242,8 +242,10 @@ c     emic  : microstructure deviator
 c     demic : \frac{\partial \hat{h}}{\partial \bar{\varepsilon}}
 c     dgR   : \frac{\partial g_R}{\partial \bar{\varepsilon}}
 c     eeq   : equivalent plastic strain
-c     ref   : yield surface reference sizen
-c             used to renormalized yield surface
+c     ref1  : yield surface reference size used to renormalized
+c            yield surface; This also means the current yield stress
+c            in the reference stress state (usually uniaxial along RD)
+c     ref0  : The initial yield surface referenze size
 c     gk    : gk parameters
 c     e_ks  : ks parameters for Bauschinger effect
 c     f_ks  : f1 and f2 parameters for Bauschinger effect
@@ -262,39 +264,40 @@ c**   Arguments passed
       integer, intent(in)::iopt,nyldp,ntens
       dimension yldp(nyldp),emic(ntens),demic(ntens),gk(4),e_ks(5),
      $     f_ks(2),ekrs(5),target(ntens)
-      real*8, intent(inout):: yldp,emic,demic,dgR,gk,e_ks,f_ks,eeq,ref,
-     $     gL,ekL,eL,gS,c_ks,ss,ekrs,target
+      real*8, intent(inout):: yldp,emic,demic,dgR,gk,e_ks,f_ks,eeq,ref0,
+     $     ref1,gL,ekL,eL,gS,c_ks,ss,ekrs,target
 c     local
       integer i
       if (iopt.eq.0) then       ! state variables <- yldp
 c     HAH yield surface/state variables (and a few constants if any)
 c***  equivalent plastic strain (cumulative)
          eeq     = yldp(1)
-c***  Reference size
-         ref     = yldp(2)
+c***  Reference size (current yield stress in the reference stress state)
+         ref0     = yldp(2)
+         ref1     = yldp(3)
 c***  Microstructure deviator
          do 5 i=1,ntens
-            emic(i)  = yldp(i+2)
-            demic(i) = yldp(i+2+ntens)
+            emic(i)  = yldp(i+3)
+            demic(i) = yldp(i+3+ntens)
  5       continue
-         dgR = yldp(ntens*2+3)
+         dgR = yldp(ntens*2+4)
 c***  Bauschinger effect
-         gk(:)   = yldp(ntens*2+4:ntens*2+7)   ! state variables
-         e_ks(:) = yldp(ntens*2+8:ntens*2+12)  ! k1,k2,k3,k4,k5 constants
+         gk(:)   = yldp(ntens*2+5:ntens*2+8)   ! state variables
+         e_ks(:) = yldp(ntens*2+9:ntens*2+13)  ! k1,k2,k3,k4,k5 constants
          do 10 i=1,2
-            f_ks(i) = yldp(ntens*2+12+i) ! f_k state parameters
+            f_ks(i) = yldp(ntens*2+13+i) ! f_k state parameters
  10      continue
 ***  Latent hardening
-         gL        = yldp(ntens*2+15)
-         ekL       = yldp(ntens*2+16)
-         eL        = yldp(ntens*2+17)
+         gL        = yldp(ntens*2+16)
+         ekL       = yldp(ntens*2+17)
+         eL        = yldp(ntens*2+18)
 c***  cross hardening
-         gS        = yldp(ntens*2+18)
-         c_ks      = yldp(ntens*2+19)
-         ss        = yldp(ntens*2+20)
+         gS        = yldp(ntens*2+19)
+         c_ks      = yldp(ntens*2+20)
+         ss        = yldp(ntens*2+21)
 c***  microstructure deviator rotation
-         ekrs(:)    = yldp(ntens*2+21:ntens*2+25)
-         target(:) = yldp(ntens*2+26:ntens*3+25)
+         ekrs(:)    = yldp(ntens*2+22:ntens*2+26)
+         target(:) = yldp(ntens*2+27:ntens*3+26)
 c     diagnose
          if (dabs(gL).lt.1e-3) then
             write(*,*)'gL is too small'
@@ -305,31 +308,32 @@ c     HAH yield surface/state variables (and a few constants if any)
 c***  equivalent plastic strain (cumulative)
          yldp(1)   = eeq
 c***  Reference size
-         yldp(2)   = ref
+         yldp(2)   = ref0
+         yldp(3)   = ref1
 c***  Microstructure deviator
          do 15 i=1,ntens
-            yldp(i+2)       = emic(i)
-            yldp(i+2+ntens) = demic(i)
+            yldp(i+3)       = emic(i)
+            yldp(i+3+ntens) = demic(i)
  15      continue
-         yldp(ntens*2+3) = dgR
+         yldp(ntens*2+4) = dgR
 c***  Bauschinger effect
-         yldp(ntens*2+4:ntens*2+7) = gk(:)      ! state variables
-         yldp(ntens*2+8:ntens*2+12) = e_ks(:)  ! k1,k2,k3,k4,k5 constants
+         yldp(ntens*2+5:ntens*2+8) = gk(:)      ! state variables
+         yldp(ntens*2+9:ntens*2+13) = e_ks(:)  ! k1,k2,k3,k4,k5 constants
          do 20 i=1,2
-            yldp(ntens*2+12+i) = f_ks(i) ! f_k state parameters
+            yldp(ntens*2+13+i) = f_ks(i) ! f_k state parameters
  20      continue
 c***  Latent hardening
-         yldp(ntens*2+15) = gL
-         yldp(ntens*2+16) = ekL
-         yldp(ntens*2+17) = eL
+         yldp(ntens*2+16) = gL
+         yldp(ntens*2+17) = ekL
+         yldp(ntens*2+18) = eL
 c***  cross hardening
-         yldp(ntens*2+18) = gS
+         yldp(ntens*2+19) = gS
 
-         yldp(ntens*2+19) = c_ks
-         yldp(ntens*2+20) = ss
+         yldp(ntens*2+20) = c_ks
+         yldp(ntens*2+21) = ss
 c***  microstructure deviator rotation
-         yldp(ntens*2+21:ntens*2+25) = ekrs(:)
-         yldp(ntens*2+26:ntens*3+25) = target(:)
+         yldp(ntens*2+22:ntens*2+26) = ekrs(:)
+         yldp(ntens*2+27:ntens*3+26) = target(:)
       endif
 c     yield surface constants
       return
@@ -353,13 +357,14 @@ c     iyld_choice : yield surface choice
       real*8 yldp,yldc
 c     hah_io
       dimension emic(ntens),demic(ntens),gk(4),e_ks(5),f_ks(2),krs(5)
-      real*8 emic,demic,gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,krs
+      real*8 emic,demic,gk,e_ks,f_ks,eeq,ref0,ref1,gL,ekL,eL,gS,c_ks,ss,
+     $     krs
 c     locals
       dimension cauchy_ref(ntens),target(ntens)
       real*8 cauchy_ref,phi,target,dgr
 
       call hah_io(0,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
-     $     ref,gL,ekL,eL,gS,c_ks,ss,krs,target)
+     $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,krs,target)
 
 c     Reference stress state: uniaxial tension along axis 1
       cauchy_ref(:)=0d0
@@ -371,7 +376,7 @@ c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
 c      call w_val(imsg,'ref',ref)
 c     save ref to yldp
       call hah_io(1,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
-     $     ref,gL,ekL,eL,gS,c_ks,ss,krs,target)
+     $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,krs,target)
       return
       end subroutine hah_calc_ref
 c-----------------------------------------------------------------------

@@ -267,18 +267,24 @@ The derivative is then
 The latent hardening is accounted for by using a linear-transformation of the deviatoric stress tensor into
 \begin{eqnarray}
   \label{eq:latent_decompose1}
-  \mathbf{s}^{\prime\prime}=\mathbf{s}_c+\eta \mathbf{s}_o
+  \mathbf{s}^{\prime\prime}=\mathbf{s}_c+\frac{1}{g_L}\mathbf{s}_o
 \end{eqnarray}
 Its derivative is obtained as
 \begin{eqnarray}
   \begin{split}
     \label{eq:latent_decompose2}
-    \frac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{s}} &=\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} + \eta \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}}\\
-    &=\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} + \eta \Big\{\mathbf{I} -   \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}}\Big\}\\
-    \bigg(\frac{\partial s^{\prime\prime}}{\partial s}\bigg)_{ij,kl} &=\bigg( \frac{\partial s_c}{\partial s}\bigg)_{ij,kl} + \eta \bigg\{I_{ij,kl} -   \bigg(\frac{\partial s_c}{\partial s}\bigg)_{ij,kl} \bigg\}
+    \frac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{s}} &=\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} + g_L^{-1} \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}}+\frac{\partial g_L^{-1}}{\partial\mathbf{s}}\otimes\mathbf{s}_o\\
+    &=\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} + g_L^{-1} \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}}+\frac{\partial g_L^{-1}}{\partial\bar{\varepsilon}}\frac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}}\otimes \frac{\partial\mathbf{\sigma}}{\partial\mathbf{s}}:\mathbf{s}_o \\
+    \bigg(\frac{\partial s^{\prime\prime}}{\partial s}\bigg)_{ij,kl} &=\bigg( \frac{\partial s_c}{\partial s}\bigg)_{ij,kl} + g_L^{-1} \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij,kl}-g_L^{-2}\frac{\partial g_L}{\partial\bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{ij}\bigg(\frac{\partial\sigma}{\partial s}\bigg)_{kl,mn}(s_o)_{mn} \\
   \end{split}
 \end{eqnarray}
-Note that $\big(\partial s_c / \partial s\big)_{ij,kl}$ is available in Eq. \ref{eq:decomp2}.
+Note that $\big(\partial s_c / \partial s\big)_{ij,kl}$ is available in Eq. \ref{eq:decomp2} and $\big(\partial s_o/\partial s\big)_{ij,kl}$ Eq. in \ref{eq:decomp4}.
+The latent hardening parameter $g_L$ follows below evolutionary behavior according to \cite{barlat2011alternative}:
+\begin{equation}
+  \label{eq:latent_deriv}
+\frac{\partial g_L}{\partial\bar{\varepsilon}} = k_L\bigg[\frac{\bar{\sigma}(\bar{\varepsilon})-\bar{\sigma}(0)}{\bar{\sigma}(\bar{\varepsilon})}\Big(\sqrt{L(1-\cos^2\chi)+\cos^2\chi}-1\Big)+1-g_L\bigg]
+\end{equation}
+
 
 The stress used for cross hardening goes through below transformation.
 \begin{eqnarray}
@@ -437,8 +443,8 @@ By combining Eqs. \ref{eq:derv1} and \ref{eq:derv2}, below equation is obtained:
   \label{eq:derv3}
   \begin{split}
   \frac{\partial{\phi_h}}{\partial{\mathbf{\sigma}}} &=\frac{1}{2\phi_h}\bigg\{ 2\psi(\mathbf{s}^{\prime\prime})\frac{\partial{\psi(\mathbf{s}^{\prime\prime})}}{\partial{\mathbf{s}^{\prime\prime}}}  \frac{\partial\mathbf{s}^{\prime\prime}}{\partial \mathbf{s}} + 2\psi(\mathbf{s}_p) \frac{\partial{\psi(\mathbf{s}_p)}}{\partial{\mathbf{s}_p}} \frac{\partial{\mathbf{s}_p}}{\partial{\mathbf{s}}}\bigg\} \frac{\partial{s}}{\partial{\sigma}}.\\
-  \Big(\frac{\partial{\phi_h}}{\partial\sigma}\Big)_{ij} &= \frac{1}{2\phi_h}\bigg\{ 2\psi(s^{\prime\prime})\Big(\frac{\partial{\psi(s^{\prime\prime})}}{\partial{s^{\prime\prime}}}\Big)_{kl}  \Big(\frac{\partial s^{\prime\prime}}{\partial s}\Big)_{kl,mn} + \\
-    & 2\psi(s_p) \Big(\frac{\partial{\psi(s_p)}}{\partial{s_p}}\Big)_{kl} \Big(\frac{\partial{s_p}}{\partial s}\Big)_{kl,mn}\bigg\} \Big(\frac{\partial s}{\partial \sigma}\Big)_{mn,ij}
+  \Big(\frac{\partial{\phi_h}}{\partial\sigma}\Big)_{ij} &= \frac{1}{\phi_h}\bigg\{ \psi(s^{\prime\prime})\Big(\frac{\partial{\psi(s^{\prime\prime})}}{\partial{s^{\prime\prime}}}\Big)_{kl}  \Big(\frac{\partial s^{\prime\prime}}{\partial s}\Big)_{kl,mn} + \\
+    & \psi(s_p) \Big(\frac{\partial{\psi(s_p)}}{\partial{s_p}}\Big)_{kl} \Big(\frac{\partial{s_p}}{\partial s}\Big)_{kl,mn}\bigg\} \Big(\frac{\partial s}{\partial \sigma}\Big)_{mn,ij}
   \end{split}
 \end{eqnarray}
 
@@ -524,10 +530,14 @@ Note that $\frac{\partial{\bar{\mathbf{\varepsilon}}}}{\partial{\mathbf{\sigma}}
   \frac{\partial{\mathbf{\sigma}}}{\partial{\bar{\varepsilon}}} = - \mathbb{C}^{el} : \frac{\partial{\bar{\sigma}}}{\partial{\mathbf{\sigma}}} = -\mathbb{C}^{el}_{ij,kl} \bigg(\frac{\partial\bar{\sigma}}{\partial\sigma}\bigg)_{kl},
 \end{eqnarray}
 which leads to
-\begin{eqnarray}
+\begin{equation}
   \label{eq:dphib6}
-\frac{\partial{\hat{\mathbf{h}}}}{\partial{\mathbf{s}}}=\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}} \bigg\{ \Big\{- \mathbb{C}^{el} : \frac{\partial{\bar{\sigma}}}{\partial{\mathbf{\sigma}}}\Big\}^{-1} :  \frac{\partial{\mathbf{\sigma}}}{\partial{\mathbf{s}}}\bigg\}
-\end{eqnarray}
+  \begin{split}
+    \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{s}}   &=\frac{\partial\hat{\mathbf{h}}}{\partial\bar{\varepsilon}} \bigg\{ \Big\{- \mathbb{C}^{el} : \frac{\partial\bar{\sigma}}{\partial\mathbf{\sigma}}\Big\}^{-1} :  \frac{\partial\mathbf{\sigma}}{\partial\mathbf{s}}\bigg\}\\
+    \bigg(\frac{\partial\hat{h}}{\partial s}\bigg)_{ij,kl}&=\bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg[ \bigg\{- \mathbb{C}^{el}_{op,mn} \Big(\frac{\partial\bar{\sigma}}{\partial\sigma}\Big)_{mn}\bigg\}^{-1} \bigg(\frac{\partial\sigma}{\partial s}\bigg)_{op,kl}\bigg]\\
+                                                          &=\bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg[ \bigg\{- \mathbb{C}^{el}_{op,mn} \Big(\frac{\partial\bar{\sigma}}{\partial\sigma}\Big)_{mn}\bigg\}^{-1} \bigg(\frac{\partial\sigma}{\partial s}\bigg)_{op,kl}\bigg]
+  \end{split}
+\end{equation}
 Substitute Eq. \ref{eq:dphib6} to Eq. \ref{eq:dphib3} to have
 \begin{equation}
   \label{eq:dphib6_1}
@@ -604,9 +614,9 @@ Likewise, $\partial\phi_h/\partial\sigma$ shown in Eq. \ref{eq:derv3} is more ex
 \item We start to calculate $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ and $\cos\chi$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}.
 \item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{s}$ in Eq. \ref{eq:dphib6}. This requires $\mathbb{C}^{el}$ and $\partial\bar{\sigma}/\partial\mathbf{\sigma}$.
 \item Obtain $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial \mathbf{s}$ in Eq. \ref{eq:dphib6_1}
+\item Also, obtain $\partial \mathbf{s_c}/\partial \mathbf{s}$ and $\partial \mathbf{s_o}/\partial\mathbf{s}$ in Eqs. \ref{eq:decomp2} and \ref{eq:decomp4}, respectively, that are dependent on $\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial\mathbf{s}$ and $\partial \hat{\mathbf{h}}/\partial\mathbf{s}$.
 \item Obtain $\partial g_s/\partial\bar{\varepsilon}$ and $\partial g_s/\partial\mathbf{s}$ in Eqs. \ref{eq:cross_linear3} and \ref{eq:cross_linear4}.
 \item Obtain $\partial \mathbf{s_p}/\partial\mathbf{s}$ using Eq. \ref{eq:cross_linear2_}.
-\item Also, obtain $\partial \mathbf{s_c}/\partial \mathbf{s}$ in Eq. \ref{eq:decomp2} that is dependent on $\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial\mathbf{s}$ and $\partial \hat{\mathbf{h}}/\partial\mathbf{s}$.
 \item Obtain $\partial\mathbf{s}^{\prime\prime}/\partial\mathbf{s}$ using $\partial \mathbf{s_c}/\partial \mathbf{s}$.
 \item Plug $\partial\mathbf{s}^{\prime\prime}/\partial\mathbf{s}$ and  $\partial \mathbf{s_p}/\partial\mathbf{s}$ into Eq. \ref{eq:dphih_dsig} to obtain $\partial\phi_h/\partial\mathbf{\sigma}$.
 \item Obtain $\partial f_k/\partial \mathbf{s}$ in Eq. \ref{eq:dphib8}.

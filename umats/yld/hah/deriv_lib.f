@@ -9,11 +9,11 @@ c     [3] Lee et al., Comput. Methods. Appl. Mech. Engrg. 286 (2015) p63-86
 c     [4] Manual of abaqusPy
 
 c-----------------------------------------------------------------------
-      subroutine hah_deriv(ntens,nyldp,s,yldp,
+      subroutine hah_deriv(nyldp,sdev,yldp,
      $     phi_h,  dphi_h,
      $     psi_sdp,dpsi_dsdp,
      $     psi_sp ,dpsi_dsp,
-     $     phi_iso, phi_hah)
+     $     phi_iso, phi_hah,dphi_hah)
 c     Arguments
 c     ntens     : Len of stress tensor
 c     nyldp     : Len of yldp
@@ -27,192 +27,162 @@ c     psi_sp    : psi_sp
 c     dpsi_dsp   :dpsi_dsp
 c     phi_iso   : isotropic yield surface
 c     phi_hah   : Homogeneous aniostropic yield surface
+c     dphi_hah  : derivative of the Homogeneous aniostropic yield surface
       implicit none
       integer, intent(in) :: ntens,ndi,nshr,nyldp
-      dimension s(ntens),yldp(nyldp),dphi_h(ntens),dpsi_dsdp(ntens),
-     $     dpsi_dsp(ntens)
+      dimension yldp(nyldp),dphi_h(6),dpsi_dsdp(6),dpsi_dsp(6),
+     $     dphi_hah(6),sdev(6)
       real*8, intent(in) :: s,yldp,phi_h,dphi_h,psi_sdp,dpsi_dsdp,
-     $     psi_sp,dpsi_dsp,phi_iso,phi_hah
-      dimension sdev(6)
-      real*8 sdev
-      dimension dh_ds(6,6),cel(6,6),deps_dsig(6),aux6(6),bux6(6),
-     $     dhs_ds(6),idx(6,6),dsc_ds(6,6),dfk_ds(2,6)
-      real*8 dh_ds,deps_dsig,aux6,bux6,dhs_ds,dsc_ds,sdh,shhat,dfk_ds
-      integer idx
+     $     psi_sp,dpsi_dsp,phi_iso,phi_hah,dphi_hah
+      real*8,intent(in):: sdev
+      dimension dh_ds(6,6),cel(6,6),deps_dsig(6),dsig_deps(6),aux6(6),
+     $     bux6(6),cux6(6),dhs_ds(6),idx(6,6),dsc_ds(6,6),dfk_ds(2,6),
+     $     dsig_ds(6,6),emic(6),dh_de(6),dgR,gk(4),e_ks(5),f_ks(2),
+     $     ekrs(5),target(6),dso_ds(6,6),dsdp_ds(6,6),dgb_de(4),
+     $     dfks_dgk(2),dfk_ds(2),dphih_dsig(6),dgs_ds(6),aux33(3,3),
+     $     bux33(3,3),dsp_ds(6,6),dphib_ds(6), dphib_dsig(6)
+      real*8 dh_ds,deps_dsig,aux6,bux6,cux6,dhs_ds,dsc_ds,sdh,shhat,
+     $     dfk_ds,dgR,gk,e_ks,f_ks,eeq,ref0,ref1,gL,ekL,eL,gS,c_ks,ss,
+     $     ekrs,target,dso_ds,dsdp_ds,dfks_dgk,dgb_de,dfk_ds,sgn,
+     $     dphih_dsig,dgs_deps,dgs_ds,aux33,bux33,dsp_ds,dsig_ds,
+     $     dphib_ds,dphib_dsig
+      integer idx,i,j, ind
 
-      dimension dsig_ds(6,6)
-      integer i,j, ind
-
-      dimension emic(ntens),demic(ntens),dgR,gk(4),e_ks(5),f_ks(2),
-     $     ekrs(5),target(ntens),dso_ds(6,6),dsdp_ds(6,6),dgb_de(4),
-     $     dfks_dgk(2),dfk_ds(2),dphih_dsig(6)
-      real*8 dgR,gk,e_ks,f_ks,eeq,ref,gL,ekL,eL,gS,c_ks,ss,ekrs,target,
-     $     dso_ds,dsdp_ds,dfks_dgk,dgb_de,dfk_ds,sgn,dphih_dsig,dgs_deps,
-     $     dgs_ds(6)
-
-      dimension dphib_ds(6), dphib_dsig(6)
-      real*8 dphib_ds,dphib_dsig
-
-      if (ntens.eq.3) then
-         sdev(1:2) = s(1:2)
-         sdev(3)   = -s(1)-s(2)
-         sdev(4:5) = 0d0
-         sdev(6)   = s(3)
-      elseif (ntens.eq.6) then
-         sdev(:)=s(:)
-      endif
-      call emod_iso(Cel,0.3,200e9,3,3)
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     Calculate demic/deps and dgr/deps
-      call micro_dev_deriv(6,3,3,sdev,nyldp,yldp) ! in <microd.f>
-      call hah_io(0,nyldp,ntens,yldp,emic,demic,dgR,gk,e_ks,f_ks,eeq,
-     $     ref,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
+      call emod_iso(Cel,0.3,200e9,3,3) !! to be improved later.
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     dsig/ds
-      call calc_dsig_ds(6,dsig_ds)
+c     Step 1
+c     Calculate dh/deps <dh_de> (and dgr/deps) and saved them to yldp
+      call micro_dev_deriv(6,3,3,nyldp,sdev,yldp) ! in <microd.f>
+      call hah_io(0,nyldp,ntens,yldp,emic,dh_de,dgR,gk,e_ks,f_ks,eeq,
+     $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     deps/dsig: see Eq 27 (its inverse actually)
-      call calc_deps_dsig(ntens,dphi_red,Cel,deps_dsig)
+c     Step 2 - calculate dh_ds
+      call calc_dh_ds(Cel,dphi_hah,dh_de,dh_ds,deps_dsig)
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     dh/ds: Eq. 28 in Ref [4]
-      do 5 j=1,3
-      do 5 i=1,3
-         aux6(j)   = aux6(j)  +deps_dsig(i)  *dsig_ds(i,j)
-         aux6(j+3) = aux6(j+3)+deps_dsig(i+3)*dsig_ds(i+3,j+3)*2d0
- 5    continue
-c     Outer product to obtain dh_ds
+c     Step 3 - calculate d(h:s)/ds
+      call calc_dhs_ds(dphi_hah,sdev,emic,dh_de,dh_ds,dhs_ds)
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Steps 4,5,6,7
+      call calc_stress_deriv(dhs_ds,dh_ds,deps_dsig,emic,sdev,eL,gL,ekL,
+     $     ref0,ref1,c_kS,sS,gS,dsdp_ds,dsp_ds)
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Step 8 - see Eq 30 in Ref [4]
+      aux6(:)=0d0
+      bux6(:)=0d0
       do 10 i=1,6
-      do 10 j=1,6
-         dh_ds(i,j) = dh_de(i) * aux6(j)
+      do 10 j=1,3
+         aux6(i) = aux6(i) + dpsi_dsdp(j)  *dsdp_ds(j,i)
+         aux6(i) = aux6(i) + dpsi_dsdp(j+3)*dsdp_ds(j+3,i)*2d0
+         bux6(i) = bux6(i) + dpsi_dsp(j)   *dps_ds(j,i)
+         bux6(i) = bux6(i) + dpsi_dsp(j+3) *dps_ds(j+3,i)*2d0
  10   continue
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     Eq 25 in Ref [4]
-      idx(:,:)=0
+      cux6(:)=psi_sdp * aux6(:) + psi_sp* bux6(:)
+      dphi_h(:)=0d0
       do 15 i=1,6
-         idx(i,i)=1
+      do 15 j=1,3
+         dphi_h(i) = dphi_h(i) + cux6(j)  *ds_dsig(j,i)
+         dphi_h(i) = dphi_h(i) + cux6(j+3)*ds_dsig(j+3,i)*2d0
  15   continue
-      do 20 i=1,3
-         dhs_ds(i)  =dhs_ds(i)+ dh_ds(i,  j)  *s(j)  +
-     $        h(j)  *idx(j,i)
-         dhs_ds(i+3)=dhs_ds(i)+ dh_ds(i+3,j+3)*s(j+3)+
-     $        h(j+3)*idx(j+3,i+3)
-         dhs_ds(i+3)=dhs_ds(i+3) * 2d0
- 20   continue
+      dphi_h(:)=dphi_h(:) / phi_h
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     Eq 33 in Ref [4]
-      sdh = 0d0
-      do 25 i=1,3
-         sdh = sdh + dhs_ds(i)  *emic(i)
-         sdh = sdh + dhs_ds(i+3)*emic(i+3)*2d0
- 25   continue
-c     sshat
-      sshat=0d0
-      do 30 i=1,3
-         sshat = sshat + s(i)   * emic(i)
-         sshat = sshat + s(i+3) * emic(i+3) * 2d0
- 30   continue
-      do 35 i=1,6
-      do 35 j=1,6
-         dsc_ds(i,j) = 8d0/3d0 * (sdh+sshat*dh_ds(i,j))
- 35   continue
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     Eq 35 in Ref [4]
-      do 40 i=1,6
-      do 40 j=1,6
-         dso_ds(i,j) = idx(i,j) - dsc_ds(i,j)
- 40   continue
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     Eq 37 in Ref [4]
-      do 45 i=1,6
-      do 45 j=1,6
-         dsdp_ds(i,j) = dsc_ds(i,j) + dso_ds(i,j) / gL
- 45   continue
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     Eq 1 in Ref [4]
-      call calc_bau(6,3,3,emic,target6,gs,e_ks,yldc(9),phi_iso,phi_hah,
-     $     debar,fks,gs_new,dfks_dgk,dgb_de)
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      do 50 j=1,3
-      do 50 i=1,3
-         dfk_ds(1,j) = dfks_dgk(1)   * dgb_de(1) * deps_dsig(i) *
-     $        dsig_ds(i,j)
-         dfk_ds(2,j) = dfks_dgk(2)   * dgb_de(2) * deps_dsig(i) *
-     $        dsig_ds(i,j)
-         dfk_ds(1,j+3) = dfks_dgk(1) * dgb_de(1) * deps_dsig(i) *
-     $        dsig_ds(i+3,j+3) * 2d0
-         dfk_ds(2,j+3) = dfks_dgk(2) * dgb_de(2) * deps_dsig(i) *
-     $        dsig_ds(i+3,j+3) * 2d0
- 50   continue
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     Eq 21 (or 24) in Ref [4]
-      sgn = sign(1d0,sdh)
-      if (sgn.ge.0) ind=2
-      if (sng.lt.0) ind=1
-      do 55 i=1,6
-         dphib_ds(i)  = 2d0*sgn*dfk_ds(ind,i)*sdh+fks(ind)*dhs_ds(i)
- 55   continue
-c     Eq 17 in Ref [4]
-      do 60 i=1,6
-      do 60 j=1,3
-         dphib_dsig(i)=dphib_dsig(i)+dphib_ds(j)  *ds_dsig(j,  i)
-         dphib_dsig(i)=dphib_dsig(i)+dphib_ds(j+3)*ds_dsig(j+3,i)*2d0
- 60   continue
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     Eq 16 in Ref [4]
-      do 62 i=1,6
-      do 62 j=1,6
-      do 62 k=1,6
-         dphih_dsig(i) = 1d0 / phi_h * (
-     $        psi_sdp* dpsi_dsdp(j)*dsdp_ds(j,k) +
-     $        psi_sp * dpsi_dsp( j)*dsp_ds(j,ik)) * ds_dsig(k,i)
- 62   continue
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     Eq 41 in Ref [4]
-      call corss_hardening(6,3,3,emic,tensor_ref,ks,ss,gS,dgS_deps)
-      dgs_ds(:)=0d0
-      do 65 i=1,3
-         dgs_ds(i)  =dgs_ds(i)  +dgs_deps*deps_dsig(j)*dsig_ds(j,i)
-         dgs_ds(i+3)=dgs_ds(i+3)+dgs_deps*deps_dsig(j)*dsig_ds(j,i+3)*2
- 65   continue
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c     Eq 40 in Ref [4]
-      do 70 i=1,6
-      do 70 j=1,6
-         dsp_ds(i,j) = - 4d0 * dgs_ds(i) * so(j) +
-     $        4d0* (1d0-gS) * dso_ds(i,j)
- 70   continue
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c$$$c     Eq 16 in Ref [4]
-c$$$      aux6(:)=0d0
-c$$$      do 75 i=1,6
-c$$$      do 75 j=1,6
-c$$$         aux6(i) = 2d0 * psi_sdp * dpsi_dsdp(j) * dsdp_ds(j,i) +
-c$$$     $             2d0 * psi_sp  * dpsi_dsp(j)  * dsp_ds(j,i)
-c$$$ 75   continue
-c$$$      do 80 i=1,6
-c$$$      do 80 j=1,6
-c$$$         dphih_dsig
-c$$$ 80   continue
-c$$$c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Step 9
+
       return
       end subroutine hah_deriv
-c-----------------------------------------------------------------------
-c     calculate \frac{\partial\varepsilon){\partial\sigma}
-      subroutine calc_deps_dsig(ntens,dphi_red,Cel,deps_dsig)
-      integer, intent(in) :: ntens
-      dimension Cel(6,6),dphi_red(ntens),dsig_deps(6),deps_dsig(6),
-     $     aux33(3,3),aux33_inv(3,3)
-      real*8, intent(in) :: Cel
-      real*8, intent(out):: deps_dsig
-      real*8 dphi_red,dsig_deps
-      integer i,j
 
-      dsig_deps(:) = 0d0
-      do 10 i=1,3
+
+c     Small operations below
+
+c-----------------------------------------------------------------------
+c     Equation 39 in Ref [4]
+      subroutine calc_dhs_ds(dphi_dsig,sdev,emic,dh_de,dh_ds,dhs_ds)
+c     Arguments
+c     dphi_dsig : Derivative of over all yield surface with respect to cauchy stress
+c     sdev      : Deviatoric stress tensor
+c     emic      : Microstructure deviator
+c     dh_de     : dh/de
+c     dh_ds     : dh/ds
+c     dhs_ds    : d(h:s)/ds (to be obtained)
+c     dsig/ds
+      implicit none
+      dimension dphi_dsig(6),sdev(6),emic(6),dh_de(6),dh_ds(6,6),
+     $     dhs_ds(6)
+      real*8, intent(in):: dphi_dsig,sdev,emic,dh_de,dh_ds
+      real*8, intent(out):: dhs_ds
+c     local
+      dimension dsig_ds(6,6),aux6(6)
+      real*8 dsig_ds,aux6
+      integer i,j
+c     dsig/ds
+      call calc_dsig_ds(6,dsig_ds)
+      do 10 i=1,6
       do 10 j=1,3
-         dsig_deps(i)  =dsig_deps(i)  -Cel(i,  j)  *dphi(j)
-         dsig_deps(i+3)=dsig_deps(i+3)-Cel(i+3,j+3)*dphi(j+3)*2d0
+         aux6(i) = aux6(i) + dh_ds(i,j)  *sdev(j)       + emic(i)
+         aux6(i) = aux6(i) + dh_ds(i,j+3)*sdev(j+3)*2d0 + emic(i)
  10   continue
+      end subroutine calc_dhs_ds
+c-----------------------------------------------------------------------
+c     Eq 41. in Ref [4]
+      subroutine calc_dh_ds(Cel,dphi_dsig,dh_de,dh_ds,deps_dsig)
+c     Arguments
+c     Cel       : elastic constants
+c     dphi_dsig : Derivative of over all yield surface with respect to cauchy stress
+c     dh_de     : dh_de
+c     dh_ds     : dh_ds (to be obtained)
+      implicit none
+      dimension cel(6,6),dphi_dsig(6),dh_ds(6,6),deps_dsig(6)
+      real*8 intent(in):: cel,dphi_dsig
+      real*8 intent(out):: dh_ds,deps_dsig
+c     locals
+      dimension aux(6),de_ds(6),dsig_ds(6,6)
+      real*8 aux,de_ds,dsig_ds
+      integer i,j,k,l
+
+c     dsig/ds
+      call calc_dsig_ds(6,dsig_ds)
+c     debar/dsig
+      call calc_deps_dsig(Cel,dphi_dsig,deps_dsig)
+c     dh_de/de_dsig/dsig_ds
+
+c     calc de_ds
+      de_ds(:)=0d0
+      do 10 i=1,6
+      do 10 j=1,3
+         de_ds(i) = de_ds(j)   + deps_dsig(j)  * dsig_ds(j,  i)
+         de_ds(i) = de_ds(j+3) + deps_dsig(j+3)* dsig_ds(j+3,i) * 2d0
+ 10   continue
+c     tensor product
+      do 20 j=1,6
+      do 20 i=1,6
+         dh_ds(i,j) = dh_de(i)*de_ds(j)
+ 20   continue
+      return
+      end subroutine calc_dh_ds
+c-----------------------------------------------------------------------
+c     deps/dsig: see Eq 40 in Ref [4] (its inverse actually)
+      subroutine calc_deps_dsig(Cel,dphi_dsig,deps_dsig)
+c     Arguments
+c     Cel      : Elastic constants (6x6)
+c     dphi_dsig: Derivative of over all yield surface
+c     deps_dsig: to be calculated in this subroutine
+      implicit none
+      dimension Cel(6,6), dphi_dsig(6),deps_dsig(6)
+      real*8, intent(in) :: Cel, dphi_dsig
+      real*8, intent(out) ::  deps_dsig
+c     locals
+      dimension aux33(3,3)
+      real*8 aux33
+      integer i,j
+      deps_dsig(:)=0d0
+      dsig_deps(:)=0d0
+      do 1 i=1,6
+      do 1 j=1,3
+!        normal components
+         dsig_deps(i)=dsig_deps(i)-Cel(i,j)  *dphi_dsig(j)
+!        shear components
+         dsig_deps(i)=dsig_deps(i)-Cel(i,j+3)*dphi_dsig(j+3)*2d0
+ 1    continue
       call voigt2(dsig_deps,aux33)
       aux33_inv(:,:)=aux33(:,:)
       call lu_inverse(aux33_inv,3)
@@ -252,86 +222,77 @@ cf2py depends(ntens) d
  5    continue
       return
       end subroutine calc_dsig_ds
-c$$$      subroutine main_deriv(nyldp,ntens,yldp,sdev)
-c$$$      implicit none
-c$$$      integer, intent(in) nyldp,ntens
-c$$$      dimension yldp(nyldp),sdev(ntens)
-c$$$      real*8, intent(in) yldp,sdev
-c$$$
-c$$$      return
-c$$$      end subroutine main_deriv
-c$$$c-----------------------------------------------------------------------
-c$$$c     Calculate derivatives between various stress components
-c$$$c     dsc_ds, dso_ds,dsig_ds,dsp_dcauchy
-c$$$      subroutine deriv_stress_components(iopt,emic,gS,f1,f2,
-c$$$     $     dsc_ds,dso_ds,dsig_ds,dsp_dcauchy)
-c$$$      implicit none
-c$$$      integer, intent(in) :: iopt
-c$$$      dimension emic(3,3),dsc_ds(3,3,3,3),dso_ds(3,3,3,3),
-c$$$     $     dsig_ds(3,3,3,3),kro(3,3)
-c$$$      real*8, intent(in) :: emic,gS,f1,f2
-c$$$      real*8, intent(out) :: dsc_ds,dso_ds,dsig_ds,dsp_dcauchy
-c$$$      real*8 temp
-c$$$      integer kro,i,j,krok,onethird
-c$$$      parameter(onethird=1d0/3d0)
-c$$$      real H
-c$$$      H=8d0/3d0
-c$$$      kro(:,:)=0
-c$$$c     Kronecker
-c$$$      kro(1,1) = 1
-c$$$      kro(2,2) = 1
-c$$$      kro(3,3) = 1
-c$$$
-c$$$
-c$$$c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c$$$c     Eq 48-a in Ref [3]
-c$$$c     dsc_ds: \partial{s_c} / \partial{sdev}
-c$$$      temp = H*0.5d0
-c$$$      do 10 i=1,3
-c$$$      do 10 j=1,3
-c$$$      do 10 k=1,3
-c$$$      do 10 l=1,3
-c$$$         dsc_ds(i,j,k,l) = 0d0
-c$$$      do 10 m=1,3
-c$$$      do 10 n=1,3
-c$$$         krok = (kro(m,k) * kro(n,l) + kro(m,l) * kro(n,k))
-c$$$         dsc_ds(i,j,k,l) = dsc_ds(i,j,k,l) + temp * (
-c$$$     $        krok * emic(m,n) * emic(i,j))
-c$$$ 10   continue
-c$$$c     Eq 48-b
-c$$$      temp = 0.5d0
-c$$$      do 20 i=1,3
-c$$$      do 20 j=1,3
-c$$$         dso_ds(i,j,:,:)=0d0
-c$$$      do 20 k=1,3
-c$$$      do 20 l=1,3
-c$$$         dso_ds(i,j,k,l,) = dso_ds(i,j,k,l) +
-c$$$     $        (kro(i,k)*kro(j,l)+kro(i,l)*kro(j,k))*temp-
-c$$$     $        dsc_ds(i,j,k,l)
-c$$$ 20   continue
-c$$$c     Eq 49-a
-c$$$      do 30 i=1,3
-c$$$      do 30 j=1,3
-c$$$         dsig_ds(i,j,:,:)=0d0
-c$$$      do 30 k=1,3
-c$$$      do 30 l=1,3
-c$$$         dsig_ds(i,j,k,l)=dsig_ds(i,j,k,l) +
-c$$$     $        kro(i,k)*kro(j,l)-onethird*kro(i,j)*kro(k,l)
-c$$$ 30   continue
-c$$$c     Eq 49-b
-c$$$      temp = 4d0*(1d0-gS)
-c$$$      do 40 i=1,3
-c$$$      do 40 j=1,3
-c$$$      do 40 k=1,3
-c$$$      do 40 l=1,3
-c$$$         dsp_dcauchy(i,j,k,l) = 0d0
-c$$$      do 40 m=1,3
-c$$$      do 40 n=1,3
-c$$$         dsp_dcauchy(i,j,k,l) = dsp_dcauchy(i,j,k,l) +
-c$$$     $        temp * dso_ds(i,j,m,n) * dsig_ds(m,n,k,l)
-c$$$ 40   continue
-c$$$c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c$$$c     Eq 47-a in Ref [3]
-c$$$
-c$$$      return
-c$$$      end subroutine
+c-----------------------------------------------------------------------
+c     Calculate ds``/ds, dsp/ds
+      subroutine calc_stress_deriv(dhs_ds,dh_ds,deps_dsig,
+     $     emic,sdev,eL,gL,ekL,
+     $     ref0,ref1,c_kS,sS,gS,dsdp_ds,dsp_ds)
+      dimension dhs_ds(6),dh_ds(6,6),emic(6),sdev(6),deps_dsig(6)
+      dimension dsdp_ds(6,6), dsp_ds(6,6),dsc_ds(6,6),aux6(6),sc(6),
+     $     so(6),dsig_ds(6,6),dgs_ds(6)
+      real*8, intent(in):: dhs_ds,dh_ds,emic,sdev,deps_dsig,eL,gL,ekL,
+     $     ref0,ref1,c_kS,sS,gS
+      real*8, intent(out)::dsdp_ds,dsp_ds
+c     locals
+      real*8 dsc_ds,sh,tempval,sc,so,dsig_ds,dgL_deps,aux6,eta,eta2,
+     $     dgs_deps,dgs_ds
+
+      call calc_dsig_ds(6,dsig_ds)
+
+      eta=1d0/gL
+      eta2=eta/gL
+
+c     calc h:s
+      sh=0d0
+      do 5 i=1,3
+         sh = sh + emic(i)  *sdev(i)
+         sh = sh + emic(i+3)*sdev(i+3)*2d0
+ 5    continue
+c     calc dsc_ds, equation 5 in Ref [4]
+      dsc_ds(:)=0d0
+      do 10 i=1,6
+      do 10 j=1,6
+         dsc_ds(i,j) = dsc_ds(i,j) + dhs_ds(i) * emic(j) + sh*dh_ds(i,j)
+ 10   continue
+      dsc_ds(:,:)=dsc_ds(:,:)*8d0/3d0
+c     calc dso/ds
+      dso_ds(:,:) = dsc_ds(:,:)
+      do 15 i=1,6
+         dso_ds(i,i)=1d0-dso_ds(i,i)
+ 15   continue
+c     calculate so/sc
+      call hah_decompose(6,3,3,sdev,emic,sc,so)
+c     Using latent_update obtain dgL_deps
+      call latent_update(6,emic,sdev,eL,Gl,ekL,ref0,ref1,dgL_deps)
+c     calculate dsig/ds : so
+      aux6(:)=0d0
+      do 20 i=1,6
+      do 20 j=1,3
+         aux6(i) = aux6(i) + dsig_ds(i,j) * so(j)
+         aux6(i) = aux6(i) + dsig_ds(i,j+3) * so(j+3)*2d0
+ 20   continue
+c     calculate ds``/ds  - see equation 9 in Ref [4]
+      dsdp_ds(:,:)=0d0
+      do 25 i=1,6
+      do 25 j=1,6
+         dsdp_ds(i,j) = dsc_ds(i,j) + eta*dso_ds(i,j) -eta2*dgL_deps*
+     $        deps_dsig(i) * aux6(j)
+ 25   continue
+c     Calculate dgs_deps
+      call cross_hardening(6,emic,sdev,c_ks,ss,gs,dgs_deps)
+c     Calculate dgs_ds
+      dgs_ds(:)=0d0
+      do 30 i=1,6
+      do 30 j=1,3
+         dgs_ds(i)=dgs_ds(i)+deps_dsig(j)*dsig_ds(j,i)
+         dgs_ds(i)=dgs_ds(i)+deps_dsig(j+3)*dsig_ds(j+3,i)*2d0
+ 30   continue
+      dgs_ds(:) = dgs_ds(:)*dgs_deps
+c     calculate dsp_ds - see Eq 12 in Ref [4]
+      do 35 i=1,6
+      do 35 j=1,6
+         dps_ds(i,j) = -4d0 * dgs_ds(i) * so(j) + 4d0*(1d0-gs)*
+     $        dso_ds(i,j)
+ 35   continue
+      return
+      end subroutine calc_stress_deriv
