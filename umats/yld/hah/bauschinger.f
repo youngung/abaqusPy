@@ -17,9 +17,10 @@ c     The equation in Ref. [1] has a typo: missing exponent q
 c     to the value of g_k
       subroutine calc_fk(gk,H,q,fk,dfk)
 c     Arguments
-c     gk
-c     H
-c     q  : the exponent
+c     gk : qk parameter
+c     H  : H; the factor to normalize deviator tensors
+c     q  : the exponent used in Bauschinger effect - equivalent to
+c          the general exponent used in yield surface
 c     fk : f value
 c     dfk: \partial(fk)/\partial(gk)
       implicit none
@@ -32,24 +33,8 @@ cf2py intent(out) fk,dfk
       fk  = (c * (1d0/(gk**q)-1d0)) ** (1d0/q)
 c     d(fk)/d(gk) - to be used for derivative of yield surface
       dfk = c**(1d0/q) * (- gk**(-q-1d0) * fk **(1d0-q))
-c     dg1/deps
       return
       end subroutine calc_fk
-c------------------------------------------------------------------------
-c$$$c     subroutine that calculates gk parameter for HAH
-c$$$c         --   Eq 8 in Ref. [1]
-c$$$      subroutine calc_gk(dk,e_ik,gk)
-c$$$c     Arguments
-c$$$c     dk
-c$$$c     e_ik
-c$$$c     gk
-c$$$      implicit none
-c$$$      real*8 dk,e_ik,gk
-c$$$cf2py intent(in) dk,e_ik
-c$$$cf2py intent(out) gk
-c$$$      gk = dk / e_ik
-c$$$      return
-c$$$      end subroutine calc_gk
 c------------------------------------------------------------------------
 c     subroutine that calculates gk parameter for HAH
 c         --   Eqs 7/8 in Ref. [1]
@@ -60,7 +45,7 @@ c     Arguments
 c     emic   : microstructure deviator
 c     target : the target direction towards which the microstructure
 c              deviator aims to realign.
-c     gs     : state variables that quantifies the <flattening>
+c     gs     : "Dimension" state variables that quantifies the <flattening>
 c     e_ks   : k1,k2,k3,k4,k5 parameters that controls the evolunary
 c              behavior of gs
 c     q      : exponent

@@ -352,7 +352,7 @@ This allows the application of the chain rule such as
   \label{eq:fk2}
   \begin{split}
   \frac{\partial f_k}{\partial{g_k}} &= \frac{1}{q}   \bigg(\frac{\sqrt{6H}}{4} \bigg)^{1/q}  (-q) g_k^{-q-1}    f_k^{1-q}\\
-  &=g_k^{-q-1} f_k^{1-q}  \ \text{  if } H=8/3
+  &=-g_k^{-q-1} f_k^{1-q}  \ \text{  if } H=8/3
   \end{split}
 \end{eqnarray}
 
@@ -609,9 +609,8 @@ Likewise, $\partial\phi_h/\partial\sigma$ shown in Eq. \ref{eq:derv3} is more ex
 \newpage
 \section{Calculation procedure}
 \label{sec:prc}
-
-\begin{itemize}
-\item We start to calculate $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ and $\cos\chi$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}.
+  \begin{enumerate}[1)]
+    \item We start to calculate $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ and $\cos\chi$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}.
 \item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{s}$ in Eq. \ref{eq:dphib6}. This requires $\mathbb{C}^{el}$ and $\partial\bar{\sigma}/\partial\mathbf{\sigma}$.
 \item Obtain $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial \mathbf{s}$ in Eq. \ref{eq:dphib6_1}
 \item Also, obtain $\partial \mathbf{s_c}/\partial \mathbf{s}$ and $\partial \mathbf{s_o}/\partial\mathbf{s}$ in Eqs. \ref{eq:decomp2} and \ref{eq:decomp4}, respectively, that are dependent on $\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial\mathbf{s}$ and $\partial \hat{\mathbf{h}}/\partial\mathbf{s}$.
@@ -622,8 +621,8 @@ Likewise, $\partial\phi_h/\partial\sigma$ shown in Eq. \ref{eq:derv3} is more ex
 \item Obtain $\partial f_k/\partial \mathbf{s}$ in Eq. \ref{eq:dphib8}.
 \item Calculate $\partial \phi_b/\partial \mathbf{s}$ using Eq. \ref{eq:dphib1_} and $\partial \phi_b/\partial \mathbf{\sigma}$ through chain rule as in Eq. \ref{eq:derv4}.
 \item Plug $\partial \phi_b/\partial\mathbf{\sigma}$ and $\partial\phi_h/\partial\mathbf{\sigma}$ into Eq. \ref{eq:hah_deriv}.
-  \item Note that both $\partial \phi_b/\partial\mathbf{\sigma}$ and $\partial\phi_h/\partial\mathbf{\sigma}$ are dependent on $\partial\Phi/\partial\mathbf{\sigma}\ (=\partial\bar{\sigma}/\partial\mathbf{\sigma})$.
-\end{itemize}
+\item Note that both $\partial \phi_b/\partial\mathbf{\sigma}$ and $\partial\phi_h/\partial\mathbf{\sigma}$ are dependent on $\partial\Phi/\partial\mathbf{\sigma}\ (=\partial\bar{\sigma}/\partial\mathbf{\sigma})$.
+  \end{enumerate}
 
 
 

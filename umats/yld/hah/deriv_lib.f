@@ -40,12 +40,12 @@ c     dphi_hah  : derivative of the Homogeneous aniostropic yield surface
      $     dsig_ds(6,6),emic(6),dh_de(6),dgR,gk(4),e_ks(5),f_ks(2),
      $     ekrs(5),target(6),dso_ds(6,6),dsdp_ds(6,6),dgb_de(4),
      $     dfks_dgk(2),dfk_ds(2),dphih_dsig(6),dgs_ds(6),aux33(3,3),
-     $     bux33(3,3),dsp_ds(6,6),dphib_ds(6), dphib_dsig(6)
+     $     bux33(3,3),dsp_ds(6,6),dphib_ds(6),dphib_dsig(6),dfks_ds(6)
       real*8 dh_ds,deps_dsig,aux6,bux6,cux6,dhs_ds,dsc_ds,sdh,shhat,
      $     dfk_ds,dgR,gk,e_ks,f_ks,eeq,ref0,ref1,gL,ekL,eL,gS,c_ks,ss,
      $     ekrs,target,dso_ds,dsdp_ds,dfks_dgk,dgb_de,dfk_ds,sgn,
      $     dphih_dsig,dgs_deps,dgs_ds,aux33,bux33,dsp_ds,dsig_ds,
-     $     dphib_ds,dphib_dsig
+     $     dphib_ds,dphib_dsig,dfks_ds
       integer idx,i,j, ind
 
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,7 +87,12 @@ c     Step 8 - see Eq 30 in Ref [4]
       dphi_h(:)=dphi_h(:) / phi_h
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c     Step 9
-
+      call calc_dfk_ds(emic,sdev,deps_dsig,dsig_ds,gs,e_ks,yldc(9),
+     $     ref0,ref1,dfks_ds)
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Step 10
+      call calc_dphib_dsig(emic,sdev,dhs_ds,dfks_ds,f_ks,dphib_dsig)
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       return
       end subroutine hah_deriv
 
@@ -190,18 +195,18 @@ c     locals
       return
       end subroutine calc_deps_dsig
 c-----------------------------------------------------------------------
-      subroutine calc_dsig_ds(ntens,d)
+      subroutine calc_dsig_ds(ntens,dsig_ds)
       implicit none
       integer, intent(in) :: ntens
-      dimension d(ntens,ntens)
-      real*8, intent(out) :: d
+      dimension dsig_ds(ntens,ntens)
+      real*8, intent(out) :: dsig_ds
       real*8 onethird
       parameter (onethird=1d0/3d0)
       integer i,j,ndi,nshr
 cf2py intent(in) ntens
-cf2py intent(out) d
-cf2py depends(ntens) d
-      d(:,:)=0d0
+cf2py intent(out) dsig_ds
+cf2py depends(ntens) dsig_ds
+      dsig_ds(:,:)=0d0
       if (ntens.eq.3) then
          ndi=2
          nshr=1
@@ -214,14 +219,21 @@ cf2py depends(ntens) d
          call exit(-1)
       endif
       do 1 i=1,ntens
-         d(i,i) = 1d0
+         dsig_ds(i,i) = 1d0
  1    continue
       do 5 j=1,ndi
       do 5 i=1,ndi
-         d(i,j) = d(i,j) -  onethird
+         dsig_ds(i,j) = dsig_ds(i,j) +  onethird
  5    continue
       return
       end subroutine calc_dsig_ds
+c-----------------------------------------------------------------------
+      subroutine calc_ds_dsig(ds_dsig)
+      implicit none
+      dimension ds_dsig(6,6)
+      real*8, intent(out) :: ds_dsig
+
+      end subroutine calc_ds_dsig
 c-----------------------------------------------------------------------
 c     Calculate ds``/ds, dsp/ds
       subroutine calc_stress_deriv(dhs_ds,dh_ds,deps_dsig,
@@ -296,3 +308,80 @@ c     calculate dsp_ds - see Eq 12 in Ref [4]
  35   continue
       return
       end subroutine calc_stress_deriv
+c-----------------------------------------------------------------------
+c     Calculate \partial f_k /\partial s
+c     Refer to eq 23 in Ref [4]
+      subroutine calc_dfk_ds(emic,sdev,deps_dsig,dsig_ds,
+     $     gs,e_ks,q,ys_iso,ys_hah,dfk_ds)
+      implicit none
+      dimension emic(6),sdev(6),deps_dsig(6,6),dsig_ds(6,6),
+     $     gs(4),e_ks(5),dfk_ds(6)
+      real*8,intent(in):: emic,e_ks,q,ys_iso,ys_hah,sdev,deps_dsig,
+     $     dsig_ds
+      real**, intent(out)::dfk_ds
+c
+c     locals
+      integer i,j,ind
+      dimension dfks_dgs(2), dgs_deps(2), dfk_ds(6), gs_new(4),fks(2)
+      real*8 dfks_dgs, dgs_deps, dot_prod, sh,gs_new,fks
+
+c     calculate s:h
+      sh = dot_prod(6,3,3,emic,sdev)
+
+c     obtain dfk/dgk and dgks/deps
+c     gs_new and fks are dummy in this subroutine
+      call calc_bau(6,3,3,emic,sdev,gs,e_ks,q,ys_iso,
+     $     ys_hah,fks,gs_new,dfks_dgs,dgs_deps)
+
+c     obtain dfk_ds
+      if (sign(1d0,sh).ge.0) then
+         ind=1
+      else
+         ind=2
+      endif
+      do 10 i=1,6
+      do 10 j=1,3
+         dfk_ds(i) = dfk_ds(i) + dfk_dgs(ind) * dgs_deps(ind) *
+     $        deps_dsig(j)*dsig_ds(j,i)
+         dfk_ds(i) = dfk_ds(i) + dfk_dgs(ind) * dgs_deps(ind) *
+     $        deps_dsig(j+3)*dsig_ds(j+3,i) * 2d0
+ 10   continue
+      end subroutine calc_dfk_ds
+c-----------------------------------------------------------------------
+      subroutine calc_dphib_dsig(emic,sdev,dhs_ds,dfk_ds,f_ks,
+     $     dphib_dsig)
+c     Arguments
+c     emic
+c     sdev
+c     dhs_ds
+c     dfk_ds
+c     f_ks
+c     dphib_ds
+      dimension emic(6), sdev(6), dhs_ds(6),dfk_ds(6),dphib_ds(6),
+     $     dphib_dsig(6),f_ks(2)
+      real*8, intent(in)::emic,sdev,dhs_ds,dfk_ds,f_ks
+      real*8, intent(out)::dphib_ds,dphib_dsig
+c     locals
+      real*8 sh, dot_prod
+      integer i, ind
+
+      call calc_dsig_ds(6,dsig_ds)
+
+c     calculate s:h
+      sh = dot_prod(6,3,3,emic,sdev)
+c     obtain dfk_ds
+      if (sign(1d0,sh).ge.0) then
+         ind=1
+      else
+         ind=2
+      endif
+c     Eq 38.
+      dphib_dsig(:) = 2.d0 *  sign(1d0,sh) * (dfk_ds(:)*sh +f_ks(ind)*
+     $     dhs_ds(:))
+c     Eq. 31.
+      do 10 i=1,6
+      do 10 j=1,3
+
+ 10   continue
+      return
+      end subroutine calc_dphib_dsig

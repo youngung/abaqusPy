@@ -199,11 +199,9 @@ c     b     : tensor in n-dimension
 
       dot_prod=0d0
       do 5 i=1,3
-         dot_prod = dot_prod + aux6(i) * bux6(i)
+         dot_prod = dot_prod + aux6(i)   * bux6(i)
+         dot_prod = dot_prod + aux6(i+3) * bux6(i+3)*2d0
  5    continue
-      do 10 i=4,6 ! shear temrs
-         dot_prod = dot_prod + 2d0*aux6(i) * bux6(i)
- 10   continue
 
       if (idiaw) then
          call w_chr(imsg,'Exit DOT_PROD')
