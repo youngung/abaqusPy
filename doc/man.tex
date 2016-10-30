@@ -241,12 +241,11 @@ The derivative of $\mathbf{s_c}$ with respect to $\mathbf{s}$ is
 \begin{eqnarray}
   \begin{split}
   \label{eq:decomp2}
-  \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}}&= \frac{8}{3}\bigg\{  \frac{\partial(\mathbf{s}:\hat{\mathbf{h}})}{\partial\mathbf{s}} \otimes \hat{\mathbf{h}}+ (\mathbf{s}:\hat{\mathbf{h}}) \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{s}}  \bigg\} \\
-  \bigg( \frac{\partial s_c}{\partial s}\bigg)_{ij,kl} &= \frac{8}{3}\Bigg\{ \bigg(\frac{\partial(s_{mn}\hat{h}_{mn})}{\partial s}\bigg)_{ij} \otimes \hat{h}_{kl}+ (s_{mn}\hat{h}_{mn}) \bigg(\frac{\partial\hat{h}}{\partial s}\bigg)_{ij,kl}  \Bigg\}
+  \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}}&= \frac{8}{3}\bigg\{  \frac{\partial(\mathbf{s}:\hat{\mathbf{h}})}{\partial\mathbf{s}} \otimes \hat{\mathbf{h}}\bigg\} \\
+  \bigg( \frac{\partial s_c}{\partial s}\bigg)_{ij,kl} &= \frac{8}{3}\Bigg\{ \bigg(\frac{\partial(s_{mn}\hat{h}_{mn})}{\partial s}\bigg)_{ij}\hat{h}_{kl} \Bigg\}=\frac{8}{3}\Bigg\{\frac{1}{2}(\delta_{mi}\delta_{nj}+\delta_{mj}\delta_{ni})\hat{h}_{mn}\hat{h}_{kl} \Bigg\}\\
+  &=\frac{8}{3}\Bigg\{\frac{1}{2}(\hat{h}_{ij}+\hat{h}_{ji})\hat{h}_{kl} \Bigg\}.
   \end{split}
 \end{eqnarray}
-
-The terms $\big\{\partial \big( s_{mn} \hat{h}_{mn} \big)/ \partial s\big\}_{ij}$ and $\big(\partial \hat{h}/\partial s\big)_{ij,kl}$ will be discussed later in Eqs. \ref{eq:dphib6_1} and \ref{eq:dphib6}, respectively.
 
 The orthogonal component is defined as:
 \begin{eqnarray}
@@ -258,8 +257,7 @@ The derivative is then
   \label{eq:decomp4}
   \begin{split}
     \frac{\partial\mathbf{s_o}}{\partial\mathbf{s}} &= \mathbf{I} -   \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}}\\
-    \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij,kl} &= I_{ij,kl} -   \bigg(\frac{\partial s_c}{\partial s}\bigg)_{ij,kl}\\
-     &= I_{ij,kl} -  \frac{8}{3}\bigg\{ \bigg(\frac{\partial(s_{mn}\hat{h}_{mn})}{\partial s}\bigg)_{ij} \otimes \hat{h}_{kl}+ (s_{mn}\hat{h}_{mn}) \bigg(\frac{\partial\hat{h}}{\partial s}\bigg)_{ij,kl}  \bigg\}
+    \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij,kl} &= \frac{1}{2}(\delta_{ik}\delta_{jl}+\delta_{il}\delta_{jk})- \bigg(\frac{\partial s_c}{\partial s}\bigg)_{ij,kl}
   \end{split}
 \end{eqnarray}
 
@@ -273,17 +271,9 @@ Its derivative is obtained as
 \begin{eqnarray}
   \begin{split}
     \label{eq:latent_decompose2}
-    \frac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{s}} &=\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} + g_L^{-1} \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}}+\frac{\partial g_L^{-1}}{\partial\mathbf{s}}\otimes\mathbf{s}_o\\
-    &=\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} + g_L^{-1} \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}}+\frac{\partial g_L^{-1}}{\partial\bar{\varepsilon}}\frac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}}\otimes \frac{\partial\mathbf{\sigma}}{\partial\mathbf{s}}:\mathbf{s}_o \\
-    \bigg(\frac{\partial s^{\prime\prime}}{\partial s}\bigg)_{ij,kl} &=\bigg( \frac{\partial s_c}{\partial s}\bigg)_{ij,kl} + g_L^{-1} \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij,kl}-g_L^{-2}\frac{\partial g_L}{\partial\bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{ij}\bigg(\frac{\partial\sigma}{\partial s}\bigg)_{kl,mn}(s_o)_{mn} \\
+    \frac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{s}} &=\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} + g_L^{-1} \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}}.
   \end{split}
 \end{eqnarray}
-Note that $\big(\partial s_c / \partial s\big)_{ij,kl}$ is available in Eq. \ref{eq:decomp2} and $\big(\partial s_o/\partial s\big)_{ij,kl}$ Eq. in \ref{eq:decomp4}.
-The latent hardening parameter $g_L$ follows below evolutionary behavior according to \cite{barlat2011alternative}:
-\begin{equation}
-  \label{eq:latent_deriv}
-\frac{\partial g_L}{\partial\bar{\varepsilon}} = k_L\bigg[\frac{\bar{\sigma}(\bar{\varepsilon})-\bar{\sigma}(0)}{\bar{\sigma}(\bar{\varepsilon})}\Big(\sqrt{L(1-\cos^2\chi)+\cos^2\chi}-1\Big)+1-g_L\bigg]
-\end{equation}
 
 
 The stress used for cross hardening goes through below transformation.
@@ -295,39 +285,10 @@ Its derivative with respect to the deviatoric stress can be obtained as:
 \begin{eqnarray}
   \begin{split}
     \label{eq:cross_linear2}
-    \frac{\partial\mathbf{s}_p}{\partial\mathbf{s}}                 &= -4 \frac{\partial g_s}{\partial\mathbf{s}} \mathbf{s}_o + 4(1-g_s) \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}} \\
-    \bigg(\frac{\partial s_p}{\partial s} \bigg)_{ij,kl} &= -4 \bigg(\frac{\partial g_s}{\partial s}\bigg)_{ij}\otimes (s_o)_{kl} + 4(1-g_s) \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij,kl}
+    \frac{\partial\mathbf{s}_p}{\partial\mathbf{s}}                 &= 4(1-g_s) \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}} \\
+    \bigg(\frac{\partial s_p}{\partial s} \bigg)_{ij,kl} &=  4(1-g_s) \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij,kl}
   \end{split}
 \end{eqnarray}
-
-$\partial g_s/ \partial s$ is obtained as below:
-
-\begin{eqnarray}
-  \begin{split}
-    \label{eq:cross_linear3}
-    \frac{\partial g_s}{\partial\mathbf{s}}         &=\frac{\partial g_s}{\partial \bar{\varepsilon}} \frac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}} \frac{\partial\mathbf{\sigma}}{\partial\mathbf{s}}\\
-    \bigg(\frac{\partial g_s}{\partial s}\bigg)_{ij}&=\frac{\partial g_s}{\partial \bar{\varepsilon}} \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{kl} \bigg(\frac{\partial\sigma}{\partial s}\bigg)_{kl,ij}
-  \end{split}
-\end{eqnarray}
-
-
-\begin{eqnarray}
-  \label{eq:cross_linear4}
-  \frac{\partial g_s}{\partial \bar{\varepsilon}} = k_s\big[ 1+ (S-1)\cos^2\chi - g_s\big]
-\end{eqnarray}
-
-Using Eqs. \ref{eq:cross_linear3} and \ref{eq:decomp4}, Eq. \ref{eq:cross_linear2} becomes as below
-\begin{equation}
-  \label{eq:cross_linear2_}
-  \begin{split}
-    \bigg(\frac{\partial s_p}{\partial s} \bigg)_{ij,kl} &= -4
-    \frac{\partial g_s}{\partial \bar{\varepsilon}} \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{mn} \bigg(\frac{\partial\sigma}{\partial s}\bigg)_{mn,ij}
-    \otimes (s_o)_{kl} +\\
-    &4(1-g_s)
-    \Bigg[I_{ij,kl} -  \frac{8}{3}\bigg\{ \bigg(\frac{\partial(s_{mn}\hat{h}_{mn})}{\partial s}\bigg)_{ij} \otimes \hat{h}_{kl}+ (s_{mn}\hat{h}_{mn}) \bigg(\frac{\partial\hat{h}}{\partial s}\bigg)_{ij,kl}  \bigg\}
-    \Bigg]
-  \end{split}
-\end{equation}
 
 
 \newpage
@@ -335,11 +296,11 @@ Using Eqs. \ref{eq:cross_linear3} and \ref{eq:decomp4}, Eq. \ref{eq:cross_linear
 \label{sec:bauschinger}
 
 
-The term $\partial f_k/\partial\mathbf{s}$ depends on the evolutionary behavior of $f_k$ with respect to equivalent strain $\bar{\varepsilon}$.
+The term $\partial f_k/\partial\mathbf{\sigma}$ depends on the evolutionary behavior of $f_k$ with respect to equivalent strain $\bar{\varepsilon}$.
 This allows the application of the chain rule such as
 \begin{eqnarray}
   \label{eq:dphib7}
-  \frac{\partial f_k}{\partial\mathbf{s}}=\frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}  \frac{\partial{\bar{\varepsilon}}}{\partial\mathbf{\sigma}} \frac{\partial\mathbf{\sigma}}{\partial\mathbf{s}}.
+  \frac{\partial f_k}{\partial\mathbf{\sigma}}=\frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}  \frac{\partial{\bar{\varepsilon}}}{\partial\mathbf{\sigma}}.
 \end{eqnarray}
 
 \begin{eqnarray}
@@ -381,10 +342,10 @@ whereas, if $\hat{\mathbf{h}}:\mathbf{s}\ge0$,
   \frac{\partial{g_2}}{\partial{\bar{\varepsilon}}}=k_1 \frac{g_3-g_2}{g_2}
 \end{eqnarray}
 
-With explictly indices, the above is expressed as:
+With explicit indices, the above is expressed as:
 \begin{equation}
   \label{eq:dphib8}
-  \bigg(\frac{\partial f_k}{\partial s}\bigg)_{ij} = \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}  \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{kl} \bigg(\frac{\partial\sigma}{\partial s}\bigg)_{kl,ij}.
+  \bigg(\frac{\partial f_k}{\partial \sigma}\bigg)_{ij} = \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}  \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{kl}.
 \end{equation}
 
 
@@ -449,18 +410,12 @@ By combining Eqs. \ref{eq:derv1} and \ref{eq:derv2}, below equation is obtained:
 \end{eqnarray}
 
 
-\subsection{Derivatives of fluctuating term $\frac{\partial{\phi_b}  }{\partial{\mathbf{\sigma}}}$}
+\subsection{Derivatives of fluctuating term $\partial\phi_b/\partial\mathbf{\sigma}$}
 \label{sec:2.2}
 
 
-Likewise, the derivative of the fluctuating term is obtained using the chain rule as follows:
-\begin{eqnarray}
-  \label{eq:derv4}
-  \frac{\partial{\phi_b}  }{\partial{\mathbf{\sigma}}}  =   \frac{\partial{\phi_b}}{\partial{\mathbf{s}}} \frac{\partial{\mathbf{s}}}{\partial{\mathbf{\sigma}}}.
-\end{eqnarray}
 
-$\phi_b$ depends on the sign of $\hat{\mathbf{h}}:\mathbf{s}$ as shown in Eq. \ref{eq:fluc}.
-
+The term $\phi_b$ depends on the sign of $\hat{\mathbf{h}}:\mathbf{s}$ as shown in Eq. \ref{eq:fluc}.
 When $\hat{\mathbf{h}}:\mathbf{s}\ge0$, Eq. \ref{eq:fluc} reduces to
 \begin{eqnarray}
     \label{eq:fluc1}
@@ -483,73 +438,72 @@ with the index $k$ being dependent on the sign of $\hat{\mathbf{h}}:\mathbf{s}$.
 The derivative $\partial\phi_b/\partial\mathbf{s}$ can be expressed as:
 \begin{eqnarray}
     \label{eq:dphib1}
-\frac{\partial{\phi_b}}{\partial{\mathbf{s}}} = 2\frac{\partial{f_k}}{\partial{\mathbf{s}}} |\hat{\mathbf{h}}:\mathbf{s}| + 2 f_k \frac{\partial{|\hat{\mathbf{h}}:\mathbf{s}|}}{\partial{\mathbf{s}}}
+    \frac{\partial\phi_b}{\partial\mathbf{\sigma}} = 2\frac{\partial f_k}{\partial\mathbf{\sigma}}|\hat{\mathbf{h}}:\mathbf{s}| + 2 f_k \frac{\partial|\hat{\mathbf{h}}:\mathbf{s}|}{\partial\mathbf{\sigma}}
 \end{eqnarray}
 
-The term $\partial|\hat{\mathbf{h}}:\mathbf{s}|/\partial\mathbf{s}$ takes on either the below depending on the sign of $\hat{\mathbf{h}}:\mathbf{s}$.
+The term $\partial|\hat{\mathbf{h}}:\mathbf{s}|/\partial\mathbf{\sigma}$ takes on either the below depending on the sign of $\hat{\mathbf{h}}:\mathbf{s}$.
 \begin{eqnarray}
   \label{eq:dphib2}
-  \frac{\partial{|\hat{\mathbf{h}}:\mathbf{s}|}}{\partial{\mathbf{s}}} &=&  \frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}}   \text{  when } \hat{\mathbf{h}}:\mathbf{s}\ge0\\
+  \frac{\partial |\hat{\mathbf{h}}:\mathbf{s}| }{\partial \mathbf{\sigma}} &=&  \frac{\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)}{\partial\mathbf{\sigma}}   \text{  when } \hat{\mathbf{h}}:\mathbf{s}\ge0\\
   \label{eq:dphib2_}
-                                                                       &=& -\frac{\partial{\hat{\mathbf{h}}:\mathbf{s}}}{\partial{\mathbf{s}}}   \text{  when } \hat{\mathbf{h}}:\mathbf{s} < 0
+&=&- \frac{\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)}{\partial\mathbf{\sigma}}   \text{  when } \hat{\mathbf{h}}:\mathbf{s} < 0
 \end{eqnarray}
 
 Substituting Eqs. \ref{eq:dphib2} and \ref{eq:dphib2_} to \ref{eq:dphib1} gives
 \begin{equation}
   \label{eq:dphib1_}
   \begin{split}
-    \frac{\partial\phi_b}{\partial\mathbf{s}}          &= 2\ \text{sgn}(\hat{\mathbf{h}}:\mathbf{s}) \bigg[  \frac{\partial{f_k}}{\partial{\mathbf{s}}} (\hat{\mathbf{h}}:\mathbf{s}) + f_k \frac{\partial\big({\hat{\mathbf{h}}:\mathbf{s}}\big)}{\partial{\mathbf{s}}} \bigg]\\
-    \bigg(\frac{\partial\phi_b}{\partial s}\bigg)_{ij} &= 2\ \text{sgn}(\hat{h}_{mn}s_{mn}) \bigg[  \bigg(\frac{\partial f_k}{\partial s}\bigg)_{ij} (\hat{h}_{mn}s_{mn}) + f_k \bigg(\frac{\partial\big({\hat{h}_{mn}s_{mn}}\big)}{\partial s}\bigg)_{ij} \bigg]\\
+    \frac{\partial\phi_b}{\partial\mathbf{\sigma}}          &= 2\ \text{sgn}(\hat{\mathbf{h}}:\mathbf{s}) \bigg[  \frac{\partial{f_k}}{\partial{\mathbf{\sigma}}} (\hat{\mathbf{h}}:\mathbf{s}) + f_k \frac{\partial\big({\hat{\mathbf{h}}:\mathbf{s}}\big)}{\partial{\mathbf{\sigma}}} \bigg]\\
+    \bigg(\frac{\partial\phi_b}{\partial \sigma}\bigg)_{ij} &= 2\ \text{sgn}(\hat{h}_{mn}s_{mn}) \bigg[  \bigg(\frac{\partial f_k}{\partial \sigma}\bigg)_{ij} (\hat{h}_{mn}s_{mn}) + f_k \bigg(\frac{\partial\big({\hat{h}_{mn}s_{mn}}\big)}{\partial \sigma}\bigg)_{ij} \bigg]\\
   \end{split}
 \end{equation}
 
 
-\subsubsection{$\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/ \partial\mathbf{s}$ }
+\subsubsection{$\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/ \partial\mathbf{\sigma}$ }
 \label{sec:3.2.1}
 
 
-The derivative  $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/ \partial\mathbf{s}$ is obtained as:
-\begin{eqnarray}
+The derivative  $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/ \partial\mathbf{\sigma}$ is obtained as:
+\begin{equation}
   \begin{split}
     \label{eq:dphib3}
-    \frac{\partial \big(\hat{\mathbf{h}}:\mathbf{s} \big)  } {\partial{\mathbf{s}}} &= \frac{\partial{\hat{\mathbf{h}}}}{\partial{\mathbf{s}}} : \mathbf{s} +\hat{\mathbf{h}}:\mathbf{I}\\
-    \bigg(\frac{\partial \big(\hat{h}:s \big)  } {\partial s}\bigg)_{ij} &= \bigg(\frac{\partial\hat{h}}{\partial s}\bigg)_{ij,kl} s_{kl} +\hat{h}_{kl}I_{kl,ij}
+    \frac{\partial \big(\hat{\mathbf{h}}:\mathbf{s} \big)  } {\partial\mathbf{\sigma}} &= \frac{\partial \hat{\mathbf{h}}}{\partial\mathbf{\sigma}} : \mathbf{s} +\hat{\mathbf{h}}:\frac{\partial \mathbf{s}}{\partial\mathbf{\sigma}}\\
+    \bigg(\frac{\partial \big(\hat{h}:s \big)  } {\partial \sigma}\bigg)_{ij} &= \bigg(\frac{\partial\hat{h}}{\partial \sigma}\bigg)_{ij,kl} s_{kl} +\hat{h}_{kl}\frac{\partial s}{\partial\sigma}_{kl,ij}
   \end{split}
-\end{eqnarray}
+\end{equation}
 
-The term $ \partial\hat{\mathbf{h}}/ \partial\mathbf{s} $ can be obtained through:
-\begin{eqnarray}
+The term $ \partial\hat{\mathbf{h}}/ \partial\mathbf{\sigma} $ can be obtained through:
+\begin{equation}
   \label{eq:dphib4}
-\frac{\partial{\hat{\mathbf{h}}}}{\partial{\mathbf{s}}}=\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}}   \frac{\partial{\bar{\varepsilon}}}{\partial{\mathbf{\sigma}}}    \frac{\partial{\mathbf{\sigma}}}{\partial{\mathbf{s}}}
-\end{eqnarray}
+\frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{\sigma}}=\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}}   \frac{\partial{\bar{\varepsilon}}}{\partial{\mathbf{\sigma}}}
+\end{equation}
 
-$\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}} $ can be obtained using the evolutionary rule of $\hat{\mathbf{h}}$.
-Note that $\frac{\partial{\bar{\mathbf{\varepsilon}}}}{\partial{\mathbf{\sigma}}}$ can be obtained using the normality rule:
-\begin{eqnarray}
+$\partial\hat{\mathbf{h}}/\partial\bar{\varepsilon} $ can be obtained using the evolutionary rule of $\hat{\mathbf{h}}$.
+Note that $\partial\bar{\mathbf{\varepsilon}}/\partial\mathbf{\sigma}$ can be obtained using the normality rule:
+\begin{equation}
   \label{eq:dphib5}
-  \frac{\partial{\mathbf{\sigma}}}{\partial{\bar{\varepsilon}}} = - \mathbb{C}^{el} : \frac{\partial{\bar{\sigma}}}{\partial{\mathbf{\sigma}}} = -\mathbb{C}^{el}_{ij,kl} \bigg(\frac{\partial\bar{\sigma}}{\partial\sigma}\bigg)_{kl},
-\end{eqnarray}
+  \frac{\partial{\mathbf{\sigma}}}{\partial{\bar{\varepsilon}}} = - \mathbb{C}^{el} : \frac{\partial\Phi}{\partial{\mathbf{\sigma}}} = -\mathbb{C}^{el}_{ij,kl} \bigg(\frac{\partial\Phi}{\partial\sigma}\bigg)_{kl}
+\end{equation}
 which leads to
 \begin{equation}
   \label{eq:dphib6}
   \begin{split}
-    \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{s}}   &=\frac{\partial\hat{\mathbf{h}}}{\partial\bar{\varepsilon}} \bigg\{ \Big\{- \mathbb{C}^{el} : \frac{\partial\bar{\sigma}}{\partial\mathbf{\sigma}}\Big\}^{-1} :  \frac{\partial\mathbf{\sigma}}{\partial\mathbf{s}}\bigg\}\\
-    \bigg(\frac{\partial\hat{h}}{\partial s}\bigg)_{ij,kl}&=\bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg[ \bigg\{- \mathbb{C}^{el}_{op,mn} \Big(\frac{\partial\bar{\sigma}}{\partial\sigma}\Big)_{mn}\bigg\}^{-1} \bigg(\frac{\partial\sigma}{\partial s}\bigg)_{op,kl}\bigg]\\
-                                                          &=\bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg[ \bigg\{- \mathbb{C}^{el}_{op,mn} \Big(\frac{\partial\bar{\sigma}}{\partial\sigma}\Big)_{mn}\bigg\}^{-1} \bigg(\frac{\partial\sigma}{\partial s}\bigg)_{op,kl}\bigg]
+      \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{\sigma}} &=\frac{\partial\hat{\mathbf{h}}}{\partial\bar{\varepsilon}}\otimes \bigg\{ \Big\{- \mathbb{C}^{el} : \frac{\partial\Phi}{\partial\mathbf{\sigma}}\Big\}^{-1} \bigg\}\\
+    \bigg(\frac{\partial\hat{h}}{\partial \sigma}\bigg)_{ij,l}&=\bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg\{- \mathbb{C}^{el}_{kl,mn} \Big(\frac{\partial\Phi}{\partial\sigma}\Big)_{mn}\bigg\}^{-1}
   \end{split}
 \end{equation}
 Substitute Eq. \ref{eq:dphib6} to Eq. \ref{eq:dphib3} to have
 \begin{equation}
   \label{eq:dphib6_1}
   \begin{split}
-    \frac{\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)  }{\partial\mathbf{s}}&=\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}}  \bigg\{ \Big\{- \mathbb{C}^{el} : \frac{\partial{\bar{\sigma}}}{\partial{\mathbf{\sigma}}}\Big\}^{-1} :  \frac{\partial{\mathbf{\sigma}}}{\partial{\mathbf{s}}}\bigg\}:\mathbf{s} + \hat{\mathbf{h}}:\mathbf{I}\\
-    \bigg(\frac{\partial \big(\hat{h}:s\big)  }{\partial s}\bigg)_{ij} & = \bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg\{\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{mn}  \bigg(\frac{\partial{\mathbf{\sigma}}}{\partial{\mathbf{s}}}\bigg)_{mn,kl} s_{kl}\bigg\} + \hat{h}_{kl}I_{kl,ij},
+    \frac{\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)  }{\partial\mathbf{\sigma}}&=\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}} \bigg\{ \Big\{- \mathbb{C}^{el} : \frac{\partial \Phi}{\partial{\mathbf{\sigma}}}\Big\}^{-1}:\mathbf{s}\bigg\} + \hat{\mathbf{h}}:\frac{\partial\mathbf{s}}{\partial\mathbf{\sigma}}\\
+    \bigg(\frac{\partial \big(\hat{h}:s\big)}{\partial \sigma}\bigg)_{ij} & = \bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg\{\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{mn} s_{mn}\bigg\} + \hat{h}_{mn}\bigg(\frac{\partial s}{\partial \sigma}\bigg)_{mn,ij},
   \end{split}
 \end{equation}
 where $\partial \hat{\mathbf{h}}/ \partial\bar{\varepsilon}$ is given in Eq. \ref{eq:dmicro1}.
 
 
-\subsubsection{Calculation procedure on $\big(\partial\phi_b/\partial s\big)_{ij}$}
+\subsubsection{Calculation procedure on $\big(\partial\phi_b/\partial \sigma\big)_{ij}$}
 \label{sec:calc}
 
 
@@ -558,71 +512,37 @@ Substitution of Eqs. \ref{eq:dphib8} and \ref{eq:dphib6_1} into Eq. \ref{eq:dphi
 \begin{equation}
   \label{eq:dphib_main}
   \begin{split}
-    \bigg(\frac{\partial\phi_b}{\partial s}\bigg)_{ij} &= 2\ \text{sgn}(\hat{h}_{mn}s_{mn}) \bigg[(\hat{h}_{mn}s_{mn})
+    \bigg(\frac{\partial\phi_b}{\partial \sigma}\bigg)_{ij} &= 2\ \text{sgn}(\hat{h}_{mn}s_{mn}) \bigg[(\hat{h}_{mn}s_{mn})
     \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}
     \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{kl}
-    \bigg(\frac{\partial\sigma}{\partial s}\bigg)_{kl,ij} \\
+   \\
     &+ f_k\bigg\{
-    \bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg\{\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{mn}  \bigg(\frac{\partial{\mathbf{\sigma}}}{\partial{\mathbf{s}}}\bigg)_{mn,kl} s_{kl}\bigg\} + \hat{h}_{kl}I_{kl,ij}
+    \bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg\{\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{mn} s_{mn}\bigg\} + \hat{h}_{kl} \bigg(\frac{\partial s}{\partial \sigma}\bigg)_{kl,ij}
       \bigg\}
     \bigg]
   \end{split}
 \end{equation}
 
-Using the chain rule in Eq. \ref{eq:derv4},
-\begin{equation}
-  \label{eq:dphib_dsig}
-  \begin{split}
-    \bigg(\frac{\partial\phi_b}{\partial\sigma}\bigg)_{ij} &=
-    2\ \text{sgn}(\hat{h}_{mn}s_{mn}) \bigg[(\hat{h}_{mn}s_{mn})
-    \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}
-    \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{kl}
-    \bigg(\frac{\partial\sigma}{\partial s}\bigg)_{kl,op} \\
-    &+ f_k\bigg\{
-    \bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{op} \bigg\{\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{mn}  \bigg(\frac{\partial \mathbf{\sigma}}{\partial \mathbf{s}}\bigg)_{mn,kl} s_{kl}\bigg\} + \hat{h}_{kl}I_{kl,op}
-      \bigg\}
-    \bigg] \bigg(\frac{\partial s}{\partial\sigma}\bigg)_{op,ij}
-  \end{split}
-\end{equation}
-
-Note that the above equation is an implicit function of $\partial\Phi/\partial\sigma\ $(i.e., $\partial\bar{\sigma}/\partial \sigma$) through $\partial\bar{\varepsilon}/\partial\sigma$ as shown in Eq. \ref{eq:dphib5}.
-
-Likewise, $\partial\phi_h/\partial\sigma$ shown in Eq. \ref{eq:derv3} is more explicitly demonstrated in what follows.
+Note that the above equation is an implicit function of $\partial\Phi/\partial\sigma\ $(i.e., $\partial\Phi/\partial \sigma$) through $\partial\bar{\varepsilon}/\partial\sigma$ as shown in Eq. \ref{eq:dphib5}.
 
 
-\begin{equation}
-  \label{eq:dphih_dsig}
-  \begin{split}
-    \Big(\frac{\partial\phi_h}{\partial\sigma}\Big)_{ij} = \frac{1}{2\phi_h}\Bigg[& 2\psi(s^{\prime\prime})\Big(\frac{\partial\psi(s^{\prime\prime})}{\partial s^{\prime\prime}}\Big)_{kl}
-    \bigg\{
-    \bigg( \frac{\partial s_c}{\partial s}\bigg)_{kl,mn} + \eta \bigg(I_{kl,mn} -   \bigg(\frac{\partial s_c}{\partial s}\bigg)_{kl,mn} \bigg)
-    \bigg\} + \\
-    & 2\psi(s_p) \Big(\frac{\partial \psi(s_p) }{\partial s_p}\Big)_{kl}
-    \Big(
-    \frac{\partial s_p}{\partial s}
-    \Big)_{kl,mn}
-    \Bigg]
-    \Big(\frac{\partial s}{\partial \sigma}\Big)_{mn,ij}
-  \end{split}
-\end{equation}
 
 \newpage
 \section{Calculation procedure}
 \label{sec:prc}
-  \begin{enumerate}[1)]
-    \item We start to calculate $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ and $\cos\chi$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}.
-\item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{s}$ in Eq. \ref{eq:dphib6}. This requires $\mathbb{C}^{el}$ and $\partial\bar{\sigma}/\partial\mathbf{\sigma}$.
-\item Obtain $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial \mathbf{s}$ in Eq. \ref{eq:dphib6_1}
-\item Also, obtain $\partial \mathbf{s_c}/\partial \mathbf{s}$ and $\partial \mathbf{s_o}/\partial\mathbf{s}$ in Eqs. \ref{eq:decomp2} and \ref{eq:decomp4}, respectively, that are dependent on $\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial\mathbf{s}$ and $\partial \hat{\mathbf{h}}/\partial\mathbf{s}$.
-\item Obtain $\partial g_s/\partial\bar{\varepsilon}$ and $\partial g_s/\partial\mathbf{s}$ in Eqs. \ref{eq:cross_linear3} and \ref{eq:cross_linear4}.
-\item Obtain $\partial \mathbf{s_p}/\partial\mathbf{s}$ using Eq. \ref{eq:cross_linear2_}.
+\begin{enumerate}[1)]
+\item We start to calculate $\cos\chi$ and $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}, respectively.
+\item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib6}. This also requires $\mathbb{C}^{el}$ and $\partial\Phi/\partial\mathbf{\sigma}$.
+\item Obtain $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib3}
+\item Also, obtain $\partial \mathbf{s_c}/\partial \mathbf{s}$ and $\partial \mathbf{s_o}/\partial\mathbf{s}$ in Eqs. \ref{eq:decomp2} and \ref{eq:decomp4}, respectively.
+\item Obtain $\partial \mathbf{s_p}/\partial\mathbf{s}$ using Eq. \ref{eq:cross_linear2}.
 \item Obtain $\partial\mathbf{s}^{\prime\prime}/\partial\mathbf{s}$ using $\partial \mathbf{s_c}/\partial \mathbf{s}$.
-\item Plug $\partial\mathbf{s}^{\prime\prime}/\partial\mathbf{s}$ and  $\partial \mathbf{s_p}/\partial\mathbf{s}$ into Eq. \ref{eq:dphih_dsig} to obtain $\partial\phi_h/\partial\mathbf{\sigma}$.
-\item Obtain $\partial f_k/\partial \mathbf{s}$ in Eq. \ref{eq:dphib8}.
-\item Calculate $\partial \phi_b/\partial \mathbf{s}$ using Eq. \ref{eq:dphib1_} and $\partial \phi_b/\partial \mathbf{\sigma}$ through chain rule as in Eq. \ref{eq:derv4}.
+\item Plug $\partial\mathbf{s}^{\prime\prime}/\partial\mathbf{s}$ and  $\partial \mathbf{s_p}/\partial\mathbf{s}$ into Eq. \ref{eq:derv3} to obtain $\partial\phi_h/\partial\mathbf{\sigma}$.
+\item Obtain $\partial f_k/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib8}.
+\item Calculate $\partial \phi_b/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib1_}
 \item Plug $\partial \phi_b/\partial\mathbf{\sigma}$ and $\partial\phi_h/\partial\mathbf{\sigma}$ into Eq. \ref{eq:hah_deriv}.
-\item Note that both $\partial \phi_b/\partial\mathbf{\sigma}$ and $\partial\phi_h/\partial\mathbf{\sigma}$ are dependent on $\partial\Phi/\partial\mathbf{\sigma}\ (=\partial\bar{\sigma}/\partial\mathbf{\sigma})$.
-  \end{enumerate}
+% \item Note that both $\partial \phi_b/\partial\mathbf{\sigma}$ and $\partial\phi_h/\partial\mathbf{\sigma}$ are dependent on $\partial\Phi/\partial\mathbf{\sigma}.$
+\end{enumerate}
 
 
 
