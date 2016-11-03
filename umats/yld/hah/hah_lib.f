@@ -67,21 +67,21 @@ c
       endif
       return
       end subroutine hah_decompose
-c-----------------------------------------------------------------------
-c     See eq 31 in Ref [1]
-c     See
-      subroutine calc_sp(ntens,gS,sp,dsp_ds)
-      integer,intent(in) :: ntens
-      dimension sp(ntens),dps_ds(ntens,ntens)
-      real*8, intent(in) :: gS
-      real*8, intent(out) :: sp,dsp_ds
-
-      integer i,j
-
-      sp(:) = 4d0*(1d0-
-
-      return
-      end subroutine calc_sp
+c$$$c-----------------------------------------------------------------------
+c$$$c     See eq 31 in Ref [1]
+c$$$c     See
+c$$$      subroutine calc_sp(ntens,gS,sp,dsp_ds)
+c$$$      integer,intent(in) :: ntens
+c$$$      dimension sp(ntens),dps_ds(ntens,ntens)
+c$$$      real*8, intent(in) :: gS
+c$$$      real*8, intent(out) :: sp,dsp_ds
+c$$$
+c$$$      integer i,j
+c$$$
+c$$$      sp(:) = 4d0*(1d0-
+c$$$
+c$$$      return
+c$$$      end subroutine calc_sp
 c-----------------------------------------------------------------------
 c     Return a 'hat' property of the given tensor <tensor6>
 c     Refer to eq 1 in Ref [1]
@@ -121,18 +121,23 @@ c     Note
 c     ----
 c     Operation is cummutative
       implicit none
-      integer,intent(in)::ntens,ndi,nshr
+      integer,intent(in)::ntens
       dimension a(ntens),b(ntens)
       real*8, intent(in) ::a,b
       real*8, intent(out)::val
       dimension ahat(6),bhat(6),aux6(6),bux6(6)
-      real*8 H,dot_prod,ahat,bhat,aux6
+      real*8 H,dot_prod,ahat,bhat,aux6,bux6
+      integer ndi,nshr
 cf2py intent(in) a,b,ntens
 cf2py intent(out) val
       if (ntens.eq.6) then
+         ndi=3
+         nshr=3
          aux6(:)=a(:)
          bux6(:)=b(:)
-      elseif (nten.eq.3) then
+      elseif (ntens.eq.3) then
+         ndi=2
+         nshr=1
          call cnv_3to6_dev(a,aux6)
          call cnv_3to6_dev(b,bux6)
       else
@@ -370,7 +375,7 @@ c     Reference stress state: uniaxial tension along axis 1
 c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
       call latent(iyld_choice,ntens,ndi,nshr,nyldp,nyldc,
      $     cauchy_ref,yldp,yldc,phi)
-      ref = phi**yldc(9)
+      ref1 = phi**yldc(9)
 c      call w_val(imsg,'ref',ref)
 c     save ref to yldp
       call hah_io(1,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,

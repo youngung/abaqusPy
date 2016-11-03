@@ -67,17 +67,18 @@ c      write(imsg,*) 'just before returning'
       return
       end subroutine emod_iso
 c----------------------------------------------------------------------c
-      subroutine el_iso_jacobian(e,nu,hard,flow,syield,predictor,
+      subroutine el_iso_jacobian(e,nu,flow,syield,predictor,
      $     ndi,ntens,ddsdde)
-c     intent(in): e,nu,hard,flow,syield,ndi,ntens
-c     intent(out): ddsdde
+c     intent(in):: e,nu,flow,syield,ndi,ntens
+c     intent(out):: ddsdde
       parameter(one=1.d0,two=2.d0,three=3.d0)
       dimension flow(ntens), ddsdde(ntens,ntens), c(ntens,ntens)
-      real*8 e, nu, hard, syield, predictor
+      real*8 e, nu, syield, predictor,ddsdde
       real*8 mu, k              !! elastic constants (shear modulus and bulk modulus)
-      integer i,j,ndi,ntens
+      integer i,j,ndi,ntens,nshr
       real*8 mustar, lamstar, fact1,fact2,fact3,c
-      call emod_iso(e,nu,c)
+      nshr = ntens - ndi
+      call emod_iso(e,nu,c,ndi,nshr)
       k=e/(three*(one-two*nu))
       mu=e/(  two*(one+    nu))
       mustar = mu * syield / predictor

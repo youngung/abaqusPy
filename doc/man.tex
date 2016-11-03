@@ -345,7 +345,7 @@ whereas, if $\hat{\mathbf{h}}:\mathbf{s}\ge0$,
 With explicit indices, the above is expressed as:
 \begin{equation}
   \label{eq:dphib8}
-  \bigg(\frac{\partial f_k}{\partial \sigma}\bigg)_{ij} = \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}  \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{kl}.
+  \bigg(\frac{\partial f_k}{\partial \sigma}\bigg)_{ij} = \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}  \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{ij}.
 \end{equation}
 
 
@@ -376,7 +376,8 @@ The derivative of the HAH yield surface is:
   \begin{split}
   \label{eq:hah_deriv}
   \frac{\partial\Phi}{\partial\mathbf{\sigma}} &=\frac{1}{q}\Phi^{(1-q)} \bigg\{                  \frac{\partial{\phi_h^q}}{\partial{\sigma}}  +                 \frac{\partial{\phi_b^q}}{\partial{\sigma}}         \bigg\}\\
-  \bigg(\frac{\partial\Phi}{\partial\sigma}\bigg)_{ij}&=\frac{1}{q}\Phi^{(1-q)} \bigg\{  q \phi_h^{(q-1)}\Big(\frac{\partial{\phi_h}  }{\partial{\sigma}}\Big)_{ij}  + q \phi_b^{(q-1)} \Big(\frac{\partial{\phi_b}  }{ \partial\sigma}\Big)_{ij}         \bigg\}
+  \bigg(\frac{\partial\Phi}{\partial\sigma}\bigg)_{ij}&=\frac{1}{q}\Phi^{(1-q)} \bigg\{  q \phi_h^{(q-1)}\Big(\frac{\partial{\phi_h}  }{\partial{\sigma}}\Big)_{ij}  + q \phi_b^{(q-1)} \Big(\frac{\partial{\phi_b}  }{ \partial\sigma}\Big)_{ij}         \bigg\}\\
+                                                      &=\Phi^{(1-q)} \bigg\{    \phi_h^{(q-1)}\Big(\frac{\partial{\phi_h}  }{\partial{\sigma}}\Big)_{ij}  + \phi_b^{(q-1)} \Big(\frac{\partial{\phi_b}  }{ \partial\sigma}\Big)_{ij}         \bigg\}
   \end{split}
 \end{eqnarray}
 
@@ -532,7 +533,7 @@ Note that the above equation is an implicit function of $\partial\Phi/\partial\s
 \label{sec:prc}
 \begin{enumerate}[1)]
 \item We start to calculate $\cos\chi$ and $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}, respectively.
-\item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib6}. This also requires $\mathbb{C}^{el}$ and $\partial\Phi/\partial\mathbf{\sigma}$.
+\item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib6}. This also requires $\mathbb{C}^{el}$ and $\partial\Phi/\partial\mathbf{\sigma}$, which gives $\frac{\partial\bar{\varepsilon}}{\partial\sigma}$.
 \item Obtain $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib3}
 \item Also, obtain $\partial \mathbf{s_c}/\partial \mathbf{s}$ and $\partial \mathbf{s_o}/\partial\mathbf{s}$ in Eqs. \ref{eq:decomp2} and \ref{eq:decomp4}, respectively.
 \item Obtain $\partial \mathbf{s_p}/\partial\mathbf{s}$ using Eq. \ref{eq:cross_linear2}.

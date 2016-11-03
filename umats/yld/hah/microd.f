@@ -9,29 +9,24 @@ c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
 c     Calculates 1) \frac{\partial \hat{h}}{\partial\bar{\varepsilon}}
 c                2) dgr = ekrs(3)*(ekrs(4)*(1-coschi*coschi)-ekrs(5))
-      subroutine micro_dev_deriv(ntens,ndi,nshr,nyldp,sdev,yldp)
+      subroutine micro_dev_deriv(ntens,nyldp,sdev,yldp)
 c     Arguments
 c     ntens : Len of tensor
-c     ndi   : Len of normal components
-c     nshr  : Len of shear components
 c     nyldp : Len of yldp
 c     sdev  : deviatoric stress
 c     yldp  : yldp
       implicit none
-      integer, intent(in) :: ntens,ndi,nshr,nyldp
+      integer, intent(in) :: ntens,nyldp
       dimension yldp(nyldp),sdev(ntens)
       real*8, intent(in) :: sdev
       real*8, intent(inout) :: yldp
 c     Additional local variables to transfer from yldp
-      dimension emic(ntens),demic(ntens),target(ntens),emod(ntens,ntens)
-     $     ,ds_dcauchy(6,6),aux(ntens),aux33(3,3),aux33_inv(3,3),aux6(6)
-     $     ,gk(4),e_ks(5),f_ks(2),ekrs(5)
-      real*8 emic,demic,dgr,emod,ds_dcauchy,aux,aux6,aux33,aux33_inv,
+      dimension emic(ntens),demic(ntens),target(ntens),
+     $     gk(4),e_ks(5),f_ks(2),ekrs(5)
+      real*8 emic,demic,dgr,
      $     target
-      dimension
       real*8 gk,e_ks,f_ks,eeq,ref0,ref1,gL,ekL,eL,gS,c_ks,ss,ekrs,
      $     coschi,H
-      integer i,j
 
       H=8d0/3d0
 c     restore variables from yldp

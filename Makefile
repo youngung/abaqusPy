@@ -5,13 +5,20 @@ CMP=gfortran
 # -fno-automatic
 
 FLAGS=-g -Wall -fcheck=all -Waliasing -Warray-bounds \
-	-fbacktrace -fstack-arrays -finit-local-zero -Winteger-division
+	-fbacktrace -fstack-arrays -finit-local-zero -Winteger-division\
+	-Werror -Wfatal-errors
+
 
 objects_hah_test=hah_test.o bauschinger_lib.o \
 	hah_lib.o bauschinger.o hah.o \
 	hah_yieldsurface.o yld.o vm.o cnv.o hill48.o yld2000_2d.o\
 	hah_update.o algb.o dev.o lib_write.o is.o lib.o yld_lib.o\
 	latent.o microd.o
+objects_hahd_test=hah_test.o bauschinger_lib.o \
+	hah_lib.o bauschinger.o hah.o \
+	hah_yieldsurface.o yld.o vm.o cnv.o hill48.o yld2000_2d.o\
+	hah_update.o algb.o dev.o lib_write.o is.o lib.o yld_lib.o\
+	latent.o microd.o deriv_lib.o elast.o
 objects_yld_test=yld.o yld_uten_test.o yld2000_2d.o bauschinger.o \
 	hah.o hah_update.o dev.o algb.o cnv.o vm.o hill48.o \
 	hah_yieldsurface.o hah_lib.o lib_write.o is.o lib.o latent.o
@@ -20,7 +27,8 @@ objects_yld_test=yld.o yld_uten_test.o yld2000_2d.o bauschinger.o \
 # Fortran executables
 hah_test: $(objects_hah_test)
 	$(CMP) $(FLAGS) -O3 $(objects_hah_test) -o hah_test
-
+hahd_test: $(objects_hahd_test)
+	$(CMP) $(FLAGS) -O3 $(objects_hahd_test) -o hahd_test
 yld_test: $(objects_yld_test)
 	$(CMP) $(FLAGS) $(objects_yld_test) -o yld_test
 ######################################################################
@@ -67,9 +75,14 @@ yld_lib.o: umats/yld/yld_lib.f
 	$(CMP) $(FLAGS) -c umats/yld/yld_lib.f
 latent.o: umats/yld/hah/latent.f
 	$(CMP) $(FLAGS) -c umats/yld/hah/latent.f
+deriv_lib.o: umats/yld/hah/deriv_lib.f
+	$(CMP) $(FLAGS) -c umats/yld/hah/deriv_lib.f
+elast.o: umats/lib/elast.f
+	$(CMP) $(FLAGS) -c umats/lib/elast.f
+
 
 
 .PHONY: all clean
-all: hah_test yld_test
+all: hah_test hahd_test yld_test
 clean :
 	-rm hah_test yld_test *.o
