@@ -14,7 +14,7 @@ objects_hah_test=hah_test.o bauschinger_lib.o \
 	hah_yieldsurface.o yld.o vm.o cnv.o hill48.o yld2000_2d.o\
 	hah_update.o algb.o dev.o lib_write.o is.o lib.o yld_lib.o\
 	latent.o microd.o
-objects_hahd_test=hah_test.o bauschinger_lib.o \
+objects_hahd_test=hahd_test.o bauschinger_lib.o \
 	hah_lib.o bauschinger.o hah.o \
 	hah_yieldsurface.o yld.o vm.o cnv.o hill48.o yld2000_2d.o\
 	hah_update.o algb.o dev.o lib_write.o is.o lib.o yld_lib.o\
@@ -79,10 +79,12 @@ deriv_lib.o: umats/yld/hah/deriv_lib.f
 	$(CMP) $(FLAGS) -c umats/yld/hah/deriv_lib.f
 elast.o: umats/lib/elast.f
 	$(CMP) $(FLAGS) -c umats/lib/elast.f
+hahd_test.o: umats/tests/hahd_test.f
+	$(CMP) $(FLAGS) -c umats/tests/hahd_test.f
 
 
 
 .PHONY: all clean
 all: hah_test hahd_test yld_test
 clean :
-	-rm hah_test yld_test *.o
+	-rm hah_test hahd_teset yld_test *.o

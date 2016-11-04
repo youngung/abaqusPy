@@ -41,7 +41,7 @@ c     local - controlling
       logical idiaw,arg_status
 c     arguments
       real*8 th_emic,pi
-      pi = 4d0*datan(1.d0)
+      pi = 4d0*datan(1d0)
       idiaw=.false.
 c      idiaw = .true.
       imsg  = 0

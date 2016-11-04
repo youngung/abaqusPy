@@ -8,7 +8,7 @@ c     [2] Jeong et al., IJP, 2016 (in press)
 c     subroutine hah has several dependents
 c     read_alpha: yld2000_2d.f
 c     yld2000_2d: yld2000_2d.f
-c     hah_yieldsurface: yld_yieldsurface.f
+c     hah_yieldsurface: hah_yieldsurface.f
 c-----------------------------------------------------------------------
       subroutine hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,
      $     cauchy,yldc,yldp,phi,dphi,d2phi)
@@ -36,6 +36,9 @@ c     Arguments
 
       dimension dphi_chi(ntens),d2phi_chi(ntens,ntens)
       real*8 phi_chi,dphi_chi,d2phi_chi,hydro
+c     local vars
+      dimension sdev6(6)
+      real*8 sdev6
 c     local controls
       integer imsg
       logical idiaw
@@ -103,8 +106,6 @@ c         call exit(-1)
 
 c$$$c     test
       phi=phi_chi
-      dphi(:)=dphi_chi(:)
-      d2phi(:,:)=d2phi_chi(:,:)
 
 c     calling hah_calc_ref stores (sqrt(phi(so)**2+phi(sdp)**2))**q to ref
       call hah_calc_ref(ntens,ndi,nshr,nyldp,nyldc,yldp,yldc,
@@ -112,5 +113,27 @@ c     calling hah_calc_ref stores (sqrt(phi(so)**2+phi(sdp)**2))**q to ref
       call hah_yieldsurface(ntens,ndi,nshr,iyld_choice,nyldc,
      $     nyldp,yldc,yldp,cauchy,phi_chi,dphi_chi,d2phi_chi,
      $     phi,dphi,d2phi,.false.)
+
+
+
+c      dphi(:)=dphi_chi(:)
+
+c      d2phi(:,:)=d2phi_chi(:,:)
+
+      if (ntens.eq.3) then
+         sdev6(1:2)=sdev(1:2)
+         sdev6(3)  = -sdev(1)-sdev(2)
+         sdev6(4:5)=0d0
+         sdev6(6) = sdev(3)
+      elseif (ntens.eq.6) then
+         sdev6(:)=sdev(:)
+      else
+         call w_chr(imsg,'Unexpected ntens given in hah.f')
+         call exit(-1)
+      endif
+
+c      call hah_deriv(nyldp,sdev6,yldp
+
+
       return
       end subroutine hah

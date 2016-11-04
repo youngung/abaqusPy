@@ -261,16 +261,10 @@ c     ss    : S  parameter for cross hardening
 c     ekrs : Parameters that control the rotation rate of microstructure
 c            deviator - (kr1,kr2,kr3,kr4,gR)
 c     target: target with which microstructure deviator tries to align
+
       implicit none
-c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c**   Arguments passed
-      integer, intent(in)::iopt,nyldp,ntens
-      dimension yldp(nyldp),emic(ntens),demic(ntens),gk(4),e_ks(5),
-     $     f_ks(2),ekrs(5),target(ntens)
-      real*8, intent(inout):: yldp,emic,demic,dgR,gk,e_ks,f_ks,eeq,ref0,
-     $     ref1,gL,ekL,eL,gS,c_ks,ss,ekrs,target
-c     local
-      integer i
+      include 'hah_io.dim'
+
       if (iopt.eq.0) then       ! state variables <- yldp
 c     HAH yield surface/state variables (and a few constants if any)
 c***  equivalent plastic strain (cumulative)
@@ -356,15 +350,15 @@ c     yldp        : Yield function parameters
 c     yldc        : Yield function constants
 c     iyld_choice : yield surface choice
       integer, intent(in) :: ntens,nyldp,nyldc,ndi,nshr,iyld_choice
-      dimension yldp(nyldp),yldc(nyldc)
-      real*8 yldp,yldc
+      dimension yldp(nyldp),yldc(nyldc),dpsi_sdp(ntens),dpsi_sp(ntens)
+      real*8 yldp,yldc,dpsi_sdp,dpsi_sp,psi_sdp,psi_sp
 c     hah_io
       dimension emic(ntens),demic(ntens),gk(4),e_ks(5),f_ks(2),krs(5)
       real*8 emic,demic,gk,e_ks,f_ks,eeq,ref0,ref1,gL,ekL,eL,gS,c_ks,ss,
      $     krs
 c     locals
       dimension cauchy_ref(ntens),target(ntens)
-      real*8 cauchy_ref,phi,target,dgr
+      real*8 cauchy_ref,phi_h,target,dgr
 
       call hah_io(0,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
      $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,krs,target)
@@ -372,10 +366,10 @@ c     locals
 c     Reference stress state: uniaxial tension along axis 1
       cauchy_ref(:)=0d0
       cauchy_ref(1)=1d0
-c     returns:  (sqrt(phi(sp)**2 + phi(sdp)**2)) ** q
+c     returns:  phi_h = (sqrt(psi(sp)**2 + psi(sdp)**2))
       call latent(iyld_choice,ntens,ndi,nshr,nyldp,nyldc,
-     $     cauchy_ref,yldp,yldc,phi)
-      ref1 = phi**yldc(9)
+     $     cauchy_ref,yldp,yldc,dpsi_sdp,dpsi_sp,psi_sdp,psi_sp,phi_h)
+      ref1 = phi_h**yldc(9)
 c      call w_val(imsg,'ref',ref)
 c     save ref to yldp
       call hah_io(1,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,

@@ -59,8 +59,10 @@ c     local
       dimension sc(ntens),so(ntens),sdp(ntens),sp(ntens) ! stress double prime
       real*8 sc,so,sdp,sp,ref0,ref1
 c     local-latent
-      dimension dphi_lat(ntens),d2phi_lat(ntens,ntens)
-      real*8 phi_lat,dphi_lat,d2phi_lat,phi_lat_norm
+      dimension dphi_lat(ntens),d2phi_lat(ntens,ntens),dpsi_sdp(ntens),
+     $     dpsi_sp(ntens)
+      real*8 phi_lat,dphi_lat,d2phi_lat,phi_lat_norm,dpsi_sdp,dpsi_sp,
+     $     psi_sdp,psi_sp
 c     local-cross
       dimension dphi_x(ntens),d2phi_x(ntens,ntens)
       real*8 phi_x,dphi_x,d2phi_x,phi_omega
@@ -146,7 +148,8 @@ c---  anisotropic yield surface with latent hardening + cross hardening
 c     phi_lat = sqrt(phi(sp)**2 + phi(sdp)**2)
 c     phi_lat being the homogeneous function of degree 1.
       call latent(iyld_choice,ntens,ndi,nshr,nyldp,nyldc,
-     $     cauchy,yldp,yldc,phi_lat)
+     $     cauchy,yldp,yldc,dpsi_sdp,dpsi_sp,psi_sdp,psi_sp,
+     $     phi_lat)
       phi_lat_norm = phi_lat**yldc(9)
       if (idiaw) then
          call w_val(imsg,'phi_lat     :',phi_lat)
