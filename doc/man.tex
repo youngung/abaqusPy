@@ -546,10 +546,280 @@ Note that the above equation is an implicit function of $\partial\Phi/\partial\s
 \end{enumerate}
 
 
+\newpage
+\section{yld2000-2d yield function}
+The current section presents discuss the mathematical formalism of yld2000-2d yield surface.
+
+By using the form of the isotropic yield function of hershey, the yield surface ($\psi$) is defined as
+\begin{equation}
+  \label{eq:hershey}
+  \psi=\bigg(\frac{\phi^{(1)} + \phi^{(2)}}{2}\bigg)^{\frac{1}{a}}=\bar{\sigma}
+\end{equation}
+where
+\begin{equation}
+  \label{eq:hershey2}
+  \phi^{(1)} = |\chi^{(1)}_1-\chi^{(1)}_2|^a \text{ and } \phi^{(2)}=|2\chi^{(2)}_2+\chi^{(2)}_1|^a+|2\chi^{(2)}_1+\chi^{(2)}_2|^a.
+\end{equation}
+
+In the above, the symbol $\chi^{(1)}_i$ and $\chi^{(2)}_i$ (with $i=1,2$) denote the two principal components of the associated tensors $\mathbf{X}^{(1)}$ and $\mathbf{X}^{(2)}$, respectively.
+The tensors $\mathbf{X}^{(1)}$ and $\mathbf{X}^{(2)}$ result from the linear transformations performed on the associated stress tensor ($\mathbf{\sigma}$) using $\mathbf{L}^{(1)}$ and $\mathbf{L}^{(2)}$ tensors, respectively, which account for the anisotropy of the material.
+The derivative of $\psi$ with respect to stress tensor ($\mathbf{\sigma}$) is obtained as below:
+\begin{equation}
+  \label{eq:derivative1}
+  \begin{split}
+    \frac{\partial\psi}{\partial\sigma}&=\frac{1}{2a}\psi^{1-a}\bigg(\frac{\partial\phi^{(1)}}{\partial\sigma}+\frac{\partial\phi^{(2)}}{\partial\sigma}\bigg)\\
+    \frac{\partial\psi}{\partial\sigma_i}&=\frac{1}{2a}\psi^{1-a}\bigg(\frac{\partial\phi^{(1)}}{\partial\sigma_i}+\frac{\partial\phi^{(2)}}{\partial\sigma_i}\bigg)
+  \end{split}
+\end{equation}
+
+The term $\partial\phi^{(1)}/\partial\mathbf{\sigma}$ is obtained using the chain rule as follows.
+\begin{equation}
+  \label{eq:derivative1_1}
+  \frac{\partial\phi^{(1)}}{\partial\sigma_i}=\sum_{l}\sum_{k} \frac{\partial\phi^{(1)}}{\partial\chi^{(1)}_k}  \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}   \frac{\partial X^{(1)}_l}{\partial\sigma_i}
+\end{equation}
+The same rule applies to $\partial\phi^{(2)}/\partial\mathbf{\sigma}$.
 
 
+
+The second derivative (Hessian matrix, i.e., $\partial^2\psi/\partial\sigma_i\partial\sigma_j$) is obtained on the basis of Eq. \ref{eq:derivative1}.
+\begin{equation}
+  \label{eq:derivative2}
+  \begin{split}
+    \frac{\partial^2\psi}{\partial\sigma_i\partial\sigma_j}=&\frac{1}{2a} (1-a)\psi^{-a}\frac{\partial\psi}{\partial\sigma_j}  \bigg\{\frac{\partial\phi^{(1)}}{\partial\sigma_i}+\frac{\partial\phi^{(2)}}{\partial\sigma_i}\bigg\}+\frac{1}{2a}\psi^{1-a}   \bigg\{\frac{\partial^2\phi^{(1)}}{\partial\sigma_i\partial\sigma_j}+\frac{\partial^2\phi^{(2)}}{\partial\sigma_i\partial\sigma_j}\bigg\}\\
+    =&\frac{1}{2a} (1-a)\psi^{-a}\frac{\partial\psi}{\partial\sigma_j}  \bigg\{2a\ \psi^{a-1} \frac{\partial\psi}{\partial\sigma_i} \bigg\}                +\frac{1}{2a}\psi^{1-a}   \bigg\{\frac{\partial^2\phi^{(1)}}{\partial\sigma_i\partial\sigma_j}+\frac{\partial^2\phi^{(2)}}{\partial\sigma_i\partial\sigma_j}\bigg\}\\
+    =&\frac{1-a}{\psi}\frac{\partial\psi}{\partial\sigma_i}  \frac{\partial\psi}{\partial\sigma_j}   +\frac{\psi^{1-a}}{2a} \bigg\{\frac{\partial^2\phi^{(1)}}{\partial\sigma_i\partial\sigma_j}+\frac{\partial^2\phi^{(2)}}{\partial\sigma_i\partial\sigma_j}\bigg\}
+  \end{split}
+\end{equation}
+
+The term $\partial^2\phi^{(1)}/\partial\sigma_i\partial\sigma_j$ can be obtained on the basis of Eq. \ref{eq:derivative1_1}.
+
+%%  \frac{\partial}{\partial}    \frac{\partial^2}{\partial\partial}
+\begin{equation}
+  \label{eq:derivative_2_1}
+  \begin{split}
+    \frac{\partial^2\phi^{(1)}}{\partial\sigma_i\partial\sigma_j}=&\sum_k \sum_l \sum_m \sum_n \frac{\partial^2\phi^{(1)}}{\partial\chi^{(1)}_k\partial\chi^{(1)}_m} \bigg( \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}    \frac{\partial X^{(1)}_l}{\partial \sigma_i}\bigg)  \bigg( \frac{\partial\chi^{(1)}_m}{\partial X^{(1)}_n}    \frac{\partial X^{(1)}_n}{\partial \sigma_j}\bigg)\\
+    +&\sum_k \sum_l \sum_m \frac{\partial\phi^{(1)} }{\partial\chi^{(1)}_k}     \frac{\partial^2\chi^{(1)}_k}{\partial X^{(1)}_l \partial  X^{(1)}_m}   \frac{\partial X^{(1)}_l}{\partial\sigma_i}    \frac{\partial X^{(1)}_m}{\partial\sigma_j}\\
+    +&\sum_k \sum_l \frac{\partial\phi^{(1)} }{\partial\chi^{(1)}_k}   \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}  \frac{\partial^2 X^{(1)}_l}{\partial\sigma_i\partial\sigma_j}.
+  \end{split}
+\end{equation}
+The same approach is needed for $\partial^2\phi^{(2)}/\partial\sigma_i\partial\sigma_j$.
+
+a. Terms $\partial\phi^{(1)}/\partial\mathbf{\chi}^{(1)}$ and $\partial\phi^{(2)}/\partial\mathbf{\chi}^{(2)}$ are derived from Eq. \ref{eq:hershey2} as:
+\begin{equation}
+  \label{eq:derivative_2_2}
+  \begin{split}
+    \begin{bmatrix}
+      \partial\phi^{(1)}/\partial\mathbf{\chi}^{(1)}_1\\
+      \partial\phi^{(1)}/\partial\mathbf{\chi}^{(1)}_2
+    \end{bmatrix}
+    =&
+    \begin{bmatrix}
+      a(\chi^{(1)}_1-\chi^{(1)}_2)^{a-1}\\
+      -a(\chi^{(1)}_1-\chi^{(1)}_2)^{a-1}
+    \end{bmatrix}\\
+    \begin{bmatrix}
+      \partial\phi^{(2)}/\partial\mathbf{\chi}^{(2)}_1\\
+      \partial\phi^{(2)}/\partial\mathbf{\chi}^{(2)}_2
+    \end{bmatrix}
+    =&
+    \begin{bmatrix}
+      a|2\chi_2^{(2)}+\chi_1^{(2)}|^{a-1} \text{ sign}(2\chi_2^{(2)}+\chi_1^{(2)})+2a|2\chi_1^{(2)}+\chi_2^{(2)}|^{a-1} \text{ sign}(2\chi_1^{(2)}+\chi_2^{(2)})\\
+      2a|2\chi_2^{(2)}+\chi_1^{(2)}|^{a-1} \text{ sign}(2\chi_2^{(2)}+\chi_1^{(2)})+ a|2\chi_1^{(2)}+\chi_2^{(2)}|^{a-1} \text{ sign}(2\chi_1^{(2)}+\chi_2^{(2)})
+    \end{bmatrix}
+  \end{split}
+\end{equation}
+
+With the above, the second order derivatives ($\partial^2\phi^{(1)}/\partial\chi^{(1)}_i\partial\chi^{(1)}_j$ and $\partial^2\phi^{(2)}/\partial\chi^{(2)}_i\partial\chi^{(2)}_i$) are obtained as below:
+\begin{equation}
+  \label{eq:derivative_2_3}
+  \begin{split}
+    \begin{bmatrix}
+      \partial\phi^{(1)}/\partial\mathbf{\chi}^{(1)}_1\partial\mathbf{\chi}^{(1)}_1\\
+      \partial\phi^{(1)}/\partial\mathbf{\chi}^{(1)}_1\partial\mathbf{\chi}^{(1)}_2\\
+      \partial\phi^{(1)}/\partial\mathbf{\chi}^{(1)}_2\partial\mathbf{\chi}^{(1)}_1\\
+      \partial\phi^{(1)}/\partial\mathbf{\chi}^{(1)}_2\partial\mathbf{\chi}^{(1)}_2
+    \end{bmatrix}
+    &=
+    \begin{bmatrix}
+      a(a-1)(\chi^{(1)}_1-\chi^{(1)}_2)^{a-2}\\
+      -a(a-1)(\chi^{(1)}_1-\chi^{(1)}_2)^{a-2}\\
+      -a(a-1)(\chi^{(1)}_1-\chi^{(1)}_2)^{a-2}\\
+      a(a-1)(\chi^{(1)}_1-\chi^{(1)}_2)^{a-2}
+    \end{bmatrix}\\
+  \end{split}
+\end{equation}
+\begin{equation}
+  \label{eq:derivative_2_4}
+  \begin{split}
+    \begin{bmatrix}
+      \partial\phi^{(2)}/\partial\mathbf{\chi}^{(2)}_1\partial\mathbf{\chi}^{(2)}_1\\
+      \partial\phi^{(2)}/\partial\mathbf{\chi}^{(2)}_1\partial\mathbf{\chi}^{(2)}_2\\
+      \partial\phi^{(2)}/\partial\mathbf{\chi}^{(2)}_2\partial\mathbf{\chi}^{(2)}_1\\
+      \partial\phi^{(2)}/\partial\mathbf{\chi}^{(2)}_2\partial\mathbf{\chi}^{(2)}_2
+    \end{bmatrix}
+    &=a(a-1)
+    \begin{bmatrix}
+      |2\chi^{(2)}_2+\chi^{(2)}_1|^{a-2}+4|2\chi^{(2)}_1+\chi^{(2)}_2|^{a-2}\\
+      2|2\chi^{(2)}_2+\chi^{(2)}_1|^{a-2}+2|2\chi^{(2)}_1+\chi^{(2)}_2|^{a-2}\\
+      2|2\chi^{(2)}_2+\chi^{(2)}_1|^{a-2}+2|2\chi^{(2)}_1+\chi^{(2)}_2|^{a-2}\\
+      4|2\chi^{(2)}_2+\chi^{(2)}_1|^{a-2}+|2\chi^{(2)}_1+\chi^{(2)}_2|^{a-2}
+    \end{bmatrix}
+  \end{split}
+\end{equation}
+\newline
+
+b. Terms $\partial\chi^{(1)}_i/\partial X^{(1)}_j$ is obtained on the basis of the below equation.
+\begin{equation}
+  \label{eq:princ}
+  \begin{split}
+    \chi_1^{(k)}=\frac{1}{2}\bigg(X_1^{(k)}+X_2^{(k)}+\sqrt{(X_1^{(k)}-X_2^{(k)})^2+4(X_3^{(k)})^2}\bigg)\\
+    \chi_2^{(k)}=\frac{1}{2}\bigg(X_1^{(k)}+X_2^{(k)}-\sqrt{(X_1^{(k)}-X_2^{(k)})^2+4(X_3^{(k)})^2}\bigg)\\
+    \text{ with k being 1 or 2}
+  \end{split}
+\end{equation}
+The derivatives ($\partial\chi_i^{(k)}/\partial X_j^{(k)}$) are found in what follows.
+We first consider $k=1$.
+With $\Delta=\big(X^{(1)}_1-X^{(1)}_2\big)^2 +4\big(X^{(1)}_3\big)^2$,
+\begin{equation}
+  \label{eq:princ1}
+  \begin{split}
+    \chi_1^{(k)}=\frac{1}{2}\bigg(X_1^{(k)}+X_2^{(k)}+\sqrt{\Delta}\bigg), \chi_2^{(k)}=\frac{1}{2}\bigg(X_1^{(k)}+X_2^{(k)}-\sqrt{\Delta}\bigg)\\
+    \text{ with k being 1 or 2}
+  \end{split}
+\end{equation}
+There are a few useful results as below:
+\begin{equation}
+  \label{eq:princ2}
+  \begin{split}
+    \frac{\partial\Delta}{\partial X_1}=2(X_1-X_2),\ \frac{\partial\Delta}{\partial X_2}=-2(X_1-X_2)=-\frac{\partial\Delta}{\partial X_1},\text{ and } \frac{\partial\Delta}{\partial X_3}=8X_3\\
+  \end{split}
+\end{equation}
+
+A few more useful results for second order derivatives are listed below.
+\begin{equation}
+  \label{eq:princ3}
+  \begin{bmatrix}
+    \dfrac{\partial^2\Delta}{\partial X_1 \partial X_1} & \dfrac{\partial^2\Delta}{\partial X_1 \partial X_2} & \dfrac{\partial^2\Delta}{\partial X_1 \partial X_3} \\
+    \dfrac{\partial^2\Delta}{\partial X_2 \partial X_1} & \dfrac{\partial^2\Delta}{\partial X_2 \partial X_2} & \dfrac{\partial^2\Delta}{\partial X_2 \partial X_3} \\
+    \dfrac{\partial^2\Delta}{\partial X_3 \partial X_1} & \dfrac{\partial^2\Delta}{\partial X_3 \partial X_2} & \dfrac{\partial^2\Delta}{\partial X_3 \partial X_3}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    2& -2& 0\\
+    2& -2& 0\\
+    0&  0& 8
+  \end{bmatrix}
+\end{equation}
+
+The first derivative $\partial\chi^{(1)}_i/\partial X^{(1)}_j$  is obtained as below:
+\begin{equation}
+  \label{eq:dchi_dx_1}
+  \begin{bmatrix}
+    \partial\chi^{(1)}_1/\partial X^{(1)}_1\\
+    \partial\chi^{(1)}_1/\partial X^{(1)}_2\\
+    \partial\chi^{(1)}_1/\partial X^{(1)}_3\\
+    \partial\chi^{(1)}_2/\partial X^{(1)}_1\\
+    \partial\chi^{(1)}_2/\partial X^{(1)}_2\\
+    \partial\chi^{(1)}_2/\partial X^{(1)}_3
+  \end{bmatrix}
+  =
+  \frac{1}{2}
+  \begin{bmatrix}
+     1 +  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+     1 +  \frac{\partial\Delta}{\partial X_2} \Delta^{(-1/2)}   \\
+      \frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}   \\
+     1 -  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+     1 -  \frac{\partial\Delta}{\partial X_2} \Delta^{(-1/2)}   \\
+     -\frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}
+  \end{bmatrix}
+  =
+  \frac{1}{2}
+  \begin{bmatrix}
+     1 +  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+     1 -  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+      \frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}   \\
+     1 -  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+     1 +  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+     -\frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+     &\partial\chi^{(1)}_1/\partial X^{(1)}_1\\
+     &\partial\chi^{(1)}_1/\partial X^{(1)}_2\\
+     &\partial\chi^{(1)}_1/\partial X^{(1)}_3\\
+     &\partial\chi^{(1)}_1/\partial X^{(1)}_2\\
+     &\partial\chi^{(1)}_1/\partial X^{(1)}_1\\
+    -&\partial\chi^{(1)}_1/\partial X^{(1)}_3
+  \end{bmatrix}
+\end{equation}
+where the second equality can be useful later.
+The same applies to $ \partial\chi^{(2)}_i/\partial X^{(2)}_j$.
+
+Now, the second derivative ($\partial^2\chi_1^{(1)}/\partial X^{(1)}_i\partial X^{(1)}_j$) is as below:
+\begin{equation}
+  \label{eq:d2chi_dxdx}
+  \begin{split}
+    &\begin{bmatrix}
+      \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_1}\\
+      \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_2}\\
+      \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_3}\\
+      \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_1}\\
+      \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_2}\\
+      \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_3}\\
+      \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_1}\\
+      \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_2}\\
+      \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_3}
+    \end{bmatrix}
+    =\dfrac{1}{2}
+    \begin{bmatrix}
+      \frac{\partial^2\Delta}{\partial X_1^{(1)} \partial X_1^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_1^{(1)}} \frac{\partial\Delta}{\partial X_1^{(1)}} \Delta^{-\frac{3}{2}}\\
+      \frac{\partial^2\Delta}{\partial X_1^{(1)} \partial X_2^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_1^{(1)}} \frac{\partial\Delta}{\partial X_2^{(1)}} \Delta^{-\frac{3}{2}}\\
+      \frac{\partial^2\Delta}{\partial X_1^{(1)} \partial X_3^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_1^{(1)}} \frac{\partial\Delta}{\partial X_3^{(1)}} \Delta^{-\frac{3}{2}}\\
+      \frac{\partial^2\Delta}{\partial X_2^{(1)} \partial X_1^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_2^{(1)}} \frac{\partial\Delta}{\partial X_1^{(1)}} \Delta^{-\frac{3}{2}}\\
+      \frac{\partial^2\Delta}{\partial X_2^{(1)} \partial X_2^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_2^{(1)}} \frac{\partial\Delta}{\partial X_2^{(1)}} \Delta^{-\frac{3}{2}}\\
+      \frac{\partial^2\Delta}{\partial X_2^{(1)} \partial X_3^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_2^{(1)}} \frac{\partial\Delta}{\partial X_3^{(1)}} \Delta^{-\frac{3}{2}}\\
+      \frac{\partial^2\Delta}{\partial X_3^{(1)} \partial X_1^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_3^{(1)}} \frac{\partial\Delta}{\partial X_1^{(1)}} \Delta^{-\frac{3}{2}}\\
+      \frac{\partial^2\Delta}{\partial X_3^{(1)} \partial X_2^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_3^{(1)}} \frac{\partial\Delta}{\partial X_2^{(1)}} \Delta^{-\frac{3}{2}}\\
+      \frac{\partial^2\Delta}{\partial X_3^{(1)} \partial X_2^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_3^{(1)}} \frac{\partial\Delta}{\partial X_3^{(1)}} \Delta^{-\frac{3}{2}}
+    \end{bmatrix}\\
+  \end{split}
+\end{equation}
+
+Using Eq. \ref{eq:dchi_dx_1}, $\dfrac{\partial^2\chi_2^{(1)}}{\partial X_i^{(1)} \partial X_j^{(1)}}$ can be related to components of Eq. \ref{eq:d2chi_dxdx} as shown below.
+
+\begin{equation}
+  \label{eq:d2chi_dxdx_2}
+  \begin{bmatrix}
+    \dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_1\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_1\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_1\partial X^{(1)}_3}\\
+    \dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_2\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_2\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_2\partial X^{(1)}_3}\\
+    \dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_3\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_3\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_3\partial X^{(1)}_3}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    \dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_3}\\
+    \dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_3}\\
+   -\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_1}&-\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_2}&-\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_3}
+  \end{bmatrix}
+\end{equation}
+
+The formalism in Eqs. \ref{eq:d2chi_dxdx} and \ref{eq:d2chi_dxdx_2} applies to $\dfrac{\partial^2\chi_i^{(2)}}{\partial X_j^{(2)} \partial X_k^{(2)}}$.
+
+
+c. $\dfrac{\partial^2 X^{(1)}_i}{\partial\sigma_j\partial\sigma_k}$
+
+Note that $\dfrac{\partial X^{(1)}_i}{\partial\sigma_j}$ are anisotropic parameters that are constant so that $\dfrac{\partial^2 X^{(1)}_i}{\partial\sigma_j\partial\sigma_k}$ lead to zeros.
+The same applies to $\dfrac{\partial^2 X^{(2)}_i}{\partial\sigma_j\partial\sigma_k}$.
+Therefore, Eq. \ref{eq:derivative_2_1} reduces to
+\begin{equation}
+  \label{eq:derivative_2_4}
+  \begin{split}
+    \frac{\partial^2\phi^{(1)}}{\partial\sigma_i\partial\sigma_j}=&\sum_k \sum_l \sum_m \sum_n \frac{\partial^2\phi^{(1)}}{\partial\chi^{(1)}_k\partial\chi^{(1)}_m} \bigg( \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}    \frac{\partial X^{(1)}_l}{\partial \sigma_i}\bigg)  \bigg( \frac{\partial\chi^{(1)}_m}{\partial X^{(1)}_n}    \frac{\partial X^{(1)}_n}{\partial \sigma_j}\bigg)\\
+    +&\sum_k \sum_l \sum_m \frac{\partial\phi^{(1)} }{\partial\chi^{(1)}_k}     \frac{\partial^2\chi^{(1)}_k}{\partial X^{(1)}_l \partial  X^{(1)}_m}   \frac{\partial X^{(1)}_l}{\partial\sigma_i}    \frac{\partial X^{(1)}_m}{\partial\sigma_j}.
+  \end{split}
+\end{equation}
 
 \newpage
+
 \bibliography{bib}
 \bibliographystyle{ieeetr}
 
