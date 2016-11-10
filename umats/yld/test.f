@@ -72,9 +72,12 @@ c     to test various yield functions
 !     yld2000-2d anisotropic uten
       verbose=.true.
       call uten(2,yldc(:nyldc),nyldc,nth,rs,ys,verbose) !! Yld2000-2d
-      verbose=.false.
+!      verbose=.false.
+      write(*,*)'Von Mises yield surface'
       call inplane_locus(0,yldc(:nyldc),nyldc,nth,locus,verbose)
+      write(*,*)'Hill48 yield surface'
       call inplane_locus(1,yldc(:nyldc),nyldc,nth,locus,verbose)
+      write(*,*)'yld2000-2d yield surface'
       call inplane_locus(2,yldc(:nyldc),nyldc,nth,locus,verbose)
 
       end program test_yld
@@ -174,6 +177,14 @@ c-----------------------------------------------------------------------
       elseif (iyld.eq.2) then
          open(unit=1,file='locus_yld2000_2d.txt')
       endif
+
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Write column heads
+      if (verbose) then
+         write(*,'(a7,4x,3a7,4x)')'theta','s1','s2','s3'
+      endif
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
       do 10 j=1,nth
          th = 2*pi/(nth-1)*(j-1)

@@ -3,7 +3,8 @@ c     Yld2000-2d model for the case of planar stress condition where
 c     sig_xx,sig_yy,sig_xy are non-zeros.
 
 c     Ref
-c     Barlat et al., IJP 19, 2003, p1297-1319
+c     [1] Barlat et al., IJP 19, 2003, p1297-1319
+c     [2] Manual of abaqusPy <man.tex>
 c
 c     Youngung Jeong
 c     youngung.jeong@gmail.com
@@ -14,7 +15,7 @@ c     Arguments
 c     cauchy: cauchy stress
 c     phi   : yield surface
 c     dphi  : yield surface 1st derivative w.r.t cauchy stress
-c     d2phi : 2nd derivative - (not included yet)
+c     d2phi : The 2nd derivative w.r.t. cauchy stress
 c     yldc  : yield surface components
       integer ntens
       parameter(ntens=3)
@@ -24,9 +25,241 @@ c     yldc  : yield surface components
 cf2py intent(in)  cauchy,yldc
 cf2py intent(out) phi,dphi,d2phi
       call deviat(ntens,cauchy,sdev,hydro)
-      call yld2000_2d_dev(sdev,phi,dphi,d2phi,yldc)
+c     call yld2000_2d_dev(sdev,phi,dphi,d2phi,yldc)
+      call yld2000_2d_cauchy(cauchy,phi,dphi,d2phi,yldc)
       return
       end subroutine yld2000_2d
+c     yld2000_2d_dev is implementation of the yld2000-2d model as a
+c     function of 'deviatoric' stress and yield function constants
+c     stored in yldc.
+c-----------------------------------------------------------------------
+      subroutine yld2000_2d_cauchy(cauchy,psi,dpsi,d2psi,yldc)
+c     psi is defiend as ((phi`+phi``)/2)^(1/q)
+c       where phi` and phi`` are analogous to Hershey isotropic functions;
+c             and q is the yield function exponent
+c       note that phi` and phi`` are functions of principal values of
+c       'linearly' transformed stress tensors.
+c     psi is a homogeneous function of degree 1.
+
+c     Arguments
+c     cauchy: cauchy stress
+c     psi   : yield surface
+c     dpsi  : yield surface 1st derivative w.r.t cauchy stress
+c     d2psi : 2nd derivative - (not included yet)
+c     yldc  : yield surface constants
+c             yldc(1:8) - alpha values, yldc(9): yield function exponent
+      implicit none
+      integer ntens
+      parameter(ntens=3)
+      dimension cauchy(ntens),sdev(ntens),dpsi(ntens),d2psi(ntens,ntens)
+     $     ,c(2,ntens,ntens),x1(ntens),x2(ntens),dx_dsig(2,ntens,ntens),
+     $     phis(2),dphis(2,ntens),yldc(9),alpha(8),aux2(ntens,ntens),
+     $     aux1(ntens),xs(2,ntens),xp1(2),xp2(2),chis(2,2)
+      real*8 cauchy,sdev,psi,dpsi,d2psi,c,x1,x2,a,phis,dphis,yldc,alpha,
+     $     dx_dsig,aux2,aux1,hydro,xs,xp1,xp2,chis
+      integer i
+c     locals controlling
+      integer imsg
+      logical idiaw
+cf2py intent(in)  cauchy,yldc
+cf2py intent(out) psi,dpsi,d2psi
+      imsg = 0
+      idiaw = .false.
+      alpha(:) = yldc(1:8)
+      a        = yldc(9)        ! yield surface exponent
+      dphis(:,:)=0d0
+      call alpha2lc(alpha,c,dx_dsig)
+      aux2(:,:) = c(1,:,:)
+      call deviat(ntens,cauchy,sdev,hydro)
+      call calc_x_dev(sdev,aux2,x1) ! x1: linearly transformed stress (prime)
+      xs(1,:)=x1(:)
+      aux2(:,:) = c(2,:,:)
+      call calc_x_dev(sdev,aux2,x2) ! x2: linearly transformed stress (double prime)
+      xs(2,:)=x2(:)
+      call calc_princ(x1,xp1)
+      chis(1,:)=xp1(:)
+      call calc_princ(x2,xp2)
+      chis(2,:)=xp2(:)
+      call hershey(xp1,xp2,a,phis(1),phis(2))
+      psi = (0.5d0*(phis(1)+phis(2)))**(1d0/a)
+      if (idiaw) then
+         call w_chr(0,'phis:')
+         call w_dim(0,phis,2,1d0,.true.)
+         call w_val(0,'psi :',psi)
+         call fill_line(0,'*',52)
+      endif
+      aux2(:,:) = c(1,:,:)
+      call calc_dphi_dev(sdev,aux2,a,aux1,0)
+      dphis(1,:) = aux1(:)
+      if (idiaw) call fill_line(0,'-',52)
+      aux2(:,:) = c(2,:,:)
+      call calc_dphi_dev(sdev,aux2,a,aux1,1)
+      dphis(2,:) = aux1(:)
+      dpsi(:) = 0d0
+      do 5 i=1,ntens
+         dpsi(i) = 1d0/2d0/a * ((phis(1)+phis(2))/2d0)**(1d0/a-1d0) *
+     $        (dphis(1,i) + dphis(2,i))
+ 5    continue
+      dpsi(3)=dpsi(3)
+c     2nd derivatives - on my to-do list
+      d2psi(:,:) = 0d0
+
+      call yld2000_2d_hessian(psi,dpsi,cauchy,chis,xs,
+     $     dx_dsig,yldc(9),d2psi)
+
+      return
+      end subroutine yld2000_2d_cauchy
+c-----------------------------------------------------------------------
+      subroutine yld2000_2d_hessian(psi,dpsi,cauchy,chis,xs,
+     $     dx_dsig,a,d2psi)
+c     Arguments
+c     psi    : yld2000-2d yield surface
+c     dpsi   : yld2000-2d yield surface 1st derivatives
+c     cauchy : cauchy stress
+c     chis   : principal values of transformed stress
+c     xs     : transformed stress
+c     dx_dsig: the L matrix.
+c     a      : yield surface exponent
+c     d2psi  : the send derivative of yld2000-2d (to be calculated)
+      implicit none
+      dimension cauchy(3),chis(2,2),xs(2,3),dx_dsig(2,3,3),
+     $     dphis_dchi(2,2),d2phis_dchidchi(2,2,2),d2psi(3,3),
+     $     dpsi(3)
+      real*8, intent(in)  :: cauchy,chis,xs,dx_dsig,a,
+     $     psi,dpsi
+      real*8, intent(out) :: d2psi
+      dimension dchi_dx(2,2,3), d2chi_dxdx(2,2,3,3),x(3),
+     $     aux23(2,3),aux233(2,3,3),d2phis_dsigdsig(2,3,3)
+      real*8 tempval1,tempval2,tempval3,sgn1,sgn2, dchi_dx,d2chi_dxdx,
+     $     aux23,aux233,d2phis_dchidchi,d2phis_dsigdsig,dphis_dchi,x
+      integer i,j,k,l,m,n,ind
+      write(3,*) cauchy,chis,xs,dx_dsig,a
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Eq. 46 in Ref [2] - calculate dphis_dchi
+      dphis_dchi(1,1) =  a * (chis(1,1) - chis(1,2))**(a-1d0)
+      dphis_dchi(1,2) = -dphis_dchi(1,1)
+      tempval1 = dabs(2d0*chis(2,2) + chis(2,1))
+      tempval2 = dabs(2d0*chis(2,1) + chis(2,2))
+      sgn1=sign(1d0,tempval1)
+      sgn2=sign(1d0,tempval2)
+      dphis_dchi(2,1) =       a * tempval1**(a-1d0) * sgn1
+     $                + 2d0 * a * tempval2**(a-1d0) * sgn2
+      dphis_dchi(2,2) = 2d0 * a * tempval1**(a-1d0) * sgn1
+     $                      + a * tempval2**(a-1d0) * sgn2
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Eq. 47 in Ref [2] - calculate (d2phis)_(dchi,dchi)
+      d2phis_dchidchi(1,1,1) = a*(a-1d0)*(chis(1,1)-chis(1,2))**(a-2d0)
+      d2phis_dchidchi(1,1,2) = -d2phis_dchidchi(1,1,1)
+      d2phis_dchidchi(1,2,1) = -d2phis_dchidchi(1,1,1)
+      d2phis_dchidchi(1,2,2) =  d2phis_dchidchi(1,1,1)
+c     --
+      tempval1 = dabs(2d0*chis(2,2)+chis(2,1))**(a-2d0)
+      tempval2 = dabs(2d0*chis(2,1)+chis(2,2))**(a-2d0)
+      tempval3 = a*(a-1d0)
+      d2phis_dchidchi(2,1,1) =     tempval1 + 4d0*tempval2
+      d2phis_dchidchi(2,1,2) = 2d0*tempval1 + 2d0*tempval2
+      d2phis_dchidchi(2,2,1) = d2phis_dchidchi(2,1,2)
+      d2phis_dchidchi(2,2,2) = 4d0*tempval1 +     tempval2
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Eq. 53 in Ref [2]
+      x=xs(1,:)
+      call calc_dchi_dx(x,aux23,aux233)
+      dchi_dx(1,:,:)=aux23(:,:)
+      d2chi_dxdx(1,:,:,:)=aux233(:,:,:)
+      x=xs(2,:)
+      call calc_dchi_dx(x,aux23,aux233)
+      dchi_dx(2,:,:)=aux23(:,:)
+      d2chi_dxdx(2,:,:,:)=aux233(:,:,:)
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Eq. 45 in Ref [2]
+      d2phis_dsigdsig(:,:,:)=0d0
+      do 20 ind=1,2
+      do 10 i=1,3
+      do 10 j=1,3
+      do 10 n=1,3
+      do 10 m=1,2
+      do 10 l=1,3
+      do 10 k=1,2
+         d2phis_dsigdsig(ind,i,j)=d2phis_dsigdsig(ind,i,j)+
+     $        d2phis_dchidchi(ind,k,m)*dchi_dx(ind,k,l)*
+     $        dx_dsig(ind,l,i)*dchi_dx(ind,m,n)*dx_dsig(ind,n,j)
+ 10   continue
+      do 20 i=1,3
+      do 20 j=1,3
+      do 20 m=1,3
+      do 20 l=1,3
+      do 20 k=1,2
+         d2phis_dsigdsig(ind,i,j) = d2phis_dsigdsig(ind,i,j) +
+     $        dphis_dchi(ind,k) * d2chi_dxdx(ind,k,l,m)
+     $        * dx_dsig(ind,l,i) *dx_dsig(ind,m,j)
+ 20   continue
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Eq. 44 in Ref [2]
+      do 30 i=1,3
+      do 30 j=1,3
+         d2psi(i,j) = (1d0-a)/psi * dpsi(i) * dpsi(j) +
+     $        psi**(1d0-a) / (2d0*a) *
+     $        (d2phis_dsigdsig(1,i,j)+d2phis_dsigdsig(2,i,j))
+ 30   continue
+      return
+      end subroutine yld2000_2d_hessian
+c-----------------------------------------------------------------------
+      subroutine calc_dchi_dx(x,dchi,d2chi)
+      dimension x(3),dchi(2,3),d2chi(2,3,3)
+      real*8, intent(in)  :: x
+      real*8, intent(out) :: dchi,d2chi
+      real*8 delta,delta_sqrt,delta_sqrt3
+      dimension dd_dx(3),d2d_dx(3,3)
+      real*8 dd_dx,d2d_dx
+      integer i,j
+      delta = (x(1) - x(2))*(x(1) - x(2)) + 4d0 * x(3) * x(3)
+      delta_sqrt  = delta**(-1d0/2d0)
+      delta_sqrt3 = delta**(-3d0/2d0)
+
+c     Eq 51 in Ref [2]
+      dd_dx(1) =  2d0*(x(1)-x(2))
+      dd_dx(2) = -dd_dx(1)
+      dd_dx(3) =  8d0*x(3)
+
+c     Eq 52 in Ref [2]
+      d2d_dx(:,:)= 0d0
+      d2d_dx(1,1)= 2d0
+      d2d_dx(1,2)=-2d0
+      d2d_dx(2,1)= 2d0
+      d2d_dx(2,2)=-2d0
+      d2d_dx(3,3)= 8d0
+
+c     Eq 53 in Ref [2]
+      dchi(1,1) = 1d0 + dd_dx(1) * delta_sqrt
+      dchi(1,2) = 1d0 - dd_dx(1) * delta_sqrt
+      dchi(1,3) =       dd_dx(3) * delta_sqrt
+      dchi(1,1:3) = dchi(1,1:3)  * 0.5d0
+
+      dchi(2,1) =  dchi(1,2)
+      dchi(2,2) =  dchi(1,1)
+      dchi(2,3) = -dchi(1,3)
+
+c     Eq 54 in Ref [2]
+      do 10 i=1,3
+      do 10 j=1,3
+         d2chi(1,i,j) = d2d_dx(i,j) * delta_sqrt
+     $        - 0.5d0 * dd_dx(i) * dd_dx(j) * delta_sqrt3
+         d2chi(1,i,j) = d2chi(1,i,j) * 0.5d0
+ 10   continue
+c     Using Eq 53 in Ref[2], d2chi(2,:,:) is obtained as below
+
+      d2chi(2,1,1) = d2chi(1,2,1)
+      d2chi(2,1,2) = d2chi(1,2,2)
+      d2chi(2,1,3) = d2chi(1,2,3)
+      d2chi(2,2,1) = d2chi(1,1,1)
+      d2chi(2,2,2) = d2chi(1,1,2)
+      d2chi(2,2,3) = d2chi(1,1,3)
+      d2chi(2,3,1) =-d2chi(1,3,1)
+      d2chi(2,3,2) =-d2chi(1,3,2)
+      d2chi(2,3,3) =-d2chi(1,3,3)
+
+      return
+      end subroutine calc_dchi_dx
 c-----------------------------------------------------------------------
 c     yld2000_2d_dev is implementation of the yld2000-2d model as a
 c     function of 'deviatoric' stress and yield function constants
@@ -112,7 +345,6 @@ cf2py intent(out) psi,dpsi,d2psi
 
 c     2nd derivatives - on my to-do list
       d2psi(:,:) = 0d0
-
       return
       end subroutine yld2000_2d_dev
 c-----------------------------------------------------------------------
@@ -144,7 +376,6 @@ c     iopt  : iopt (0: dphi`; 1: dphi``)
      $     dp_dx(2,3),dphi_dx(3),l(3,3)
       real*8 c,delta,x,dphi,xp,dp_dx,dphi_dp,a,dphi_dx,l,sdev
       integer iopt,i,j
-
       call calc_x_dev(sdev,c,x)
       call calc_delta(x,delta)
       call calc_princ(x,xp)
@@ -154,10 +385,6 @@ c     iopt  : iopt (0: dphi`; 1: dphi``)
 
       if (delta.ne.0) then
          call calc_a15(x,delta,dp_dx) ! eq A1.9 = eq A1.5
-c$$$         call w_chr(0, 'dphi_dp')
-c$$$         call w_dim(0,  dphi_dp,2,  1d0,.true.)
-c$$$         call w_chr(0, 'dp_dx')
-c$$$         call w_mndim(0,dphi_dp,2,3,1d0)
 !        eq A1.3
          do 5 j=1,3
          do 5 i=1,2
@@ -177,14 +404,10 @@ c$$$         call w_mndim(0,dphi_dp,2,3,1d0)
       ! dphi_dx
       dphi(:)=0d0
       call calc_l(c,l)
-c$$$      call w_chr(0,'L:')
-c$$$      call w_mdim(0,l,3,1d0)
       do 10 j=1,3
       do 10 i=1,3
          dphi(j) = dphi(j) + dphi_dx(i) * l(i,j)
  10   continue
-c$$$      call w_chr(0,'dphi')
-c$$$      call w_dim(0,dphi,3,1d0,.true.)
       return
       end subroutine calc_dphi_dev
 c-----------------------------------------------------------------------
@@ -267,16 +490,14 @@ c     delta: to be calculated (intent: out)
       return
       end subroutine calc_delta
 c-----------------------------------------------------------------------
-      subroutine hershey(x1,x2,a,h1,h2)
+      subroutine hershey(xp1,xp2,a,h1,h2)
 c     Arguments
 c     x1, x2: two linearly transformed stresses
 c     h1, h2: the two Hershey components
 c     a: exponent
       implicit none
-      dimension x1(3),x2(3),xp1(2),xp2(2)
-      real*8 x1,x2,xp1,xp2,a,h1,h2
-      call calc_princ(x1,xp1)
-      call calc_princ(x2,xp2)
+      dimension xp1(2),xp2(2)
+      real*8 xp1,xp2,a,h1,h2
       h1 = dabs(xp1(1) - xp1(2))**a
       h2 = dabs(2d0*xp2(2)+xp2(1))**a +dabs(2d0*xp2(1)+xp2(2))**a
       end subroutine hershey
@@ -403,7 +624,9 @@ c     C     : C matrix
 c     L     : L matrix
       implicit none
       dimension alpha(8),c(2,3,3),l(2,3,3),aux266(2,6,6)
-      real*8 alpha,c,l,aux266,aux66(6,6),aux33(3,3)
+      real*8, intent(in)  :: alpha
+      real*8, intent(out) :: c,l
+      real*8 aux266,aux66(6,6),aux33(3,3)
       call alpha2l(alpha,aux266)
       aux66(:,:) = aux266(1,:,:)
       call reduce_basis(aux66,aux33)
@@ -412,7 +635,6 @@ c     L     : L matrix
       call reduce_basis(aux66,aux33)
       l(2,:,:) = aux33
       call alpha2c(alpha,aux266)
-
       aux66(:,:) = aux266(1,:,:)
       call reduce_basis(aux66,aux33)
       c(1,:,:) = aux33
@@ -448,7 +670,8 @@ c     a : the 8 parameters (alpha)
 c     l : l matrix in the dimension of (2,3,3)
       implicit none
       dimension a(8), l(2,6,6)
-      real*8 a,l
+      real*8, intent(in)  :: a
+      real*8, intent(out) :: l
       l(:,:,:) = 0d0
 !     l`
       l(1,1,1) = 2*a(1)/3
