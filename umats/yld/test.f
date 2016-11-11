@@ -3,7 +3,7 @@ c     to test various yield functions
       program test_yld
       implicit none
       integer nth,nyldc
-      parameter(nth=15)
+      parameter(nth=31)
       dimension yldc(9),rs(nth),ys(nth),locus(nth,2)
       real*8 yldc,rs,ys,locus
       real*8 toler
@@ -181,11 +181,13 @@ c-----------------------------------------------------------------------
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c     Write column heads
       if (verbose) then
-         write(*,'(a7,4x,3a7,4x)')'theta','s1','s2','s3'
+         write(*,'(11x,3(a20,4x))')'Stress probe',
+     $        'Stress on surface','2nd derivatives'
+         write(*,'(a7,4x,3a7,4x,3a7,2x,a,x,9a7)')'theta','s1','s2',
+     $        'psi','s1','s2','psi','|','psi11','psi12','psi16','psi21',
+     $        'psi22','psi26','psi61','psi62','psi66'
       endif
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
       do 10 j=1,nth
          th = 2*pi/(nth-1)*(j-1)
          s6mat(1)   = dcos(th)
@@ -225,10 +227,20 @@ c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             call reduce_6to3(s6mat,s3mat)
             call yld2000_2d(s3mat,phim,aux3,aux33,yldc)
             call reduce_3to6(aux3,dphim)
+c           aux33 - 1,2,6
+            d2phim( : , : ) = 0d0
+            d2phim(1:2,1:2) = aux33(1:2,1:2)
+            d2phim(1:2, 6 ) = aux33(1:2, 3)
+            d2phim( 6 ,1:2) = aux33( 3 ,1:2)
+            d2phim( 6 , 6 ) = aux33( 3 , 3)
          endif
 
          if (verbose) then
-            write(*,'(3f7.2)',advance='no') s6mat(1),s6mat(2),phim
+            write(*,'(3f7.2,x,a2,x)',advance='no')
+     $           s6mat(1),s6mat(2),phim,'|'
+            write(*,'(9f7.3)',advance='no') d2phim(1,1),d2phim(1,2),
+     $           d2phim(1,6),d2phim(2,1),d2phim(2,2),d2phim(2,6),
+     $           d2phim(6,1),d2phim(6,2),d2phim(6,6)
             write(*,*)
          endif
          write(1,'(2f9.4)') s6mat(1),s6mat(2)
