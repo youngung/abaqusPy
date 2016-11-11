@@ -225,14 +225,14 @@ c     Eq 52 in Ref [2]
       d2d_dx(:,:)= 0d0
       d2d_dx(1,1)= 2d0
       d2d_dx(1,2)=-2d0
-      d2d_dx(2,1)= 2d0
-      d2d_dx(2,2)=-2d0
+      d2d_dx(2,1)=-2d0
+      d2d_dx(2,2)= 2d0
       d2d_dx(3,3)= 8d0
 
 c     Eq 53 in Ref [2]
-      dchi(1,1) = 1d0 + dd_dx(1) * delta_sqrt
-      dchi(1,2) = 1d0 - dd_dx(1) * delta_sqrt
-      dchi(1,3) =       dd_dx(3) * delta_sqrt
+      dchi(1,1) = 1d0 + 0.5d0*dd_dx(1) * delta_sqrt
+      dchi(1,2) = 1d0 - 0.5d0*dd_dx(1) * delta_sqrt
+      dchi(1,3) =       0.5d0*dd_dx(3) * delta_sqrt
       dchi(1,1:3) = dchi(1,1:3)  * 0.5d0
 
       dchi(2,1) =  dchi(1,2)
@@ -244,19 +244,19 @@ c     Eq 54 in Ref [2]
       do 10 j=1,3
          d2chi(1,i,j) = d2d_dx(i,j) * delta_sqrt
      $        - 0.5d0 * dd_dx(i) * dd_dx(j) * delta_sqrt3
-         d2chi(1,i,j) = d2chi(1,i,j) * 0.5d0
+         d2chi(1,i,j) = d2chi(1,i,j) * 0.25d0
  10   continue
 c     Using Eq 53 in Ref[2], d2chi(2,:,:) is obtained as below
 
-      d2chi(2,1,1) = d2chi(1,2,1)
-      d2chi(2,1,2) = d2chi(1,2,2)
-      d2chi(2,1,3) = d2chi(1,2,3)
-      d2chi(2,2,1) = d2chi(1,1,1)
-      d2chi(2,2,2) = d2chi(1,1,2)
-      d2chi(2,2,3) = d2chi(1,1,3)
-      d2chi(2,3,1) =-d2chi(1,3,1)
-      d2chi(2,3,2) =-d2chi(1,3,2)
-      d2chi(2,3,3) =-d2chi(1,3,3)
+      d2chi(2,1,:) = d2chi(1,2,:)
+      !d2chi(2,1,2) = d2chi(1,2,2)
+      !d2chi(2,1,3) = d2chi(1,2,3)
+      d2chi(2,2,:) = d2chi(1,1,:)
+      !d2chi(2,2,2) = d2chi(1,1,2)
+      !d2chi(2,2,3) = d2chi(1,1,3)
+      d2chi(2,3,:) =-d2chi(1,3,:)
+      !d2chi(2,3,2) =-d2chi(1,3,2)
+      !d2chi(2,3,3) =-d2chi(1,3,3)
 
       return
       end subroutine calc_dchi_dx

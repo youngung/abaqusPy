@@ -706,7 +706,7 @@ A few more useful results for second order derivatives are listed below.
   =
   \begin{bmatrix}
     2& -2& 0\\
-    2& -2& 0\\
+   -2&  2& 0\\
     0&  0& 8
   \end{bmatrix}
 \end{equation}
@@ -725,22 +725,22 @@ The first derivative $\partial\chi^{(1)}_i/\partial X^{(1)}_j$  is obtained as b
   =
   \frac{1}{2}
   \begin{bmatrix}
-     1 +  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
-     1 +  \frac{\partial\Delta}{\partial X_2} \Delta^{(-1/2)}   \\
-      \frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}   \\
-     1 -  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
-     1 -  \frac{\partial\Delta}{\partial X_2} \Delta^{(-1/2)}   \\
-     -\frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}
+     1 +  \frac{1}{2}\frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+     1 +  \frac{1}{2}\frac{\partial\Delta}{\partial X_2} \Delta^{(-1/2)}   \\
+          \frac{1}{2}\frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}   \\
+     1 -  \frac{1}{2}\frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+     1 -  \frac{1}{2}\frac{\partial\Delta}{\partial X_2} \Delta^{(-1/2)}   \\
+         -\frac{1}{2}\frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}
   \end{bmatrix}
   =
   \frac{1}{2}
   \begin{bmatrix}
-     1 +  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
-     1 -  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
-      \frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}   \\
-     1 -  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
-     1 +  \frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
-     -\frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}
+     1 +  \frac{1}{2}\frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+     1 -  \frac{1}{2}\frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+          \frac{1}{2}\frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}   \\
+     1 -  \frac{1}{2}\frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+     1 +  \frac{1}{2}\frac{\partial\Delta}{\partial X_1} \Delta^{(-1/2)}   \\
+       -  \frac{1}{2}\frac{\partial\Delta}{\partial X_3} \Delta^{(-1/2)}
   \end{bmatrix}
   =
   \begin{bmatrix}
@@ -770,7 +770,7 @@ Now, the second derivative ($\partial^2\chi_1^{(1)}/\partial X^{(1)}_i\partial X
       \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_2}\\
       \frac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_3}
     \end{bmatrix}
-    =\dfrac{1}{2}
+    =\dfrac{1}{4}
     \begin{bmatrix}
       \frac{\partial^2\Delta}{\partial X_1^{(1)} \partial X_1^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_1^{(1)}} \frac{\partial\Delta}{\partial X_1^{(1)}} \Delta^{-\frac{3}{2}}\\
       \frac{\partial^2\Delta}{\partial X_1^{(1)} \partial X_2^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_1^{(1)}} \frac{\partial\Delta}{\partial X_2^{(1)}} \Delta^{-\frac{3}{2}}\\
@@ -780,12 +780,12 @@ Now, the second derivative ($\partial^2\chi_1^{(1)}/\partial X^{(1)}_i\partial X
       \frac{\partial^2\Delta}{\partial X_2^{(1)} \partial X_3^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_2^{(1)}} \frac{\partial\Delta}{\partial X_3^{(1)}} \Delta^{-\frac{3}{2}}\\
       \frac{\partial^2\Delta}{\partial X_3^{(1)} \partial X_1^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_3^{(1)}} \frac{\partial\Delta}{\partial X_1^{(1)}} \Delta^{-\frac{3}{2}}\\
       \frac{\partial^2\Delta}{\partial X_3^{(1)} \partial X_2^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_3^{(1)}} \frac{\partial\Delta}{\partial X_2^{(1)}} \Delta^{-\frac{3}{2}}\\
-      \frac{\partial^2\Delta}{\partial X_3^{(1)} \partial X_2^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_3^{(1)}} \frac{\partial\Delta}{\partial X_3^{(1)}} \Delta^{-\frac{3}{2}}
+      \frac{\partial^2\Delta}{\partial X_3^{(1)} \partial X_3^{(1)}} \Delta^{-\frac{1}{2}} - \frac{1}{2}\frac{\partial\Delta}{\partial X_3^{(1)}} \frac{\partial\Delta}{\partial X_3^{(1)}} \Delta^{-\frac{3}{2}}
     \end{bmatrix}\\
   \end{split}
 \end{equation}
 
-Using Eq. \ref{eq:dchi_dx_1}, $\dfrac{\partial^2\chi_2^{(1)}}{\partial X_i^{(1)} \partial X_j^{(1)}}$ can be related to components of Eq. \ref{eq:d2chi_dxdx} as shown below.
+Using Eq. \ref{eq:dchi_dx_1}, $\dfrac{\partial^2\chi_2^{(1)}}{\partial X_i^{(1)} \partial X_j^{(1)}}$ can be related to components of  $\dfrac{\partial^2\chi_1^{(1)}}{\partial X_i^{(1)} \partial X_j^{(1)}}$ as shown in Eq. \ref{eq:d2chi_dxdx}.
 
 \begin{equation}
   \label{eq:d2chi_dxdx_2}
