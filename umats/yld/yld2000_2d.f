@@ -54,12 +54,15 @@ c             yldc(1:8) - alpha values, yldc(9): yield function exponent
       dimension cauchy(ntens),sdev(ntens),dpsi(ntens),d2psi(ntens,ntens)
      $     ,c(2,ntens,ntens),x1(ntens),x2(ntens),dx_dsig(2,ntens,ntens),
      $     phis(2),dphis(2,ntens),yldc(9),alpha(8),aux2(ntens,ntens),
-     $     aux1(ntens),xs(2,ntens),xp1(2),xp2(2),chis(2,2)
+     $     aux1(ntens),xs(2,ntens),xp1(2),xp2(2),chis(2,2),
+     $     dphis_dchi(2,2),x(ntens),dchi_dx(2,2,ntens),aux23(2,ntens),
+     $     aux233(2,ntens,ntens),dphis_aux(2,ntens)
       real*8 cauchy,sdev,psi,dpsi,d2psi,c,x1,x2,a,phis,dphis,yldc,alpha,
-     $     dx_dsig,aux2,aux1,hydro,xs,xp1,xp2,chis
+     $     dx_dsig,aux2,aux1,hydro,xs,xp1,xp2,chis,dphis_dchi,x,dchi_dx,
+     $     aux23,aux233,dphis_aux
       integer i
 c     locals controlling
-      integer imsg
+      integer imsg,ind,j,k
       logical idiaw
 cf2py intent(in)  cauchy,yldc
 cf2py intent(out) psi,dpsi,d2psi
@@ -80,7 +83,7 @@ cf2py intent(out) psi,dpsi,d2psi
       chis(1,:)=xp1(:)
       call calc_princ(x2,xp2)
       chis(2,:)=xp2(:)
-      call hershey(xp1,xp2,a,phis(1),phis(2))
+      call hershey(xp1,xp2,a,phis(1),phis(2),dphis_dchi)
       psi = (0.5d0*(phis(1)+phis(2)))**(1d0/a)
       if (idiaw) then
          call w_chr(0,'phis:')
@@ -100,10 +103,40 @@ cf2py intent(out) psi,dpsi,d2psi
          dpsi(i) = 1d0/2d0/a * ((phis(1)+phis(2))/2d0)**(1d0/a-1d0) *
      $        (dphis(1,i) + dphis(2,i))
  5    continue
-      dpsi(3)=dpsi(3)
+c     Just to check if chain-rule based yield surface derivative is
+c     equivalent to the derivations shown in the yld2000-2d paper
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Eq. 53 in Ref [2]
+      do ind=1,2
+         x=xs(ind,:)
+         call calc_dchi_dx(x,aux23,aux233)
+         dchi_dx(ind,:,:)=aux23(:,:)
+      enddo
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     1st derivatives
+c     See = Eq. 43 in Ref [43]
+      dphis_aux(:,:)=0d0
+      do 10 ind=1,2
+      do 10 i=1,ntens
+      do 10 j=1,2
+      do 10 k=1,3
+         dphis_aux(ind,i) = dphis_aux(ind,i) +
+     $        dphis_dchi(ind,j)*dchi_dx(ind,j,k)*dx_dsig(ind,k,i)
+ 10   continue
+
+      do 20 ind=1,2
+      do 20 i=1,ntens
+         if (dabs(dphis(ind,i)-dphis_aux(ind,i)).gt.1e-3) then
+            write(*,*)
+            write(*,'(4a8)')'ind','i','dp_sol','dp_x'
+            write(*,'(i8,i8,f8.3,f8.3)') ind,i,
+     $           dphis(ind,i),dphis_aux(ind,i)
+c            call exit(-1)
+         endif
+ 20   continue
+
 c     2nd derivatives - on my to-do list
       d2psi(:,:) = 0d0
-
       call yld2000_2d_hessian(psi,dpsi,cauchy,chis,xs,
      $     dx_dsig,yldc(9),d2psi)
 
@@ -137,15 +170,15 @@ c     d2psi  : the send derivative of yld2000-2d (to be calculated)
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c     Eq. 46 in Ref [2] - calculate dphis_dchi
       dphis_dchi(1,1) =  a * (chis(1,1) - chis(1,2))**(a-1d0)
-      dphis_dchi(1,2) = -dphis_dchi(1,1)
-      tempval1 = dabs(2d0*chis(2,2) + chis(2,1))
-      tempval2 = dabs(2d0*chis(2,1) + chis(2,2))
-      sgn1=sign(1d0,tempval1)
-      sgn2=sign(1d0,tempval2)
-      dphis_dchi(2,1) =       a * tempval1**(a-1d0) * sgn1
-     $                + 2d0 * a * tempval2**(a-1d0) * sgn2
-      dphis_dchi(2,2) = 2d0 * a * tempval1**(a-1d0) * sgn1
-     $                      + a * tempval2**(a-1d0) * sgn2
+      dphis_dchi(1,2) = - dphis_dchi(1,1)
+      tempval1 = 2d0*chis(2,2) + chis(2,1)
+      tempval2 = 2d0*chis(2,1) + chis(2,2)
+      sgn1 = sign(1d0,tempval1)
+      sgn2 = sign(1d0,tempval2)
+      dphis_dchi(2,1) =       a * dabs(tempval1)**(a-1d0) * sgn1
+     $                + 2d0 * a * dabs(tempval2)**(a-1d0) * sgn2
+      dphis_dchi(2,2) = 2d0 * a * dabs(tempval1)**(a-1d0) * sgn1
+     $                      + a * dabs(tempval2)**(a-1d0) * sgn2
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c     Eq. 47 in Ref [2] - calculate (d2phis)_(dchi,dchi)
       d2phis_dchidchi(1,1,1) = a*(a-1d0)*(chis(1,1)-chis(1,2))**(a-2d0)
@@ -160,16 +193,15 @@ c     --
       d2phis_dchidchi(2,1,2) = 2d0*tempval1 + 2d0*tempval2
       d2phis_dchidchi(2,2,1) = d2phis_dchidchi(2,1,2)
       d2phis_dchidchi(2,2,2) = 4d0*tempval1 +     tempval2
+      d2phis_dchidchi(2,:,:) = tempval3*d2phis_dchidchi(2,:,:)
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c     Eq. 53 in Ref [2]
-      x=xs(1,:)
-      call calc_dchi_dx(x,aux23,aux233)
-      dchi_dx(1,:,:)=aux23(:,:)
-      d2chi_dxdx(1,:,:,:)=aux233(:,:,:)
-      x=xs(2,:)
-      call calc_dchi_dx(x,aux23,aux233)
-      dchi_dx(2,:,:)=aux23(:,:)
-      d2chi_dxdx(2,:,:,:)=aux233(:,:,:)
+      do ind=1,2
+         x(:)=xs(ind,:)
+         call calc_dchi_dx(x,aux23,aux233)
+         dchi_dx(ind,:,:)=aux23(:,:)
+         d2chi_dxdx(ind,:,:,:)=aux233(:,:,:)
+      enddo
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c     Eq. 45 in Ref [2]
       d2phis_dsigdsig(:,:,:)=0d0
@@ -195,6 +227,7 @@ c     Eq. 45 in Ref [2]
  20   continue
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c     Eq. 44 in Ref [2]
+      d2psi(:,:)=0d0
       do 30 i=1,3
       do 30 j=1,3
          d2psi(i,j) = (1d0-a)/psi * dpsi(i) * dpsi(j) +
@@ -285,9 +318,9 @@ c             yldc(1:8) - alpha values, yldc(9): yield function exponent
       dimension sdev(ntens),dpsi(ntens),d2psi(ntens,ntens),
      $     c(2,ntens,ntens),x1(ntens),x2(ntens),l2c(2,ntens,ntens),
      $     phis(2),dphis(2,ntens),yldc(9),alpha(8),aux2(ntens,ntens),
-     $     aux1(ntens)
+     $     aux1(ntens),dphis_dchi(2,2)
       real*8 sdev,psi,dpsi,d2psi,c,x1,x2,a,phis,dphis,yldc,alpha,l2c,
-     $     aux2,aux1
+     $     aux2,aux1,dphis_dchi
       integer i
 c     locals controlling
       integer imsg
@@ -319,7 +352,7 @@ cf2py intent(out) psi,dpsi,d2psi
       call calc_x_dev(sdev,aux2,x1) ! x1: linearly transformed stress (prime)
       aux2(:,:) = c(2,:,:)
       call calc_x_dev(sdev,aux2,x2) ! x2: linearly transformed stress (double prime)
-      call hershey(x1,x2,a,phis(1),phis(2))
+      call hershey(x1,x2,a,phis(1),phis(2),dphis_dchi)
       psi = (0.5d0*(phis(1)+phis(2)))**(1d0/a)
       if (idiaw) then
          call w_chr(0,'phis:')
@@ -490,16 +523,35 @@ c     delta: to be calculated (intent: out)
       return
       end subroutine calc_delta
 c-----------------------------------------------------------------------
-      subroutine hershey(xp1,xp2,a,h1,h2)
+      subroutine hershey(xp1,xp2,a,phi1,phi2,dphis_dchi)
 c     Arguments
 c     x1, x2: two linearly transformed stresses
-c     h1, h2: the two Hershey components
+c     phi1, phi2: the two Hershey components
 c     a: exponent
       implicit none
-      dimension xp1(2),xp2(2)
-      real*8 xp1,xp2,a,h1,h2
-      h1 = dabs(xp1(1) - xp1(2))**a
-      h2 = dabs(2d0*xp2(2)+xp2(1))**a +dabs(2d0*xp2(1)+xp2(2))**a
+      dimension xp1(2),xp2(2),dphis_dchi(2,2),chis(2,2)
+      real*8, intent(in)::xp1,xp2,a
+      real*8, intent(out)::phi1,phi2,dphis_dchi
+      real*8 tempval1,tempval2,sgn1,sgn2,chis
+      phi1 = dabs(xp1(1) - xp1(2))**a
+      phi2 = dabs(2d0*xp2(2)+xp2(1))**a +dabs(2d0*xp2(1)+xp2(2))**a
+
+c     dphis/dchi
+      chis(1,:)=xp1(:)
+      chis(2,:)=xp2(:)
+
+c     dphi1/dchi
+      dphis_dchi(1,1) =  a * (chis(1,1) - chis(1,2))**(a-1d0)
+      dphis_dchi(1,2) = -dphis_dchi(1,1)
+c     dphi2/dchi
+      tempval1 = 2d0*chis(2,2) + chis(2,1)
+      tempval2 = 2d0*chis(2,1) + chis(2,2)
+      sgn1=sign(1d0,tempval1)
+      sgn2=sign(1d0,tempval2)
+      dphis_dchi(2,1) =       a * dabs(tempval1)**(a-1d0) * sgn1
+     $                + 2d0 * a * dabs(tempval2)**(a-1d0) * sgn2
+      dphis_dchi(2,2) = 2d0 * a * dabs(tempval1)**(a-1d0) * sgn1
+     $                      + a * dabs(tempval2)**(a-1d0) * sgn2
       end subroutine hershey
 c-----------------------------------------------------------------------
       subroutine calc_princ(s,xp)
