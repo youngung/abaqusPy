@@ -567,15 +567,15 @@ The derivative of $\psi$ with respect to stress tensor ($\mathbf{\sigma}$) is ob
 \begin{equation}
   \label{eq:derivative1}
   \begin{split}
-    \frac{\partial\psi}{\partial\sigma}&=\frac{1}{2a}\psi^{1-a}\bigg(\frac{\partial\phi^{(1)}}{\partial\sigma}+\frac{\partial\phi^{(2)}}{\partial\sigma}\bigg)\\
-    \frac{\partial\psi}{\partial\sigma_i}&=\frac{1}{2a}\psi^{1-a}\bigg(\frac{\partial\phi^{(1)}}{\partial\sigma_i}+\frac{\partial\phi^{(2)}}{\partial\sigma_i}\bigg)
+    \frac{\partial\psi}{\partial\mathbf{\sigma}}&=\frac{1}{a}\bigg(\frac{\phi^{(1)}+\phi^{(2)}}{2}\bigg)^{\frac{1}{a}-1}\bigg(\frac{1}{2}\frac{\partial\phi^{(1)}}{\partial\mathbf{\sigma}\hfill}+\frac{1}{2}\frac{\partial\phi^{(2)}}{\partial\mathbf{\sigma}\hfill}\bigg)=\frac{1}{2a}\psi^{1-a}\bigg(\frac{\partial\phi^{(1)}}{\partial\mathbf{\sigma}\hfill}+\frac{\partial\phi^{(2)}}{\partial\mathbf{\sigma}\hfill}\bigg)\\
+    \frac{\partial\psi}{\partial\sigma_i}&=\frac{1}{2a}\psi^{1-a}\bigg(\frac{\partial\phi^{(1)}}{\partial\sigma_i\hfill}+\frac{\partial\phi^{(2)}}{\partial\sigma_i\hfill}\bigg)
   \end{split}
 \end{equation}
 
 The term $\partial\phi^{(1)}/\partial\mathbf{\sigma}$ is obtained using the chain rule as follows.
 \begin{equation}
   \label{eq:derivative1_1}
-  \frac{\partial\phi^{(1)}}{\partial\sigma_i}=\sum_{l}\sum_{k} \frac{\partial\phi^{(1)}}{\partial\chi^{(1)}_k}  \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}   \frac{\partial X^{(1)}_l}{\partial\sigma_i}
+  \frac{\partial\phi^{(1)}}{\partial\sigma_i\hfill}=\sum_j^2\sum_k^3 \frac{\partial\phi^{(1)}}{\partial\chi^{(1)}_j}  \frac{\partial\chi^{(1)}_j}{\partial X^{(1)}_k}   \frac{\partial X^{(1)}_k}{\partial\sigma_i\hfill}
 \end{equation}
 The same rule applies to $\partial\phi^{(2)}/\partial\mathbf{\sigma}$.
 
@@ -597,9 +597,9 @@ The term $\partial^2\phi^{(1)}/\partial\sigma_i\partial\sigma_j$ can be obtained
 \begin{equation}
   \label{eq:derivative_2_1}
   \begin{split}
-    \frac{\partial^2\phi^{(1)}}{\partial\sigma_i\partial\sigma_j}=&\sum_k \sum_l \sum_m \sum_n \frac{\partial^2\phi^{(1)}}{\partial\chi^{(1)}_k\partial\chi^{(1)}_m} \bigg( \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}    \frac{\partial X^{(1)}_l}{\partial \sigma_i}\bigg)  \bigg( \frac{\partial\chi^{(1)}_m}{\partial X^{(1)}_n}    \frac{\partial X^{(1)}_n}{\partial \sigma_j}\bigg)\\
-    +&\sum_k \sum_l \sum_m \frac{\partial\phi^{(1)} }{\partial\chi^{(1)}_k}     \frac{\partial^2\chi^{(1)}_k}{\partial X^{(1)}_l \partial  X^{(1)}_m}   \frac{\partial X^{(1)}_l}{\partial\sigma_i}    \frac{\partial X^{(1)}_m}{\partial\sigma_j}\\
-    +&\sum_k \sum_l \frac{\partial\phi^{(1)} }{\partial\chi^{(1)}_k}   \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}  \frac{\partial^2 X^{(1)}_l}{\partial\sigma_i\partial\sigma_j}.
+    \frac{\partial^2\phi^{(1)}}{\partial\sigma_i\partial\sigma_j}=&\sum_k^2 \sum_l^3 \sum_m^2 \sum_n^3 \frac{\partial^2\phi^{(1)}}{\partial\chi^{(1)}_k\partial\chi^{(1)}_m} \bigg( \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}    \frac{\partial X^{(1)}_l}{\partial \sigma_i}\bigg)  \bigg( \frac{\partial\chi^{(1)}_m}{\partial X^{(1)}_n}    \frac{\partial X^{(1)}_n}{\partial \sigma_j}\bigg)\\
+    +&\sum_k^2 \sum_l^3 \sum_m^3 \frac{\partial\phi^{(1)} }{\partial\chi^{(1)}_k}     \frac{\partial^2\chi^{(1)}_k}{\partial X^{(1)}_l \partial  X^{(1)}_m}   \frac{\partial X^{(1)}_l}{\partial\sigma_i}    \frac{\partial X^{(1)}_m}{\partial\sigma_j}\\
+    +&\sum_k^2 \sum_l^3 \frac{\partial\phi^{(1)} }{\partial\chi^{(1)}_k}   \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}  \frac{\partial^2 X^{(1)}_l}{\partial\sigma_i\partial\sigma_j}.
   \end{split}
 \end{equation}
 The same approach is needed for $\partial^2\phi^{(2)}/\partial\sigma_i\partial\sigma_j$.
@@ -811,10 +811,10 @@ Note that $\dfrac{\partial X^{(1)}_i}{\partial\sigma_j}$ are anisotropic paramet
 The same applies to $\dfrac{\partial^2 X^{(2)}_i}{\partial\sigma_j\partial\sigma_k}$.
 Therefore, Eq. \ref{eq:derivative_2_1} reduces to
 \begin{equation}
-  \label{eq:derivative_2_4}
+  \label{eq:derivative_2_5}
   \begin{split}
-    \frac{\partial^2\phi^{(1)}}{\partial\sigma_i\partial\sigma_j}=&\sum_k \sum_l \sum_m \sum_n \frac{\partial^2\phi^{(1)}}{\partial\chi^{(1)}_k\partial\chi^{(1)}_m} \bigg( \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}    \frac{\partial X^{(1)}_l}{\partial \sigma_i}\bigg)  \bigg( \frac{\partial\chi^{(1)}_m}{\partial X^{(1)}_n}    \frac{\partial X^{(1)}_n}{\partial \sigma_j}\bigg)\\
-    +&\sum_k \sum_l \sum_m \frac{\partial\phi^{(1)} }{\partial\chi^{(1)}_k}     \frac{\partial^2\chi^{(1)}_k}{\partial X^{(1)}_l \partial  X^{(1)}_m}   \frac{\partial X^{(1)}_l}{\partial\sigma_i}    \frac{\partial X^{(1)}_m}{\partial\sigma_j}.
+    \frac{\partial^2\phi^{(1)}}{\partial\sigma_i\partial\sigma_j}=&\sum_k^2 \sum_l^3 \sum_m^2 \sum_n^3 \frac{\partial^2\phi^{(1)}}{\partial\chi^{(1)}_k\partial\chi^{(1)}_m} \bigg( \frac{\partial\chi^{(1)}_k}{\partial X^{(1)}_l}    \frac{\partial X^{(1)}_l}{\partial \sigma_i}\bigg)  \bigg( \frac{\partial\chi^{(1)}_m}{\partial X^{(1)}_n}    \frac{\partial X^{(1)}_n}{\partial \sigma_j}\bigg)\\
+    +&\sum_k^2 \sum_l^3 \sum_m^3 \frac{\partial\phi^{(1)} }{\partial\chi^{(1)}_k}     \frac{\partial^2\chi^{(1)}_k}{\partial X^{(1)}_l \partial  X^{(1)}_m}   \frac{\partial X^{(1)}_l}{\partial\sigma_i}    \frac{\partial X^{(1)}_m}{\partial\sigma_j}.
   \end{split}
 \end{equation}
 
