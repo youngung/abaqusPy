@@ -44,144 +44,6 @@
 
 \doublespacing
 
-% %% Custom colors
-% \definecolor{dkgreen}{rgb}{0,0.6,0}
-% \definecolor{lime}(0,255,0)
-% \definecolor{gray}{rgb}{0.5,0.5,0.5}
-% \definecolor{mauve}{rgb}{0.58,0,0.82}
-% \definecolor{lightgray}{rgb}{0.83, 0.83, 0.83}
-% \definecolor{lightergray}{rgb}{0.90, 0.90, 0.90}
-% \definecolor{verylightgray}{rgb}{0.95, 0.95, 0.95}
-
-%% not working
-% \colorlet{lcfree}{Green3}
-% \colorlet{lcnorm}{Blue3}
-% \colorlet{lccong}{Red3}
-
-% -------------------------------------------------
-% Set up a new layer for the debugging marks, and make sure it is on
-% top
-% \pgfdeclarelayer{marx}
-% \pgfsetlayers{main,marx}
-
-
-%% custom lst styles
-% \lstdefinestyle{numbers} {numbers=left, stepnumber=1, numberstyle=\tiny, numbersep=10pt}
-% \lstdefinestyle{MyFrame}{backgroundcolor=\color{yellow},frame=shadowbox}
-
-% \lstdefinestyle{Fortran} {
-%   language=Fortran,
-%   aboveskip=3mm,
-%   belowskip=3mm,
-%   showstringspaces=true,
-%   columns=flexible,
-%   basicstyle={\small\ttfamily},
-%   numbers=left,
-%   numberstyle=\tiny\color{red},
-%   keywordstyle=\color{blue},
-%   commentstyle=\color{dkgreen},
-%   stringstyle=\color{mauve},
-%   breaklines=true,
-%   breakatwhitespace=true,
-%   frame=shadowbox,
-%   backgroundcolor=\color{verylightgray},
-%   tabsize=3
-%   }
-
-% \lstdefinestyle{sh} {
-%   language=bash,
-%   aboveskip=3mm,
-%   belowskip=3mm,
-%   showstringspaces=true,
-%   columns=flexible,
-%   basicstyle={\tiny\ttfamily},
-%   numbers=left,
-%   numberstyle=\tiny\color{blue},
-%   keywordstyle=\color{blue},
-%   commentstyle=\color{dkgreen},
-%   stringstyle=\color{mauve},
-%   breaklines=true,
-%   breakatwhitespace=true,
-%   frame=shadowbox,
-%   backgroundcolor=\color{lightergray},
-%   tabsize=3
-%   }
-
-% \lstdefinestyle{Python} {
-%   language=Python,
-%   aboveskip=3mm,
-%   frame=shadowbox,
-%   belowskip=3mm,
-%   showstringspaces=true,
-%   columns=flexible,
-%   basicstyle={\small\ttfamily},
-%   numbers=left,
-%   numberstyle=\tiny\color{red},
-%   keywordstyle=\color{blue},
-%   commentstyle=\color{dkgreen},
-%   stringstyle=\color{mauve},
-%   breaklines=true,
-%   breakatwhitespace=true,
-%   frame=shadowbox,
-%   backgroundcolor=\color{lightgray},
-%   tabsize=3}
-
-% \lstdefinestyle{inp} {
-%   language=bash,
-%   aboveskip=3mm,
-%   frame=shadowbox,
-%   belowskip=3mm,
-%   showstringspaces=true,
-%   columns=flexible,
-%   basicstyle={\tiny\ttfamily\scriptsize},
-%   numbers=left,
-%   numberstyle=\tiny\color{red},
-%   keywordstyle=\color{black},
-%   commentstyle=\color{dkgreen},
-%   stringstyle=\color{mauve},
-%   breaklines=true,
-%   breakatwhitespace=true,
-%   frame=shadowbox,
-%   backgroundcolor=\color{lightgray},
-%   tabsize=3
-%   }
-
-% \lstdefinestyle{txt} {
-%   aboveskip=3mm,
-%   frame=shadowbox,
-%   belowskip=3mm,
-%   showstringspaces=true,
-%   columns=flexible,
-%   basicstyle={\small\ttfamily},
-%   numbers=none,
-%   numberstyle=\tiny\color{red},
-%   keywordstyle=\color{black},
-%   commentstyle=\color{black},
-%   stringstyle=\color{black},
-%   breaklines=true,
-%   breakatwhitespace=true,
-%   frame=shadowbox,
-%   backgroundcolor=\color{lightgray},
-%   tabsize=3
-%   }
-
-% \DeclareCaptionFormat{listing}{\rule{\dimexpr\textwidth+17pt\relax}{0.4pt}\par\vskip1pt#1#2#3}
-% \captionsetup[lstlisting]{format=listing,singlelinecheck=false, margin=0pt, font={sf},labelsep=space,labelfont=bf}
-
-% \renewcommand\lstlistingname{Code}
-% % \lstset{language=Fortran,frame=none}
-% % \lstset{language=bash,frame=none}
-% % \lstset{language=Python,frame=none}
-
-% %% tikz customization
-% \tikzset{state/.style={rectangle,rounded corners,draw=black, very thick,
-%     minimum height=2em,inner sep=2pt,text centered}}
-% \tikzset{decision/.style={diamond,aspect=2,draw=black,very thick,
-%     minimum height=2em,inner sep=2pt,text centered}}
-% \tikzset{process/.style={circle,draw=black,very thick,
-%     minimum height=2em,inner sep=2pt,text centered}}
-% \tikzset{dot/.style={circle,draw=black,thick,
-%     inner sep=0pt,minimum size=4pt}}
 
 \title{Manual for abaqusPy}
 %\date{} % delete this line to display the current date
@@ -190,32 +52,27 @@
 
 \begin{document}
 \pgfplotsset{compat=1.14}
-
-
-% \section{derivatives}
-
-% \begin{eqnarray}
-%   \label{eq:dbau1}
-%   \frac{\partial{f_k}}{\partial{\mathbf{s}}} = \frac{\partial{f_k}}{\partial{g_k}}   \frac{\partial{g_k}}{\partial{\bar{\varepsilon}}}   \frac{\partial{\bar{\varepsilon}}}{\partial{\mathbf{\sigma}}} \frac{\partial\mathbf{\sigma}}{\partial\mathbf{s}}\\
-%   \text{ where      }\ \ \  \frac{\partial{f_k}}{\partial{g_k}} = -g_k^{-q-1} f_k ^{1-q}
-% \end{eqnarray}
-
-
 \section{Microstructure deviator}
 \label{sec:micd}
-
-
-The microstructure deviator may deviate from a {\emph target} direction (i.e., $\hat{\mathbf{t}}$) when non-proportional loading condition is considered.
-The degree of such deviation may be quantified by the double product $\hat{\mathbf{t}}:\hat{\mathbf{h}}$.
-More accurately, this can be characterized by $\cos \chi$, which resembles the parameter introduced by Schmitt et al. \cite{schmitt1994parameter}.
+In the Homogeneous Anisotropic Hardening model proposed by Barlat et al. \cite{barlat2011alternative}, the dynamic changes of anisotropic hardening is described by introducing distortional hardening.
+The HAH model mimics the progressive evolution of microstructures by allowing distortions of yield surface shape along particular direction that is guided by empirical parameter called microstructure deviator (denoted as $\mathbf{h}$).
+Under monotnic loading, the microstructure deviator stays invariable thus keep pointing to a fixed direction in the stress space.
+Note that the 'direction' of the microstructure deviator is often used, which is denoted with the hat operatore, e.g., $\hat{\mathbf{h}}$.
+On the other hand, when loading direction is not monotonic but undergoes, say, an abrupt change, the microstructure deviator may also evolve into a new direction.
+The two remaining questions are then 1) to which new direction should the microstructure deviator rotates and 2) in what way should this 'rotation' occur.
+These questions are very difficult to answer as the microstructure deviator does not correspond to a specific measurable material property because the microstructure deviator is rather a conceptual entity introduced to {\emph effectively} capture the progressive nature of the evolutionary behavior of microstuctrure.
+\newline
+Nevertheless, a proper destination should be specified when the change in direction is required.
+For the sake of argument, we call this new direction of the microstructure deviator the {\emph target} direction (i.e., $\hat{\mathbf{t}}$).
+This direction was originally proposed to align with the direction of applied stress tensor in the stress space \cite{barlat2011alternative}.
+More recently, \cite{Jeong2016} reported that the direction of the applied strain tensor might be more suitable considering the effect of anisotropy pertaining to the crystallographic texture.
+To tackle the second question, Barlat et al. \cite{barlat2011alternative} proposed to use the double product $\hat{\mathbf{t}}:\hat{\mathbf{h}}$ as the measure of speed of rotation.
+More specifically, this has been characterized by the $\cos \chi$ value, which resembles the parameter originally introduced by Schmitt et al. \cite{schmitt1994parameter}:
 \begin{equation}
   \label{eq:coschi}
-\cos\chi = \frac{\hat{\mathbf{t}}:\hat{\mathbf{h}} }{ \sqrt{\hat{\mathbf{t}}:\hat{\mathbf{t}}}\sqrt{\hat{\mathbf{h}}:\hat{\mathbf{h}}}   }
+\cos\chi = \frac{\hat{\mathbf{t}}:\hat{\mathbf{h}} }{ \sqrt{\hat{\mathbf{t}}:\hat{\mathbf{t}}}\sqrt{\hat{\mathbf{h}}:\hat{\mathbf{h}}}}.
 \end{equation}
-The target direction was originally proposed to follow the applied stress deviator $\mathbf{s}$ \cite{barlat2011alternative}.
-Recently, Jeong et al. \cite{Jeong2016} demonstrated that $\hat{\mathbf{t}}=\hat{\dot{\mathbf{\varepsilon}}}$ is more physically relevant by applying a crystal plasticity model for various loading scenarios.
-
-The evolutionary behavior of the microstructure deviator is written with respect to the equivalent strain increment such that
+Furthermore, in the most recent version of the HAH model \cite{barlat2014}, the evolutionary behavior of the microstructure deviator is written with respect to the equivalent strain increment such that
 \begin{equation}
   \label{eq:dmicro1}
   \frac{\partial\hat{\mathbf{h}}}{\partial \bar{\varepsilon}} = k_{R1}\ \text{sgn}(\cos\chi)\big[|\frac{\cos\chi}{H}|^{1/k_{R2}} +g_R \big] \big(\hat{\mathbf{t}}-\cos\chi \hat{\mathbf{h}}\big),
@@ -225,44 +82,69 @@ where $g_R$ evolves according to
   \label{eq:dmicro2}
 \frac{dg_R}{d\bar{\varepsilon}} = k_{R3} \big[k_{R4} (1-\cos^2\chi) -g_R \big].
 \end{equation}
-
-
-\section{Derivatives of linearly transformed stresses}
+\newline
+\section{Linear transformations of stress tensor}
 \label{sec:stress_deriv}
-
-
-There are a few stress tensor transformation used in HAH formalism.
-In the original model of HAH, the stress tensor is decomposed into two contributions: namely, co-linear and orthogonal components with respect to the microstructure deviator.
+To introduce the {\emph distortions} to the yield surface, a few types of transformation of the applied stress tensor are considered.
+As mentioned earlier, such distortion is guided by the microstructure deviator.
+In what follows the definitions of the stress transformation and their derivatives with respect to the applied stress tensor are derived.
+Note that the Voigt notation is used where plausible.
+\newline
+In the original version of the HAH model, the stress tensor is decomposed into two contributions: namely, co-linear and orthogonal components with respect to the microstructure deviator.
+The col-linear component is defined as below:
 \begin{equation}
   \label{eq:decomp1}
-  \mathbf{s_c} = \frac{8}{3} (\mathbf{s}:\hat{\mathbf{h}}) \mathbf{h}
+  \mathbf{s_c} = \frac{8}{3} (\mathbf{s}\cdot\hat{\mathbf{h}}) \mathbf{h}
 \end{equation}
 The derivative of $\mathbf{s_c}$ with respect to $\mathbf{s}$ is
 \begin{eqnarray}
   \begin{split}
   \label{eq:decomp2}
-  \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}}&= \frac{8}{3}\bigg\{  \frac{\partial(\mathbf{s}:\hat{\mathbf{h}})}{\partial\mathbf{s}} \otimes \hat{\mathbf{h}}\bigg\} \\
-  \bigg( \frac{\partial s_c}{\partial s}\bigg)_{ij,kl} &= \frac{8}{3}\Bigg\{ \bigg(\frac{\partial(s_{mn}\hat{h}_{mn})}{\partial s}\bigg)_{ij}\hat{h}_{kl} \Bigg\}=\frac{8}{3}\Bigg\{\frac{1}{2}(\delta_{mi}\delta_{nj}+\delta_{mj}\delta_{ni})\hat{h}_{mn}\hat{h}_{kl} \Bigg\}\\
-  &=\frac{8}{3}\Bigg\{\frac{1}{2}(\hat{h}_{ij}+\hat{h}_{ji})\hat{h}_{kl} \Bigg\}.
+  \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}} &= \frac{8}{3}\bigg\{  \frac{\partial(\mathbf{s}\cdot\hat{\mathbf{h}})}{\partial\mathbf{s}} \otimes \hat{\mathbf{h}}+ (\mathbf{s}\cdot\hat{\mathbf{h}}) \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{s}}\bigg\}\\
+  \bigg( \frac{\partial s_c}{\partial s}\bigg)_{ij}&= \frac{8}{3}\Bigg\{ \bigg(\frac{\partial(s_{k}\hat{h}_{k})}{\partial s_i}\bigg)\hat{h}_j +(s_k\hat{h}_k)\frac{\partial\hat{h}_i}{\partial s_j} \Bigg\}
   \end{split}
 \end{eqnarray}
-
-The orthogonal component is defined as:
+$\dfrac{\partial(s_k\hat{h}_k)}{\partial s_i}$ expands to
+\begin{equation}
+  \label{eq:dsh_ds}
+  \dfrac{\partial(s_1\hat{h}_1+s_2\hat{h}_2+s_3\hat{h}_3+2s_6\hat{h}_6)}{\partial s_i}=
+  \begin{bmatrix}
+    \hat{h}_1&\hat{h}_2&\hat{h}_3&2\hat{h}_6
+  \end{bmatrix}
+\end{equation}
+Therefore, Eq. \ref{eq:decomp2} is expressed as:
+\begin{equation}
+  \label{eq:dsc_ds_matrix}
+  \begin{split}
+    &\begin{bmatrix}
+      \bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{11}&\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{12} &\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{13}&\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{16}\\
+      \bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{21}&\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{22} &\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{23} &\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{26}\\
+      \bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{31}&\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{32} &\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{33}&\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{36}\\
+      \bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{61}&\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{62} &\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{63}&\bigg( \dfrac{\partial s_c}{\partial s}\bigg)_{66}
+    \end{bmatrix}\\
+    &=\dfrac{8}{3}
+    \begin{bmatrix}
+      \hat{h}_1\hat{h}_1&\hat{h}_1\hat{h}_2&\hat{h}_1\hat{h}_3&2\hat{h}_1\hat{h}_6\\
+      \hat{h}_2\hat{h}_1&\hat{h}_2\hat{h}_2&\hat{h}_2\hat{h}_3&2\hat{h}_2\hat{h}_6\\
+      \hat{h}_3\hat{h}_1&\hat{h}_3\hat{h}_2&\hat{h}_3\hat{h}_3&2\hat{h}_3\hat{h}_6\\
+      \hat{h}_6\hat{h}_1&\hat{h}_6\hat{h}_2&\hat{h}_6\hat{h}_3&2\hat{h}_6\hat{h}_6
+    \end{bmatrix}
+    +(s_k\hat{h}_k)\dfrac{\partial\hat{h}_i}{\partial s_j}
+  \end{split}
+\end{equation}
+The orthogonal component is the remaining portion as defined below:
 \begin{eqnarray}
   \label{eq:decomp3}
   \mathbf{s_o} = \mathbf{s} - \mathbf{s}_c.
 \end{eqnarray}
-The derivative is then
+The derivative of $\mathbf{s}_o$ with respect to $\mathbf{s}$ is then
 \begin{eqnarray}
   \label{eq:decomp4}
   \begin{split}
-    \frac{\partial\mathbf{s_o}}{\partial\mathbf{s}} &= \mathbf{I} -   \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}}\\
-    \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij,kl} &= \frac{1}{2}(\delta_{ik}\delta_{jl}+\delta_{il}\delta_{jk})- \bigg(\frac{\partial s_c}{\partial s}\bigg)_{ij,kl}
+    \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij} &= \delta_{ij}- \bigg(\frac{\partial s_c}{\partial s}\bigg)_{ij}.
   \end{split}
 \end{eqnarray}
-
-
-The latent hardening is accounted for by using a linear-transformation of the deviatoric stress tensor into
+The latent hardening is accounted for by using a separate linear-transformation of the deviatoric stress tensor:
 \begin{eqnarray}
   \label{eq:latent_decompose1}
   \mathbf{s}^{\prime\prime}=\mathbf{s}_c+\frac{1}{g_L}\mathbf{s}_o
@@ -271,11 +153,9 @@ Its derivative is obtained as
 \begin{eqnarray}
   \begin{split}
     \label{eq:latent_decompose2}
-    \frac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{s}} &=\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} + g_L^{-1} \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}}.
+    \frac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{s}} &=\frac{\partial\mathbf{s}_c}{\partial\mathbf{s}}-g_L^{-2}\frac{\partial g_L}{\partial \mathbf{s}} +g_L^{-1} \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}}.
   \end{split}
 \end{eqnarray}
-
-
 The stress used for cross hardening goes through below transformation.
 \begin{eqnarray}
   \label{eq:cross_linear1}
@@ -285,30 +165,34 @@ Its derivative with respect to the deviatoric stress can be obtained as:
 \begin{eqnarray}
   \begin{split}
     \label{eq:cross_linear2}
-    \frac{\partial\mathbf{s}_p}{\partial\mathbf{s}}                 &= 4(1-g_s) \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}} \\
-    \bigg(\frac{\partial s_p}{\partial s} \bigg)_{ij,kl} &=  4(1-g_s) \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij,kl}
+    \frac{\partial\mathbf{s}_p}{\partial\mathbf{s}\hfill}  &= -4\mathbf{s}_o\otimes\frac{\partial g_s}{\partial \mathbf{s}}+4(1-g_s) \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}} \\
+    \bigg(\frac{\partial s_p}{\partial s\hfill} \bigg)_{ij} &= -4(s_o)_i\frac{\partial g_s}{\partial s_j} + 4(1-g_s) \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij}\\
+    &= -4(s_o)_i\otimes\frac{\partial g_s}{\partial \bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_k\bigg(\frac{\partial\sigma}{\partial s}\bigg)_{kj} + 4(1-g_s) \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij}
   \end{split}
 \end{eqnarray}
-
-
+Now, what about derivatives with respect to Cauchy stress?
+\begin{equation}
+  \label{eq:dsp_dsig}
+  \begin{split}
+    \bigg(\frac{\partial s_c}{\partial \sigma}\bigg)_{ij}&=\frac{8}{3}\Bigg\{\bigg( \frac{\partial (s_m\hat{h}_m)}{\partial s_i}\hat{h}_k\frac{\partial s_k}{\partial\sigma_j} +(s_m\hat{h}_m) \frac{\partial \hat{h}_i}{\partial \bar{\varepsilon}}\frac{\partial\bar{\varepsilon}}{\partial\sigma} \bigg)  \Bigg\}\\
+    \bigg(\frac{\partial s_o}{\partial \sigma}\bigg)_{ij}&=\bigg(\frac{\partial s}{\partial\sigma}\bigg)_{ij}-\bigg(\frac{\partial s_c}{\partial \sigma}\bigg)_{ij}\\
+    \bigg(\frac{\partial s_p}{\partial \sigma}\bigg)_{ij}&=\bigg(\frac{\partial s_p}{\partial s}\bigg)_{ik} \bigg(\frac{\partial s}{\partial \sigma}\bigg)_{kj}= -4(s_o)_i\otimes\frac{\partial g_s}{\partial \bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_j + 4(1-g_s) \bigg(\frac{\partial s_o}{\partial \sigma}\bigg)_{ij}\\
+    \bigg(\frac{\partial s^{\prime\prime}}{\partial\sigma}\bigg)_{ij}&=\bigg(\frac{\partial s_c}{\partial\sigma}\bigg)_{ij}-g_L^{-2}\frac{\partial g_L}{\partial\bar{\varepsilon}}\frac{\partial\bar{\varepsilon}}{\partial \sigma}\mathbf{s}_o+g_L^{-1}\frac{\partial s_o}{\partial\sigma}
+  \end{split}
+\end{equation}
 \newpage
 \section{Derivatives associated with Bauschinger effect}
 \label{sec:bauschinger}
-
-
 The term $\partial f_k/\partial\mathbf{\sigma}$ depends on the evolutionary behavior of $f_k$ with respect to equivalent strain $\bar{\varepsilon}$.
 This allows the application of the chain rule such as
 \begin{eqnarray}
   \label{eq:dphib7}
   \frac{\partial f_k}{\partial\mathbf{\sigma}}=\frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}  \frac{\partial{\bar{\varepsilon}}}{\partial\mathbf{\sigma}}.
 \end{eqnarray}
-
 \begin{eqnarray}
   \label{eq:fk1}
   f_k = \bigg[ \frac{\sqrt{6H}}{4}   \Big(  g_k^{-q} - 1  \Big)  \bigg] ^{1/q}
 \end{eqnarray}
-
-
 \begin{eqnarray}
   \label{eq:fk2}
   \begin{split}
@@ -316,7 +200,6 @@ This allows the application of the chain rule such as
   &=-g_k^{-q-1} f_k^{1-q}  \ \text{  if } H=8/3
   \end{split}
 \end{eqnarray}
-
 The term $  \partial{g_k}/\partial{\bar{\varepsilon}} $ depends on the sign of $\hat{\mathbf{h}}:\mathbf{s}$.
 For the case of $g_1$ and when  $\hat{\mathbf{h}}:\mathbf{s}<0$:
 \begin{eqnarray}
@@ -328,9 +211,7 @@ whereas, if $\hat{\mathbf{h}}:\mathbf{s}\ge0$,
   \label{eq:dbau3}
 \frac{\partial{g_1}}{\partial{\bar{\varepsilon}}}=k_2 (k_3 H(0)/H(\bar{\varepsilon})-g_1)
 \end{eqnarray}
-
-
-$g_2$ follows a similar rule as follows:
+On the other hand, $g_2$ follows a similar rule as follows:
 when  $\hat{\mathbf{h}}:\mathbf{s}<0$:
 \begin{eqnarray}
   \label{eq:dbau4}
@@ -341,198 +222,183 @@ whereas, if $\hat{\mathbf{h}}:\mathbf{s}\ge0$,
   \label{eq:dbau5}
   \frac{\partial{g_2}}{\partial{\bar{\varepsilon}}}=k_1 \frac{g_3-g_2}{g_2}
 \end{eqnarray}
-
 With explicit indices, the above is expressed as:
 \begin{equation}
   \label{eq:dphib8}
-  \bigg(\frac{\partial f_k}{\partial \sigma}\bigg)_{ij} = \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}  \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{ij}.
+  \bigg(\frac{\partial f_k}{\partial \sigma}\bigg)_i = \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}  \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_i.
 \end{equation}
-
-
-\newpage
+\newline
 \section{Yield surface derivative}
-
-
-The yield surface of HAH model is decomposed into two contributions: the homogeneous and fluctuating terms that are $\phi_h$ and $\phi_b$.
+The yield surface of the HAH model is decomposed into two contributions: the homogeneous and fluctuating terms that are denoted as $\phi_h$ and $\phi_b$, respectively.
 \begin{eqnarray}
   \label{eq:hah_def}
   \Phi(\mathbf{\sigma})=\{\phi_h^q + \phi_b^q \}^{1/q}=\bar{\sigma}
 \end{eqnarray}
-
 The homogeneous term is further decomposed into two contributions:
 \begin{eqnarray}
   \label{eq:hah_homo}
-  \phi_h = \big(\psi(\mathbf{s}^{\prime\prime})^2+\psi(\mathbf{s_p})^2\big)^{1/2}
+  \phi_h = \big(\psi(\mathbf{s}^{\prime\prime})^2+\psi(\mathbf{s}_p)^2\big)^{1/2}
 \end{eqnarray}
-
 Whereas, the fluctuating term is defined as:
 \begin{eqnarray}
     \label{eq:fluc}
 \phi_b  = f_1|\hat{\mathbf{h}}:\mathbf{s} - |\hat{\mathbf{h}}:\mathbf{s}||    + f_2|\hat{\mathbf{h}}:\mathbf{s} + |\hat{\mathbf{h}}:\mathbf{s}||.
 \end{eqnarray}
-
 The derivative of the HAH yield surface is:
 \begin{eqnarray}
   \begin{split}
   \label{eq:hah_deriv}
   \frac{\partial\Phi}{\partial\mathbf{\sigma}} &=\frac{1}{q}\Phi^{(1-q)} \bigg\{                  \frac{\partial{\phi_h^q}}{\partial{\sigma}}  +                 \frac{\partial{\phi_b^q}}{\partial{\sigma}}         \bigg\}\\
-  \bigg(\frac{\partial\Phi}{\partial\sigma}\bigg)_{ij}&=\frac{1}{q}\Phi^{(1-q)} \bigg\{  q \phi_h^{(q-1)}\Big(\frac{\partial{\phi_h}  }{\partial{\sigma}}\Big)_{ij}  + q \phi_b^{(q-1)} \Big(\frac{\partial{\phi_b}  }{ \partial\sigma}\Big)_{ij}         \bigg\}\\
-                                                      &=\Phi^{(1-q)} \bigg\{    \phi_h^{(q-1)}\Big(\frac{\partial{\phi_h}  }{\partial{\sigma}}\Big)_{ij}  + \phi_b^{(q-1)} \Big(\frac{\partial{\phi_b}  }{ \partial\sigma}\Big)_{ij}         \bigg\}
+  \bigg(\frac{\partial\Phi}{\partial\sigma}\bigg)_i&=\frac{1}{q}\Phi^{(1-q)} \bigg\{  q \phi_h^{(q-1)}\Big(\frac{\partial{\phi_h}  }{\partial{\sigma}}\Big)_i  + q \phi_b^{(q-1)} \Big(\frac{\partial{\phi_b}  }{ \partial\sigma}\Big)_i         \bigg\}\\
+                                                      &=\Phi^{(1-q)} \bigg\{    \phi_h^{(q-1)}\Big(\frac{\partial{\phi_h}  }{\partial{\sigma}}\Big)_i  + \phi_b^{(q-1)} \Big(\frac{\partial{\phi_b}  }{ \partial\sigma}\Big)_i         \bigg\}
   \end{split}
 \end{eqnarray}
-
-The terms $\frac{\partial{\phi_h}  }{\partial{\mathbf{\sigma}}}$ and $\frac{\partial{\phi_b}  }{\partial{\mathbf{\sigma}}}$ are obtained in the following sections.
-
-
+The terms $\dfrac{\partial\phi_h}{\partial\mathbf{\sigma}}$ and $\dfrac{\partial\phi_b}{\partial\mathbf{\sigma}}$ are obtained in the following sections.
 \subsection{Derivatives of homogeneous term}
 \label{sec:2.1}
-
-
 The derivative of the homogeneous term is obtained using the chain rule as follows:
 \begin{eqnarray}
   \label{eq:derv1}
-  \frac{\partial{\phi_h}  }{\partial{\mathbf{\sigma}}}  =   \frac{\partial{\phi_h}}{\partial{\mathbf{s}}} \frac{\partial{\mathbf{s}}}{\partial{\mathbf{\sigma}}}.
+  \frac{\partial\phi_h}{\partial\mathbf{\sigma}}  =   \frac{\partial\phi_h}{\partial\mathbf{s}} \frac{\partial\mathbf{s}}{\partial\mathbf{\sigma}}.
 \end{eqnarray}
-
 The term $\partial\phi_h/\partial \mathbf{s} $ is obtained using Eq. \ref{eq:hah_homo}:
 \begin{eqnarray}
   \label{eq:derv2}
   \frac{\partial{\phi_h}  }{\partial{\mathbf{s}}} = \frac{1}{2\phi_h}\bigg\{ 2\psi(\mathbf{s}^{\prime\prime})\frac{\partial{\psi(\mathbf{s}^{\prime\prime})}}{\partial{\mathbf{s}^{\prime\prime}}}  \frac{\partial\mathbf{s}^{\prime\prime}}{\partial \mathbf{s}}  +  2\psi(\mathbf{s}_p) \frac{\partial{\psi(\mathbf{s}_p)}}{\partial{\mathbf{s}_p}} \frac{\partial{\mathbf{s}_p}}{\partial{\mathbf{s}}}\bigg\}
 \end{eqnarray}
-
 By combining Eqs. \ref{eq:derv1} and \ref{eq:derv2}, below equation is obtained:
 \begin{eqnarray}
   \label{eq:derv3}
   \begin{split}
   \frac{\partial{\phi_h}}{\partial{\mathbf{\sigma}}} &=\frac{1}{2\phi_h}\bigg\{ 2\psi(\mathbf{s}^{\prime\prime})\frac{\partial{\psi(\mathbf{s}^{\prime\prime})}}{\partial{\mathbf{s}^{\prime\prime}}}  \frac{\partial\mathbf{s}^{\prime\prime}}{\partial \mathbf{s}} + 2\psi(\mathbf{s}_p) \frac{\partial{\psi(\mathbf{s}_p)}}{\partial{\mathbf{s}_p}} \frac{\partial{\mathbf{s}_p}}{\partial{\mathbf{s}}}\bigg\} \frac{\partial{s}}{\partial{\sigma}}.\\
-  \Big(\frac{\partial{\phi_h}}{\partial\sigma}\Big)_{ij} &= \frac{1}{\phi_h}\bigg\{ \psi(s^{\prime\prime})\Big(\frac{\partial{\psi(s^{\prime\prime})}}{\partial{s^{\prime\prime}}}\Big)_{kl}  \Big(\frac{\partial s^{\prime\prime}}{\partial s}\Big)_{kl,mn} + \\
-    & \psi(s_p) \Big(\frac{\partial{\psi(s_p)}}{\partial{s_p}}\Big)_{kl} \Big(\frac{\partial{s_p}}{\partial s}\Big)_{kl,mn}\bigg\} \Big(\frac{\partial s}{\partial \sigma}\Big)_{mn,ij}
+  \Big(\frac{\partial{\phi_h}}{\partial\sigma}\Big)_i &= \frac{1}{\phi_h}\bigg\{ \psi(s^{\prime\prime})\Big(\frac{\partial{\psi(s^{\prime\prime})}}{\partial{s^{\prime\prime}}}\Big)_{j}  \Big(\frac{\partial s^{\prime\prime}}{\partial\sigma}\Big)_{ji}+\psi(s_p) \Big(\frac{\partial{\psi(s_p)}}{\partial{s_p}}\Big)_{j} \Big(\frac{\partial{s_p}}{\partial\sigma}\Big)_{ji}\bigg\}
   \end{split}
 \end{eqnarray}
-
-
+Find the definitions of $\dfrac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{\sigma}}$ and $\dfrac{\partial\mathbf{s}_p}{\partial\mathbf{\sigma}}$ in Eq. \ref{eq:dsp_dsig}, respectively.
 \subsection{Derivatives of fluctuating term $\partial\phi_b/\partial\mathbf{\sigma}$}
 \label{sec:2.2}
-
-
-
-The term $\phi_b$ depends on the sign of $\hat{\mathbf{h}}:\mathbf{s}$ as shown in Eq. \ref{eq:fluc}.
-When $\hat{\mathbf{h}}:\mathbf{s}\ge0$, Eq. \ref{eq:fluc} reduces to
+The term $\phi_b$ depends on the sign of $\hat{\mathbf{h}}\cdot\mathbf{s}$ as shown in Eq. \ref{eq:fluc}.
+When $\hat{\mathbf{h}}\cdot\mathbf{s}\ge0$, Eq. \ref{eq:fluc} reduces to
 \begin{eqnarray}
     \label{eq:fluc1}
-\phi_b =f_2|2\hat{\mathbf{h}}:\mathbf{s}|=f_2|2\hat{h}_{ij}:s_{ij}|
+\phi_b =f_2|2\hat{\mathbf{h}}\cdot\mathbf{s}|=f_2|2\hat{h}_{i}\cdot s_{i}|
 \end{eqnarray}
-
-
 When $\hat{\mathbf{h}}:\mathbf{s}<0$, Eq. \ref{eq:fluc} reduces to
 \begin{eqnarray}
     \label{eq:fluc2}
-\phi_b  =f_1|2\hat{\mathbf{h}}:\mathbf{s}|=f_1|2\hat{h}_{ij}:s_{ij}|.
+\phi_b  =f_1|2\hat{\mathbf{h}}\cdot\mathbf{s}|=f_1|2\hat{h}_{i}\cdot s_{i}|.
 \end{eqnarray}
-
 Generally,
 \begin{eqnarray}
     \label{eq:fluc3}
-\phi_b  =f_k|2\hat{\mathbf{h}}:\mathbf{s}|=f_k|2\hat{h}_{ij}:s_{ij}|,
+\phi_b  =f_k|2\hat{\mathbf{h}}\cdot\mathbf{s}|=2f_k|\hat{h}_1s_1+\hat{h}_2s_2+\hat{h}_3s_3+2\hat{h}_6s_6|,
 \end{eqnarray}
-with the index $k$ being dependent on the sign of $\hat{\mathbf{h}}:\mathbf{s}$.
+with the index $k$ being dependent on the sign of $\hat{\mathbf{h}}\cdot\mathbf{s}$.
 The derivative $\partial\phi_b/\partial\mathbf{s}$ can be expressed as:
 \begin{eqnarray}
     \label{eq:dphib1}
-    \frac{\partial\phi_b}{\partial\mathbf{\sigma}} = 2\frac{\partial f_k}{\partial\mathbf{\sigma}}|\hat{\mathbf{h}}:\mathbf{s}| + 2 f_k \frac{\partial|\hat{\mathbf{h}}:\mathbf{s}|}{\partial\mathbf{\sigma}}
+    \frac{\partial\phi_b}{\partial\mathbf{\sigma}} = 2\frac{\partial f_k}{\partial\mathbf{\sigma}}|\hat{\mathbf{h}}\cdot\mathbf{s}| + 2 f_k \frac{\partial|\hat{\mathbf{h}}\cdot\mathbf{s}|}{\partial\mathbf{\sigma}}
 \end{eqnarray}
-
-The term $\partial|\hat{\mathbf{h}}:\mathbf{s}|/\partial\mathbf{\sigma}$ takes on either the below depending on the sign of $\hat{\mathbf{h}}:\mathbf{s}$.
+The term $\partial|\hat{\mathbf{h}}\cdot\mathbf{s}|/\partial\mathbf{\sigma}$ takes on either the below depending on the sign of $\hat{\mathbf{h}}\cdot\mathbf{s}$.
 \begin{eqnarray}
   \label{eq:dphib2}
-  \frac{\partial |\hat{\mathbf{h}}:\mathbf{s}| }{\partial \mathbf{\sigma}} &=&  \frac{\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)}{\partial\mathbf{\sigma}}   \text{  when } \hat{\mathbf{h}}:\mathbf{s}\ge0\\
+  \frac{\partial |\hat{\mathbf{h}}\cdot\mathbf{s}| }{\partial \mathbf{\sigma}} &=&  \frac{\partial \big(\hat{\mathbf{h}}\cdot\mathbf{s}\big)}{\partial\mathbf{\sigma}}   \text{  when } \hat{\mathbf{h}}\cdot\mathbf{s}\ge0\\
   \label{eq:dphib2_}
-&=&- \frac{\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)}{\partial\mathbf{\sigma}}   \text{  when } \hat{\mathbf{h}}:\mathbf{s} < 0
+&=&- \frac{\partial \big(\hat{\mathbf{h}}\cdot\mathbf{s}\big)}{\partial\mathbf{\sigma}}   \text{  when } \hat{\mathbf{h}}\cdot\mathbf{s} < 0
 \end{eqnarray}
-
 Substituting Eqs. \ref{eq:dphib2} and \ref{eq:dphib2_} to \ref{eq:dphib1} gives
 \begin{equation}
   \label{eq:dphib1_}
   \begin{split}
-    \frac{\partial\phi_b}{\partial\mathbf{\sigma}}          &= 2\ \text{sgn}(\hat{\mathbf{h}}:\mathbf{s}) \bigg[  \frac{\partial{f_k}}{\partial{\mathbf{\sigma}}} (\hat{\mathbf{h}}:\mathbf{s}) + f_k \frac{\partial\big({\hat{\mathbf{h}}:\mathbf{s}}\big)}{\partial{\mathbf{\sigma}}} \bigg]\\
-    \bigg(\frac{\partial\phi_b}{\partial \sigma}\bigg)_{ij} &= 2\ \text{sgn}(\hat{h}_{mn}s_{mn}) \bigg[  \bigg(\frac{\partial f_k}{\partial \sigma}\bigg)_{ij} (\hat{h}_{mn}s_{mn}) + f_k \bigg(\frac{\partial\big({\hat{h}_{mn}s_{mn}}\big)}{\partial \sigma}\bigg)_{ij} \bigg]\\
+    \frac{\partial\phi_b}{\partial\mathbf{\sigma}}          &= 2\ \text{sgn}(\hat{\mathbf{h}}\cdot\mathbf{s}) \bigg[  \frac{\partial{f_k}}{\partial{\mathbf{\sigma}}} (\hat{\mathbf{h}}\cdot\mathbf{s}) + f_k \frac{\partial\big({\hat{\mathbf{h}}\cdot\mathbf{s}}\big)}{\partial{\mathbf{\sigma}}} \bigg]\\
+    \bigg(\frac{\partial\phi_b}{\partial \sigma}\bigg)_{i} &= 2\ \text{sgn}(\hat{h}_{m}s_{m}) \bigg[  \bigg(\frac{\partial f_k}{\partial \sigma}\bigg)_{i} (\hat{h}_{m}s_{m}) + f_k \bigg(\frac{\partial\big({\hat{h}_{m}s_{m}}\big)}{\partial \sigma}\bigg)_{i} \bigg]\\
   \end{split}
 \end{equation}
-
-
-\subsubsection{$\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/ \partial\mathbf{\sigma}$ }
+\subsubsection{$\partial\big(\hat{\mathbf{h}}\cdot\mathbf{s}\big)/ \partial\mathbf{\sigma}$ }
 \label{sec:3.2.1}
-
-
-The derivative  $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/ \partial\mathbf{\sigma}$ is obtained as:
+The derivative  $\partial\big(\hat{\mathbf{h}}\cdot\mathbf{s}\big)/ \partial\mathbf{\sigma}$ is obtained as:
 \begin{equation}
   \begin{split}
     \label{eq:dphib3}
-    \frac{\partial \big(\hat{\mathbf{h}}:\mathbf{s} \big)  } {\partial\mathbf{\sigma}} &= \frac{\partial \hat{\mathbf{h}}}{\partial\mathbf{\sigma}} : \mathbf{s} +\hat{\mathbf{h}}:\frac{\partial \mathbf{s}}{\partial\mathbf{\sigma}}\\
-    \bigg(\frac{\partial \big(\hat{h}:s \big)  } {\partial \sigma}\bigg)_{ij} &= \bigg(\frac{\partial\hat{h}}{\partial \sigma}\bigg)_{ij,kl} s_{kl} +\hat{h}_{kl}\frac{\partial s}{\partial\sigma}_{kl,ij}
+    \frac{\partial \big(\hat{\mathbf{h}}\cdot\mathbf{s} \big)  } {\partial\mathbf{\sigma}} &= \frac{\partial \hat{\mathbf{h}}}{\partial\mathbf{\sigma}}\cdot\mathbf{s} +\hat{\mathbf{h}}\cdot\frac{\partial \mathbf{s}}{\partial\mathbf{\sigma}}\\
+    \bigg(\frac{\partial \big(\hat{h}\cdot s\big)} {\partial\sigma}\bigg)_i &= \bigg(\frac{\partial\hat{h}}{\partial \sigma}\bigg)_{ij} s_j +\hat{h}_j\frac{\partial s}{\partial\sigma}_{ji}
   \end{split}
 \end{equation}
-
 The term $ \partial\hat{\mathbf{h}}/ \partial\mathbf{\sigma} $ can be obtained through:
 \begin{equation}
   \label{eq:dphib4}
 \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{\sigma}}=\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}}   \frac{\partial{\bar{\varepsilon}}}{\partial{\mathbf{\sigma}}}
 \end{equation}
-
 $\partial\hat{\mathbf{h}}/\partial\bar{\varepsilon} $ can be obtained using the evolutionary rule of $\hat{\mathbf{h}}$.
 Note that $\partial\bar{\mathbf{\varepsilon}}/\partial\mathbf{\sigma}$ can be obtained using the normality rule:
 \begin{equation}
   \label{eq:dphib5}
-  \frac{\partial{\mathbf{\sigma}}}{\partial{\bar{\varepsilon}}} = - \mathbb{C}^{el} : \frac{\partial\Phi}{\partial{\mathbf{\sigma}}} = -\mathbb{C}^{el}_{ij,kl} \bigg(\frac{\partial\Phi}{\partial\sigma}\bigg)_{kl}
+  \bigg(\frac{\partial{\mathbf{\sigma}}}{\partial{\bar{\varepsilon}}}\bigg)_i = - \mathbb{C}^{el} \cdot \frac{\partial\Phi}{\partial{\mathbf{\sigma}}} = -\mathbb{C}^{el}_{ij} \bigg(\frac{\partial\Phi}{\partial\sigma}\bigg)_j
 \end{equation}
 which leads to
 \begin{equation}
   \label{eq:dphib6}
   \begin{split}
-      \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{\sigma}} &=\frac{\partial\hat{\mathbf{h}}}{\partial\bar{\varepsilon}}\otimes \bigg\{ \Big\{- \mathbb{C}^{el} : \frac{\partial\Phi}{\partial\mathbf{\sigma}}\Big\}^{-1} \bigg\}\\
-    \bigg(\frac{\partial\hat{h}}{\partial \sigma}\bigg)_{ij,l}&=\bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg\{- \mathbb{C}^{el}_{kl,mn} \Big(\frac{\partial\Phi}{\partial\sigma}\Big)_{mn}\bigg\}^{-1}
+      \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{\sigma}} &=\frac{\partial\hat{\mathbf{h}}}{\partial\bar{\varepsilon}}\otimes \bigg\{ \Big\{- \mathbb{C}^{el} \cdot \frac{\partial\Phi}{\partial\mathbf{\sigma}}\Big\}^{-1} \bigg\}\\
+    \bigg(\frac{\partial\hat{h}}{\partial \sigma}\bigg)_{ij}&=\bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_i \bigg\{-\mathbb{C}^{el}_{jk} \Big(\frac{\partial\Phi}{\partial\sigma}\Big)_{k}\bigg\}^{-1}
   \end{split}
 \end{equation}
 Substitute Eq. \ref{eq:dphib6} to Eq. \ref{eq:dphib3} to have
 \begin{equation}
   \label{eq:dphib6_1}
   \begin{split}
-    \frac{\partial \big(\hat{\mathbf{h}}:\mathbf{s}\big)  }{\partial\mathbf{\sigma}}&=\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}} \bigg\{ \Big\{- \mathbb{C}^{el} : \frac{\partial \Phi}{\partial{\mathbf{\sigma}}}\Big\}^{-1}:\mathbf{s}\bigg\} + \hat{\mathbf{h}}:\frac{\partial\mathbf{s}}{\partial\mathbf{\sigma}}\\
-    \bigg(\frac{\partial \big(\hat{h}:s\big)}{\partial \sigma}\bigg)_{ij} & = \bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg\{\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{mn} s_{mn}\bigg\} + \hat{h}_{mn}\bigg(\frac{\partial s}{\partial \sigma}\bigg)_{mn,ij},
+    \frac{\partial \big(\hat{\mathbf{h}}\cdot\mathbf{s}\big)  }{\partial\mathbf{\sigma}}&=\frac{\partial{\hat{\mathbf{h}}}}{\partial{\bar{\varepsilon}}} \bigg\{ \Big\{- \mathbb{C}^{el} \cdot \frac{\partial \Phi}{\partial{\mathbf{\sigma}}}\Big\}^{-1}\cdot\mathbf{s}\bigg\} + \hat{\mathbf{h}}\cdot\frac{\partial\mathbf{s}}{\partial\mathbf{\sigma}}\\
+    \bigg(\frac{\partial \big(\hat{h}\cdot s\big)}{\partial \sigma}\bigg)_i & = \bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_i \bigg\{\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_m s_m\bigg\} + \hat{h}_m\bigg(\frac{\partial s}{\partial \sigma}\bigg)_{mi},
   \end{split}
 \end{equation}
 where $\partial \hat{\mathbf{h}}/ \partial\bar{\varepsilon}$ is given in Eq. \ref{eq:dmicro1}.
-
-
 \subsubsection{Calculation procedure on $\big(\partial\phi_b/\partial \sigma\big)_{ij}$}
 \label{sec:calc}
-
-
 Substitution of Eqs. \ref{eq:dphib8} and \ref{eq:dphib6_1} into Eq. \ref{eq:dphib1_} gives below:
-
 \begin{equation}
   \label{eq:dphib_main}
   \begin{split}
-    \bigg(\frac{\partial\phi_b}{\partial \sigma}\bigg)_{ij} &= 2\ \text{sgn}(\hat{h}_{mn}s_{mn}) \bigg[(\hat{h}_{mn}s_{mn})
+    \bigg(\frac{\partial\phi_b}{\partial \sigma}\bigg)_i &= 2\ \text{sgn}(\hat{h}_ms_m) \bigg[(\hat{h}_ms_m)
     \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial \bar{\varepsilon}}
-    \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{kl}
+    \bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_i
    \\
     &+ f_k\bigg\{
-    \bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_{ij} \bigg\{\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{mn} s_{mn}\bigg\} + \hat{h}_{kl} \bigg(\frac{\partial s}{\partial \sigma}\bigg)_{kl,ij}
+    \bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_i \bigg\{\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_m s_m\bigg\} + \hat{h}_j \bigg(\frac{\partial s}{\partial \sigma}\bigg)_{ji}
       \bigg\}
     \bigg]
   \end{split}
 \end{equation}
-
 Note that the above equation is an implicit function of $\partial\Phi/\partial\sigma\ $(i.e., $\partial\Phi/\partial \sigma$) through $\partial\bar{\varepsilon}/\partial\sigma$ as shown in Eq. \ref{eq:dphib5}.
-
-
-
 \newpage
 \section{Calculation procedure}
 \label{sec:prc}
-\begin{enumerate}[1)]
-\item We start to calculate $\cos\chi$ and $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}, respectively.
+
+The first derivative of the HAH yield surface is summarized as below:
+
+\begin{equation}
+  \label{eq:hah_yieldsurface_derivative}
+  \begin{split}
+    \dfrac{\partial\Phi(\sigma)}{\partial\sigma}&=\frac{1}{q}\Phi^{1-q}\bigg\{\phi_h^{(q-1)}\frac{\partial\phi_h}{\partial\sigma} + \phi_b^{(q-1)}\frac{\partial\phi_b}{\partial\sigma}\bigg\}\\
+    &=\frac{1}{q}\Phi^{1-q}\bigg[\phi_h^{(q-1)}\frac{1}{2\phi_h}\bigg\{ 2\psi(\mathbf{s}^{\prime\prime})\frac{\partial{\psi(\mathbf{s}^{\prime\prime})}}{\partial{\mathbf{s}^{\prime\prime}}}  \frac{\partial\mathbf{s}^{\prime\prime}}{\partial \mathbf{\sigma}}+ 2\psi(\mathbf{s}_p) \frac{\partial{\psi(\mathbf{s}_p)}}{\partial{\mathbf{s}_p}} \frac{\partial{\mathbf{s}_p}}{\partial{\mathbf{\sigma}}}\bigg\} \\
+    &+ \phi_b^{(q-1)}\frac{\partial\phi_b}{\partial\sigma}\bigg]
+  \end{split}
+\end{equation}
+More explicitly, the below is obtained.
+\begin{equation}
+  \label{eq:hah_yieldsurface_derivative_aux}
+  \begin{split}
+    \dfrac{\partial\Phi(\mathbf{\sigma})}{\partial\mathbf{\sigma}}&=\frac{1}{q}\Phi^{1-q}\bigg\{\phi_h^{(q-1)}\frac{\partial\phi_h}{\partial\mathbf{\sigma}}+\phi_b^{(q-1)}\frac{\partial\phi_b}{\partial\mathbf{\sigma}}\bigg\}\\
+    &=\frac{1}{q}\Phi^{1-q}\bigg[\phi_h^{(q-2)}\bigg\{\psi(\mathbf{s}^{\prime\prime})\frac{\partial{\psi(\mathbf{s}^{\prime\prime})}}{\partial{\mathbf{s}^{\prime\prime}}}\frac{\partial\mathbf{s}^{\prime\prime}}{\partial \mathbf{\sigma}}+\psi(\mathbf{s}_p)\frac{\partial{\psi(\mathbf{s}_p)}}{\partial{\mathbf{s}_p}}\frac{\partial{\mathbf{s}_p}}{\partial{\mathbf{\sigma}}}\bigg\}\\
+    &+\phi_b^{(q-1)}2\ \text{sgn}(\hat{\mathbf{h}}\cdot\mathbf{s})\bigg\{(\hat{\mathbf{h}}\cdot\mathbf{s})
+    \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial\bar{\varepsilon}}
+    \frac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}}+f_k\Bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}}\cdot\mathbf{s}\bigg)+\hat{h}\cdot\frac{\partial\mathbf{s}}{\partial \mathbf{\sigma}}
+      \Bigg)\bigg\} \bigg]
+  \end{split}
+\end{equation}
+with $k$ being 1 or 2 depending on the sign of $\hat{\mathbf{h}}\cdot\mathbf{s}$.
+Note that both $\dfrac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{\sigma}}$ and $\dfrac{\partial\mathbf{s}_p}{\partial\mathbf{\sigma}}$ depend on $\dfrac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}}$.
+ We start to calculate $\cos\chi$ and $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}, respectively.
+\begin{enumerate}
 \item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib6}. This also requires $\mathbb{C}^{el}$ and $\partial\Phi/\partial\mathbf{\sigma}$, which gives $\frac{\partial\bar{\varepsilon}}{\partial\sigma}$.
 \item Obtain $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib3}
 \item Also, obtain $\partial \mathbf{s_c}/\partial \mathbf{s}$ and $\partial \mathbf{s_o}/\partial\mathbf{s}$ in Eqs. \ref{eq:decomp2} and \ref{eq:decomp4}, respectively.
@@ -628,7 +494,6 @@ a. Terms $\partial\phi^{(1)}/\partial\mathbf{\chi}^{(1)}$ and $\partial\phi^{(2)
     \end{bmatrix}
   \end{split}
 \end{equation}
-
 With the above, the second order derivatives ($\partial^2\phi^{(1)}/\partial\chi^{(1)}_i\partial\chi^{(1)}_j$ and $\partial^2\phi^{(2)}/\partial\chi^{(2)}_i\partial\chi^{(2)}_i$) are obtained as below:
 \begin{equation}
   \label{eq:derivative_2_3}
@@ -667,7 +532,6 @@ With the above, the second order derivatives ($\partial^2\phi^{(1)}/\partial\chi
   \end{split}
 \end{equation}
 \newline
-
 b. Terms $\partial\chi^{(1)}_i/\partial X^{(1)}_j$ is obtained on the basis of the below equation.
 \begin{equation}
   \label{eq:princ}
@@ -694,7 +558,6 @@ There are a few useful results as below:
     \frac{\partial\Delta}{\partial X_1}=2(X_1-X_2),\ \frac{\partial\Delta}{\partial X_2}=-2(X_1-X_2)=-\frac{\partial\Delta}{\partial X_1},\text{ and } \frac{\partial\Delta}{\partial X_3}=8X_3\\
   \end{split}
 \end{equation}
-
 A few more useful results for second order derivatives are listed below.
 \begin{equation}
   \label{eq:princ3}
@@ -710,7 +573,6 @@ A few more useful results for second order derivatives are listed below.
     0&  0& 8
   \end{bmatrix}
 \end{equation}
-
 The first derivative $\partial\chi^{(1)}_i/\partial X^{(1)}_j$  is obtained as below:
 \begin{equation}
   \label{eq:dchi_dx_1}
@@ -754,7 +616,6 @@ The first derivative $\partial\chi^{(1)}_i/\partial X^{(1)}_j$  is obtained as b
 \end{equation}
 where the third equality can be useful later.
 The same applies to $ \partial\chi^{(2)}_i/\partial X^{(2)}_j$.
-
 Now, the second derivative ($\partial^2\chi_1^{(1)}/\partial X^{(1)}_i\partial X^{(1)}_j$) is as below:
 \begin{equation}
   \label{eq:d2chi_dxdx}
@@ -789,24 +650,22 @@ Using Eq. \ref{eq:dchi_dx_1}, $\dfrac{\partial^2\chi_2^{(1)}}{\partial X_i^{(1)}
 
 \begin{equation}
   \label{eq:d2chi_dxdx_2}
-  \begin{bmatrix}
-    \dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_1\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_1\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_1\partial X^{(1)}_3}\\
-    \dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_2\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_2\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_2\partial X^{(1)}_3}\\
-    \dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_3\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_3\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_3\partial X^{(1)}_3}
-  \end{bmatrix}
-  =
-  \begin{bmatrix}
-    \dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_3}\\
-    \dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_3}\\
-   -\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_1}&-\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_2}&-\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_3}
-  \end{bmatrix}
+  \begin{split}
+    \begin{bmatrix}
+      \dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_1\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_1\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_1\partial X^{(1)}_3}\\
+      \dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_2\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_2\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_2\partial X^{(1)}_3}\\
+      \dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_3\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_3\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_2}{\partial X^{(1)}_3\partial X^{(1)}_3}
+    \end{bmatrix}
+    =\\
+    \begin{bmatrix}
+      \dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_2\partial X^{(1)}_3}\\
+      \dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_1}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_2}&\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_1\partial X^{(1)}_3}\\
+      -\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_1}&-\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_2}&-\dfrac{\partial^2\chi^{(1)}_1}{\partial X^{(1)}_3\partial X^{(1)}_3}
+    \end{bmatrix}
+  \end{split}
 \end{equation}
-
 The formalism in Eqs. \ref{eq:d2chi_dxdx} and \ref{eq:d2chi_dxdx_2} applies to $\dfrac{\partial^2\chi_i^{(2)}}{\partial X_j^{(2)} \partial X_k^{(2)}}$.
-
-
 c. $\dfrac{\partial^2 X^{(1)}_i}{\partial\sigma_j\partial\sigma_k}$
-
 Note that $\dfrac{\partial X^{(1)}_i}{\partial\sigma_j}$ are anisotropic parameters that are constant so that $\dfrac{\partial^2 X^{(1)}_i}{\partial\sigma_j\partial\sigma_k}$ lead to zeros.
 The same applies to $\dfrac{\partial^2 X^{(2)}_i}{\partial\sigma_j\partial\sigma_k}$.
 Therefore, Eq. \ref{eq:derivative_2_1} reduces to
@@ -819,12 +678,7 @@ Therefore, Eq. \ref{eq:derivative_2_1} reduces to
 \end{equation}
 
 \newpage
-
 \bibliography{bib}
 \bibliographystyle{ieeetr}
 
 \end{document}
-
-
-
-%\bibliographystyle{ieeetr}
