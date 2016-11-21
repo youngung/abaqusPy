@@ -170,7 +170,7 @@ Its derivative with respect to the deviatoric stress can be obtained as:
     &= -4(s_o)_i\otimes\frac{\partial g_s}{\partial \bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_k\bigg(\frac{\partial\sigma}{\partial s}\bigg)_{kj} + 4(1-g_s) \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij}
   \end{split}
 \end{eqnarray}
-Now, what about derivatives with respect to Cauchy stress?
+Now, the derivatives with respect to Cauchy stress is given below,
 \begin{equation}
   \label{eq:dsp_dsig}
   \begin{split}
@@ -180,6 +180,14 @@ Now, what about derivatives with respect to Cauchy stress?
     \bigg(\frac{\partial s^{\prime\prime}}{\partial\sigma}\bigg)_{ij}&=\bigg(\frac{\partial s_c}{\partial\sigma}\bigg)_{ij}-g_L^{-2}\frac{\partial g_L}{\partial\bar{\varepsilon}}\frac{\partial\bar{\varepsilon}}{\partial \sigma}\mathbf{s}_o+g_L^{-1}\frac{\partial s_o}{\partial\sigma}
   \end{split}
 \end{equation}
+where $\dfrac{\partial g_L}{\partial\bar{\varepsilon}}$ is given as:
+\begin{equation}
+  \label{eq:dgl_de}
+  \dfrac{\partial g_L}{\partial\bar{\varepsilon}}=k_L\bigg[\frac{\bar{\sigma}(\bar{\varepsilon})-\bar{\sigma}(0)}{\bar{\sigma}(\bar{\varepsilon})}
+  \bigg(\sqrt{L(1-\cos^2\chi)+\cos^2\chi)}-1\bigg)+1-g_L\bigg]
+\end{equation}
+
+
 \newpage
 \section{Derivatives associated with Bauschinger effect}
 \label{sec:bauschinger}
@@ -389,7 +397,7 @@ More explicitly, the below is obtained.
   \begin{split}
     \dfrac{\partial\Phi(\mathbf{\sigma})}{\partial\mathbf{\sigma}}&=\frac{1}{q}\Phi^{1-q}\bigg\{\phi_h^{(q-1)}\frac{\partial\phi_h}{\partial\mathbf{\sigma}}+\phi_b^{(q-1)}\frac{\partial\phi_b}{\partial\mathbf{\sigma}}\bigg\}\\
     &=\frac{1}{q}\Phi^{1-q}\bigg[\phi_h^{(q-2)}\bigg\{\psi(\mathbf{s}^{\prime\prime})\frac{\partial{\psi(\mathbf{s}^{\prime\prime})}}{\partial{\mathbf{s}^{\prime\prime}}}\frac{\partial\mathbf{s}^{\prime\prime}}{\partial \mathbf{\sigma}}+\psi(\mathbf{s}_p)\frac{\partial{\psi(\mathbf{s}_p)}}{\partial{\mathbf{s}_p}}\frac{\partial{\mathbf{s}_p}}{\partial{\mathbf{\sigma}}}\bigg\}\\
-    &+\phi_b^{(q-1)}2\ \text{sgn}(\hat{\mathbf{h}}\cdot\mathbf{s})\bigg\{(\hat{\mathbf{h}}\cdot\mathbf{s})
+    &+2\phi_b^{(q-1)}\text{sgn}(\hat{\mathbf{h}}\cdot\mathbf{s})\bigg\{(\hat{\mathbf{h}}\cdot\mathbf{s})
     \frac{\partial f_k}{\partial g_k} \frac{\partial g_k}{\partial\bar{\varepsilon}}
     \frac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}}+f_k\Bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}}\cdot\mathbf{s}\bigg)+\hat{h}\cdot\frac{\partial\mathbf{s}}{\partial \mathbf{\sigma}}
       \Bigg)\bigg\} \bigg]
@@ -397,7 +405,16 @@ More explicitly, the below is obtained.
 \end{equation}
 with $k$ being 1 or 2 depending on the sign of $\hat{\mathbf{h}}\cdot\mathbf{s}$.
 Note that both $\dfrac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{\sigma}}$ and $\dfrac{\partial\mathbf{s}_p}{\partial\mathbf{\sigma}}$ depend on $\dfrac{\partial\bar{\varepsilon}}{\partial\mathbf{\sigma}}$.
- We start to calculate $\cos\chi$ and $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}, respectively.
+
+For better understanding, Eq. \ref{eq:hah_yieldsurface_derivative_aux} is expressed as:
+\begin{equation}
+  \label{eq:hah_yieldsurface_derivative_short}
+  \bigg(\dfrac{\partial\Phi(\mathbf{\sigma})}{\partial\mathbf{\sigma}}\bigg)_i=\frac{1}{q}\Phi^{1-q}\bigg[\phi_h^{(q-2)}\bigg\{\psi(\mathbf{s}^{\prime\prime})A_i+\psi(\mathbf{s}_p)B_i\bigg\}+2\phi_b^{(q-1)}\text{sgn}(\hat{\mathbf{h}}\cdot\mathbf{s})\bigg\{C_i+ D_i\bigg\} \bigg]
+\end{equation}
+where $A_{i}=\sum_j\bigg(\dfrac{\partial\phi}{\partial\mathbf{s}^{\prime\prime}}\bigg)_{j}\bigg(\dfrac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{\sigma}}\bigg)_{ji}$, $B_{i}=\bigg[\sum_m(\hat{h}_ms_m)\bigg]\sum_j\bigg(\dfrac{\partial\phi}{\partial\mathbf{s}_p}\bigg)_{j}\bigg(\dfrac{\partial\mathbf{s}_p}{\partial\mathbf{\sigma}}\bigg)_{ji}$,$C_i=\dfrac{\partial f_k}{\partial g_k}\dfrac{\partial g_k}{\partial \bar{\varepsilon}}\bigg(\dfrac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{i}$ and $D_i= f_k\bigg[\bigg(\dfrac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_i\sum_m\bigg\{{\bigg(\dfrac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_m s_m}\bigg\}+\sum_j\bigg\{\hat{h}_j\bigg(\dfrac{\partial s}{\partial\sigma}\bigg)_{ji}\bigg\} \bigg]$.
+Since $\dfrac{\partial\bar{\varepsilon}}{\partial\sigma}=\bigg\{-\mathbb{C}^{el}\cdot\dfrac{\partial\Phi}{\partial\mathbf{\sigma}}\bigg\}^{-1}$, Eq. \ref{eq:hah_yieldsurface_derivative_aux} is an implicit function.
+Moreover, each of $A_i, B_i, C_i$ and $D_i$ is individually dependent on $\dfrac{\partial\Phi}{\partial\sigma}$.
+We start to calculate $\cos\chi$ and $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}, respectively.
 \begin{enumerate}
 \item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib6}. This also requires $\mathbb{C}^{el}$ and $\partial\Phi/\partial\mathbf{\sigma}$, which gives $\frac{\partial\bar{\varepsilon}}{\partial\sigma}$.
 \item Obtain $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib3}
@@ -410,8 +427,6 @@ Note that both $\dfrac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{\sigma
 \item Plug $\partial \phi_b/\partial\mathbf{\sigma}$ and $\partial\phi_h/\partial\mathbf{\sigma}$ into Eq. \ref{eq:hah_deriv}.
 % \item Note that both $\partial \phi_b/\partial\mathbf{\sigma}$ and $\partial\phi_h/\partial\mathbf{\sigma}$ are dependent on $\partial\Phi/\partial\mathbf{\sigma}.$
 \end{enumerate}
-
-
 \newpage
 \section{yld2000-2d yield function}
 The current section presents discuss the mathematical formalism of yld2000-2d yield surface.
