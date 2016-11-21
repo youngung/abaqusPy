@@ -104,7 +104,8 @@ The derivative of $\mathbf{s_c}$ with respect to $\mathbf{s}$ is
   \bigg( \frac{\partial s_c}{\partial s}\bigg)_{ij}&= \frac{8}{3}\Bigg\{ \bigg(\frac{\partial(s_{k}\hat{h}_{k})}{\partial s_i}\bigg)\hat{h}_j +(s_k\hat{h}_k)\frac{\partial\hat{h}_i}{\partial s_j} \Bigg\}
   \end{split}
 \end{eqnarray}
-$\dfrac{\partial(s_k\hat{h}_k)}{\partial s_i}$ expands to
+In the plane stress space only three stress components (i.e., $\sigma_{11}, \sigma_{22},$ and $\sigma_{12}$) are relevant, which then leads to four non-zero components in the deviatoric space, i.e., $s_{11}, s_{22}, s_{33}$ (i.e., $s_{33}=-s_{11}-s_{22}$) $s_{12}$.
+Therefore, $\dfrac{\partial(s_k\hat{h}_k)}{\partial s_i}$ expands to
 \begin{equation}
   \label{eq:dsh_ds}
   \dfrac{\partial(s_1\hat{h}_1+s_2\hat{h}_2+s_3\hat{h}_3+2s_6\hat{h}_6)}{\partial s_i}=
@@ -112,7 +113,7 @@ $\dfrac{\partial(s_k\hat{h}_k)}{\partial s_i}$ expands to
     \hat{h}_1&\hat{h}_2&\hat{h}_3&2\hat{h}_6
   \end{bmatrix}
 \end{equation}
-Therefore, Eq. \ref{eq:decomp2} is expressed as:
+To that end, Eq. \ref{eq:decomp2} can be expressed as:
 \begin{equation}
   \label{eq:dsc_ds_matrix}
   \begin{split}
@@ -159,15 +160,15 @@ Its derivative is obtained as
 The stress used for cross hardening goes through below transformation.
 \begin{eqnarray}
   \label{eq:cross_linear1}
-  \mathbf{s}_p = 4(1-g_s)\mathbf{s}_o
+  \mathbf{s}_p = 4(1-g_S)\mathbf{s}_o
 \end{eqnarray}
 Its derivative with respect to the deviatoric stress can be obtained as:
 \begin{eqnarray}
   \begin{split}
     \label{eq:cross_linear2}
-    \frac{\partial\mathbf{s}_p}{\partial\mathbf{s}\hfill}  &= -4\mathbf{s}_o\otimes\frac{\partial g_s}{\partial \mathbf{s}}+4(1-g_s) \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}} \\
-    \bigg(\frac{\partial s_p}{\partial s\hfill} \bigg)_{ij} &= -4(s_o)_i\frac{\partial g_s}{\partial s_j} + 4(1-g_s) \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij}\\
-    &= -4(s_o)_i\otimes\frac{\partial g_s}{\partial \bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_k\bigg(\frac{\partial\sigma}{\partial s}\bigg)_{kj} + 4(1-g_s) \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij}
+    \frac{\partial\mathbf{s}_p}{\partial\mathbf{s}\hfill}  &= -4\mathbf{s}_o\otimes\frac{\partial g_S}{\partial \mathbf{s}}+4(1-g_S) \frac{\partial\mathbf{s}_o}{\partial\mathbf{s}} \\
+    \bigg(\frac{\partial s_p}{\partial s\hfill} \bigg)_{ij} &= -4(s_o)_i\frac{\partial g_S}{\partial s_j} + 4(1-g_S) \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij}\\
+    &= -4(s_o)_i\otimes\frac{\partial g_S}{\partial \bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_k\bigg(\frac{\partial\sigma}{\partial s}\bigg)_{kj} + 4(1-g_S) \bigg(\frac{\partial s_o}{\partial s}\bigg)_{ij}
   \end{split}
 \end{eqnarray}
 Now, the derivatives with respect to Cauchy stress is given below,
@@ -176,7 +177,7 @@ Now, the derivatives with respect to Cauchy stress is given below,
   \begin{split}
     \bigg(\frac{\partial s_c}{\partial \sigma}\bigg)_{ij}&=\frac{8}{3}\Bigg\{\bigg( \frac{\partial (s_m\hat{h}_m)}{\partial s_i}\hat{h}_k\frac{\partial s_k}{\partial\sigma_j} +(s_m\hat{h}_m) \frac{\partial \hat{h}_i}{\partial \bar{\varepsilon}}\frac{\partial\bar{\varepsilon}}{\partial\sigma} \bigg)  \Bigg\}\\
     \bigg(\frac{\partial s_o}{\partial \sigma}\bigg)_{ij}&=\bigg(\frac{\partial s}{\partial\sigma}\bigg)_{ij}-\bigg(\frac{\partial s_c}{\partial \sigma}\bigg)_{ij}\\
-    \bigg(\frac{\partial s_p}{\partial \sigma}\bigg)_{ij}&=\bigg(\frac{\partial s_p}{\partial s}\bigg)_{ik} \bigg(\frac{\partial s}{\partial \sigma}\bigg)_{kj}= -4(s_o)_i\otimes\frac{\partial g_s}{\partial \bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_j + 4(1-g_s) \bigg(\frac{\partial s_o}{\partial \sigma}\bigg)_{ij}\\
+    \bigg(\frac{\partial s_p}{\partial \sigma}\bigg)_{ij}&=\bigg(\frac{\partial s_p}{\partial s}\bigg)_{ik} \bigg(\frac{\partial s}{\partial \sigma}\bigg)_{kj}= -4(s_o)_i\otimes\frac{\partial g_S}{\partial \bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_j + 4(1-g_S) \bigg(\frac{\partial s_o}{\partial \sigma}\bigg)_{ij}\\
     \bigg(\frac{\partial s^{\prime\prime}}{\partial\sigma}\bigg)_{ij}&=\bigg(\frac{\partial s_c}{\partial\sigma}\bigg)_{ij}-g_L^{-2}\frac{\partial g_L}{\partial\bar{\varepsilon}}\frac{\partial\bar{\varepsilon}}{\partial \sigma}\mathbf{s}_o+g_L^{-1}\frac{\partial s_o}{\partial\sigma}
   \end{split}
 \end{equation}
@@ -186,8 +187,6 @@ where $\dfrac{\partial g_L}{\partial\bar{\varepsilon}}$ is given as:
   \dfrac{\partial g_L}{\partial\bar{\varepsilon}}=k_L\bigg[\frac{\bar{\sigma}(\bar{\varepsilon})-\bar{\sigma}(0)}{\bar{\sigma}(\bar{\varepsilon})}
   \bigg(\sqrt{L(1-\cos^2\chi)+\cos^2\chi)}-1\bigg)+1-g_L\bigg]
 \end{equation}
-
-
 \newpage
 \section{Derivatives associated with Bauschinger effect}
 \label{sec:bauschinger}
@@ -413,10 +412,34 @@ For better understanding, Eq. \ref{eq:hah_yieldsurface_derivative_aux} is expres
 \end{equation}
 where $A_{i}=\sum_j\bigg(\dfrac{\partial\phi}{\partial\mathbf{s}^{\prime\prime}}\bigg)_{j}\bigg(\dfrac{\partial\mathbf{s}^{\prime\prime}}{\partial\mathbf{\sigma}}\bigg)_{ji}$, $B_{i}=\bigg[\sum_m(\hat{h}_ms_m)\bigg]\sum_j\bigg(\dfrac{\partial\phi}{\partial\mathbf{s}_p}\bigg)_{j}\bigg(\dfrac{\partial\mathbf{s}_p}{\partial\mathbf{\sigma}}\bigg)_{ji}$,$C_i=\dfrac{\partial f_k}{\partial g_k}\dfrac{\partial g_k}{\partial \bar{\varepsilon}}\bigg(\dfrac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{i}$ and $D_i= f_k\bigg[\bigg(\dfrac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_i\sum_m\bigg\{{\bigg(\dfrac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_m s_m}\bigg\}+\sum_j\bigg\{\hat{h}_j\bigg(\dfrac{\partial s}{\partial\sigma}\bigg)_{ji}\bigg\} \bigg]$.
 Since $\dfrac{\partial\bar{\varepsilon}}{\partial\sigma}=\bigg\{-\mathbb{C}^{el}\cdot\dfrac{\partial\Phi}{\partial\mathbf{\sigma}}\bigg\}^{-1}$, Eq. \ref{eq:hah_yieldsurface_derivative_aux} is an implicit function.
-Moreover, each of $A_i, B_i, C_i$ and $D_i$ is individually dependent on $\dfrac{\partial\Phi}{\partial\sigma}$.
+Moreover, each of $A_i, B_i, C_i$ and $D_i$ is individually dependent on $\dfrac{\partial\Phi}{\partial\sigma}$. Therefore Eq. \ref{eq:hah_yieldsurface_derivative_short} is an implicit function.
+The solution of $\dfrac{\partial\Phi}{\partial\sigma}$ should be iteratively obtained.
+For the very initial state, all state variables are zeros thus $\dfrac{\partial\Phi(\mathbf{\sigma})}{\partial\mathbf{\sigma}}=\dfrac{\partial \phi_h}{\partial\sigma}$.
+To obtain the general step $n+1$, previous state variables (such as $g_L^{(n)}, g_S^{(n)}, g_1^{(n)},$ and $g_2^{(n)}$) and $\bigg(\dfrac{\partial\Phi(\mathbf{\sigma})}{\partial\mathbf{\sigma}}\bigg)^{(n)}$ can be useful.
+For the currently 'guessed' plastic strain increment $\Delta\lambda^{(k)}$, the corrected equivalent plastic strain increment should be updated for the step n-1.
+This value is subjected to the iterative estimation, during which the relevant state variables are denoted with the symbol such that
+$\Delta\tilde{\lambda}^{(n+1)}=\Delta\lambda^{(n)}+\Delta\lambda^{(k)}$
+Note that $\Delta\lambda^{(k=0)}$ is obtained using the elastic predictor.
+Now that the $\Delta\tilde{\lambda}^{(n+1)}$ is estimated, the corresponding state variables should be obtained, which are listed as $\tilde{g_L}^{(n+1)}, \tilde{g_S}^{(n+1)}, \tilde{g_1}^{(n+1)},$ and $\tilde{g_2}^{(n+1)}$.
+The calculation of $\tilde{\Phi}^{n+1}$ is rather strainghtforward as it is an explicit function of the state variables and the $\tilde{\mathbf{\sigma}}$ stress.
+On the other hand, according to Eq. \ref{eq:hah_yieldsurface_derivative_aux} $\tilde{\bigg(\dfrac{\partial\Phi}{\partial\mathbf{\sigma}}\bigg)}^{(n+1)}$ is in an implicit function which requires additional iterative scheme.
+
+This can be performed by introducing the multi-step procedure which divide the interval increments.
+Say for state variable $g$, we use $g^{(n)}$ and $\tilde{g}^{(n+1)}$ to sub-divide the each k step into a separate iterative loop indexed by $l$ such that
+\begin{equation}
+  \label{eq:g_subdivision}
+  g^{l}=g^{(n)}+\frac{\tilde{g}^{(n+1)}-n^{(n)}}{N}\cdot l \text{  where } l \text{ is 1, 2, ... , N}
+\end{equation}
+where $N$ denotes the total number of subdivision.
+For each $l$ step to calculate $\tilde{\bigg(\dfrac{\partial\phi}{\partial\sigma}\bigg)}^{(l+1)}$ we explicitly obtain $A_i, B_i, C_i$, and $D_i$ with using $\tilde{\bigg(\dfrac{\partial\phi}{\partial\sigma}\bigg)}^{(l)}$.
+Note that $\tilde{\bigg(\dfrac{\partial\phi}{\partial\sigma}\bigg)}^{(l=0)}$ is equivalent to $\bigg(\dfrac{\partial\phi}{\partial\sigma}\bigg)^{(n)}$.
+For the last step of $l$ loop, we must ensure that the difference between the input $\tilde{\bigg(\dfrac{\partial\phi}{\partial\sigma}\bigg)}^{(l)}$ and the output $\tilde{\bigg(\dfrac{\partial\phi}{\partial\sigma}\bigg)}^{(l+1)}$ is marginal.
+If that is the case, we update $\tilde{\bigg(\dfrac{\partial\phi}{\partial\sigma}\bigg)}^{(n+1)}=\tilde{\bigg(\dfrac{\partial\phi}{\partial\sigma}\bigg)}^{(l+1)}$.
+If not, consider reducing the total number of subdivision.
+
 We start to calculate $\cos\chi$ and $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ using Eqs. \ref{eq:coschi} and \ref{eq:dmicro1}, respectively.
 \begin{enumerate}
-\item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib6}. This also requires $\mathbb{C}^{el}$ and $\partial\Phi/\partial\mathbf{\sigma}$, which gives $\frac{\partial\bar{\varepsilon}}{\partial\sigma}$.
+\item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib6}. This also requires $\mathbb{C}^{el}$ and $\partial\Phi/\partial\mathbf{\sigma}$, which gives $\dfrac{\partial\bar{\varepsilon}}{\partial\sigma}$.
 \item Obtain $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib3}
 \item Also, obtain $\partial \mathbf{s_c}/\partial \mathbf{s}$ and $\partial \mathbf{s_o}/\partial\mathbf{s}$ in Eqs. \ref{eq:decomp2} and \ref{eq:decomp4}, respectively.
 \item Obtain $\partial \mathbf{s_p}/\partial\mathbf{s}$ using Eq. \ref{eq:cross_linear2}.
