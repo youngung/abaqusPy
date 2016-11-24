@@ -39,7 +39,7 @@ c     locals
 
 c     ! calculate deviatoric stress
       call deviat(ntens,cauchy,sdev,hydro)
-      call emod_iso(Cel,0.3,200e9,ndi,nshr) !! to be improved later.
+      call emod_iso(200e9,0.3,Cel,ndi,nshr) !! to be improved later.
       call calc_sdev_deriv(ntens,ndi,nshr,nyldp,yldp,sdev,
      $     dphi_dsig,dsp_dsig,dspp_dsig)
       return

@@ -32,21 +32,24 @@ c      call w_mdim(0,cel,3,1d0)
       end subroutine
 c     -------------------------------------
       subroutine emod_iso(e,nu,c,ndi,nshr)
+      implicit none
 c     intent(in): e,nu,ndi,nshr
 c     intent(out): c
       integer, intent(in) :: ndi,nshr
+      dimension c(ndi+nshr,ndi+nshr)
       real*8, intent(in) ::  e, nu
-      real*8, intent(out) :: c(ndi+nshr,ndi+nshr)
+      real*8, intent(out) :: c
       real*8 x
-      integer i,j,imsg
-
+      integer i,j,imsg,ntens
+      ntens=ndi+nshr
       imsg=7
 
 c     initialization
-      do 20 i=1,ntens
-      do 20 j=1,ntens
-         c(i,j) = 0.d0
- 20   continue
+      c(:,:)=0d0
+c$$$      do 20 i=1,ntens
+c$$$      do 20 j=1,ntens
+c$$$         c(i,j) = 0d0
+c$$$ 20   continue
 c      write(imsg,*) 'after initialization c matrix'
 c
 c     construct elastic tensor (6x6) with assuming that

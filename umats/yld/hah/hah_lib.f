@@ -297,7 +297,7 @@ c***  microstructure deviator rotation
          target(:) = yldp(ntens*2+27:ntens*3+26)
 c     diagnose
          if (dabs(gL).lt.1e-3) then
-            write(*,*)'gL is too small'
+            write(*,*)'Error: The value of gL found to be too small'
             call exit(-1)
          endif
       elseif (iopt.eq.1) then   ! state variables -> yldp

@@ -15,7 +15,7 @@ c-----------------------------------------------------------------------
       program test
       implicit none
       integer ntens,ndi,nshr,nyldc,nyldp,narg
-      parameter(ntens=3,ndi=2,nshr=1,nyldc=9,nyldp=36,narg=5)
+      parameter(ntens=3,ndi=2,nshr=1,nyldc=9,nyldp=50,narg=5)
       character(len=32) :: arg
       dimension yldc(nyldc),yldp(nyldp),stress(ntens),dphi(ntens),
      $     d2phi(ntens,ntens)
