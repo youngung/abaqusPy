@@ -114,10 +114,7 @@ c     calling hah_calc_ref stores (sqrt(phi(so)**2+phi(sdp)**2))**q to ref
      $     nyldp,yldc,yldp,cauchy,phi_chi,dphi_chi,d2phi_chi,
      $     phi,dphi,d2phi,.false.)
 
-
-
 c      dphi(:)=dphi_chi(:)
-
 c      d2phi(:,:)=d2phi_chi(:,:)
 
       if (ntens.eq.3) then

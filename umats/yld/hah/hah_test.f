@@ -112,8 +112,10 @@ c     $     '/home/younguj/repo/abaqusPy/umats/yld/alfas.txt',yldc)
       endif
 
 c      call hah_uten(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,yldc,yldp)
-      call hah_locus(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,yldc,yldp)
-c      call one(iyld_choice,nyldc,nyldp,yldc,yldp)
+c      call hah_locus(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,yldc,yldp)
+      call one(iyld_choice,nyldc,nyldp,yldc,yldp)
+
+
 
       end program test
 c--------------------------------------------------------------------------------
@@ -242,7 +244,7 @@ c     Local variables.
       real*8 dphi,d2phi,pi,th,time0,time1,phim,q,smat,sdev,hydro,s1,s2,
      $     aux6
       integer nth,i,j,imsg,iverbose
-      parameter(nth=1000)
+      parameter(nth=10)
       logical idiaw
       imsg = 0
       iverbose=0  ! (0: fully verbose)
@@ -260,7 +262,7 @@ c     pi and yield surface exponent q stored in yldc
          write(*,*)
          write(*,*)
          write(*,*)
-         write(*,'(5a7)')'s1','s2','e1','e2','phi'
+         write(*,'(5a9)')'s1','s2','e1','e2','phi'
       endif
 c$$$         write(*,'(a11,x,(4a9,x,a1,x),2(4a11,x,a1,x,a11,x))')'th',
 c$$$     $        's1_m', 's2_m', 's3_m', 's6_m', '|',
@@ -337,6 +339,10 @@ c     Arguments passed into
       dimension yldc(nyldc),yldp(nyldp),
      $     d2phi(ntens,ntens),dphi(ntens),aux_ten(ntens),emic(ntens)
       real*8 yldc,yldp,d2phi,dphi,phi,cauchy(ntens),aux_ten,emic,hydro
+      integer imsg
+      logical idiaw
+      imsg=0
+      idiaw=.true.              !.false.
 
 c     microstructure deviator
       aux_ten(:) = 0d0
@@ -344,21 +350,36 @@ c     microstructure deviator
       aux_ten(1) = 1d0
       call deviat(ntens,aux_ten,emic,hydro)
       call dev_norm(ntens,ndi,nshr,emic)
-      call w_chr(0,'microstructure deviator:')
-      call w_dim(0,emic,ntens,1d0,.true.)
+      if (idiaw) then
+         call fill_line(imsg,'-',27)
+         call w_chr(imsg,'Microstructure deviator:')
+         call w_dim(imsg,emic,ntens,1d0,.true.)
+
+      endif
 
 c     Uniaxial tension along axial 1
-      cauchy(:)=0
-      cauchy(1)=1.
+      cauchy(:)=0d0
+      cauchy(1)=1d0
       call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,cauchy,yldc,yldp,
      $     phi,dphi,d2phi)
+      if (idiaw) then
+         call fill_line(imsg,'-',27)
+         call w_chr(imsg,'         cauchy stress')
+         call w_dim(imsg,cauchy,ntens,1d0,.true.)
+         call w_val(imsg,'phi:',phi)
+         call w_chr(imsg,'    dphi1   dphi2   dphi3')
+         call w_dim(imsg,dphi,ntens,1d0,.true.)
+      endif
 
-      call exit(-1)
-
-c     Uniaxial tension along axial 2
-      cauchy(:)=0
-      cauchy(2)=1.
-      call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,cauchy,yldc,yldp,
-     $     phi,dphi,d2phi)
+c$$$c     Uniaxial tension along axial 2
+c$$$      cauchy(:)=0d0
+c$$$      cauchy(2)=1d0
+c$$$      call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,cauchy,yldc,yldp,
+c$$$     $     phi,dphi,d2phi)
+c$$$c     Balanced biaxial tension
+c$$$      cauchy(:)=0d0
+c$$$      cauchy(1:2)=1d0
+c$$$      call hah(iyld_choice,ntens,ndi,nshr,nyldc,nyldp,cauchy,yldc,yldp,
+c$$$     $     phi,dphi,d2phi)
       return
       end subroutine one

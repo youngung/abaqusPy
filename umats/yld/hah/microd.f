@@ -9,6 +9,7 @@ c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
 c     Calculates 1) \frac{\partial \hat{h}}{\partial\bar{\varepsilon}}
 c                2) dgr = ekrs(3)*(ekrs(4)*(1-coschi*coschi)-ekrs(5))
+c     and Then saved them to yldp
       subroutine micro_dev_deriv(ntens,nyldp,sdev,yldp)
 c     Arguments
 c     ntens : Len of tensor

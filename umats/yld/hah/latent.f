@@ -12,8 +12,9 @@ c     Youngung Jeong
 c     youngung.jeong@gmail.com
 c------------------------------------------------------------------------
 c     calculate incremental gL (dgL_deps)
-      subroutine latent_update(ntens,emic,target,eL,gL,ekL,
-     $     ys_0,ys_hah,dgL_deps)
+      subroutine latent_update(ntens,nyldp,yldp,dgL_deps)
+c$$$      subroutine latent_update(ntens,emic,target,eL,gL,ekL,
+c$$$     $     ys_0,ys_hah,dgL_deps)
 c     Arguments
 c     ntens  : Len of <emic> and <target>
 c     target : the target direction, with which the microstructure
@@ -27,20 +28,28 @@ c     emic   : microstructure deviator
 c     dgL_deps
       implicit none
 c     Arguments of subroutine
-      integer, intent(in):: ntens
-      dimension emic(ntens),target(ntens)
-      real*8, intent(in) :: emic,target,eL,gL,ekL,ys_0,ys_hah
+      integer, intent(in):: ntens,nyldp
       real*8, intent(out):: dgL_deps
 c     Local variables
-      real*8 coschi,term
+      real*8 coschi,temp1,temp2
+
+      dimension yldp(nyldp),hhat(ntens),dhhat_de(ntens),gk(4),e_ks(5),
+     $     f_ks(2),ekrs(5),target(ntens)
+      real*8 yldp,hhat,dhhat_de,gk,e_ks,f_ks,ekrs,target,eeq,dgR,
+     $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss
+
 cf2py intent(in) eL,gL,ekL,ys_0,ys_hah,emic,target,ntens
 cf2py intent(out) dgL_deps
 cf2py depend(ntens) emic,target
 
-      call calc_coschi(ntens,target,emic,coschi)
-c     Eq 16 in Ref [1]
-      term = dsqrt(eL * (1d0-coschi*coschi) + coschi*coschi)-1d0
-      dgL_deps = ekL *( (ys_hah-ys_0) / ys_hah * term  + 1d0 - gL )
+      call hah_io(0,nyldp,ntens,yldp,hhat,dhhat_de,dgR,gk,e_ks,
+     $     f_ks,eeq,ref0,ref1,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
+
+      call calc_coschi(ntens,target,hhat,coschi)
+c     Eq 15 in Ref [1]
+      temp1 = coschi*coschi
+      temp2 = dsqrt(eL * (1d0-temp1) + temp1)-1d0
+      dgL_deps = ekL *( (ref1-ref0) / ref1 * temp2  + 1d0 - gL )
 
       return
       end subroutine latent_update

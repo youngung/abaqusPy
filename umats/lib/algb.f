@@ -82,6 +82,22 @@ c     intent(out) cij
       return
       end subroutine mult_array2
 c------------------------------------------------------------------------
+      subroutine inner_dot_voigt(ntens,ndi,nshr,a,b,c)
+      integer i
+      integer, intent(in)::ndi,nshr,ntens
+      dimension a(ntens), b(ntens)
+      real*8, intent(in) ::a, b
+      real*8, intent(out)::c
+      c=0d0
+      do 10 i=1,ndi
+         c=c+a(i)*b(i)
+ 10   continue
+      do 20 i=ndi+1, nshr+ndi
+         c=c+a(i)*b(i)*2d0
+ 20   continue
+      return
+      end subroutine inner_dot_voigt
+c------------------------------------------------------------------------
 c     Apply incremental update on array
 c     ai = ai + d_ai
       subroutine add_array(ai,d_ai,ntens)

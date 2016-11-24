@@ -15,9 +15,8 @@ c     yield surface =[phi^q+phi_b^q]^(1/q).
 c     phi is a homogeneous function of first degree.
 
       subroutine hah_yieldsurface(ntens,ndi,nshr,iyld_choice,nyldc,
-     $     nyldp,yldc,yldp,
-     $     cauchy,phi_chi,dphi_chi,d2phi_chi,phi,dphi,d2phi,idiaw)
-     $
+     $     nyldp,yldc,yldp,cauchy,phi_chi,dphi_chi,d2phi_chi,phi,dphi,
+     $     d2phi,idiaw)
 c     Arguments
 c     iyld_choice: choice of yield surface kernel
 c     yldc       : yield surface constants
@@ -56,13 +55,14 @@ c     local - Latent hardening parameters
 c     local - cross hardening parameters
       real*8 gS,c_ks,ss
 c     local
-      dimension sc(ntens),so(ntens),sdp(ntens),sp(ntens) ! stress double prime
-      real*8 sc,so,sdp,sp,ref0,ref1
+      dimension sc(ntens),so(ntens),spp(ntens),sp(ntens),dphi_hah(6),
+     $     dphi_hah_fin(6)
+      real*8 sc,so,spp,sp,ref0,ref1,dphi_hah,dphi_hah_fin
 c     local-latent
-      dimension dphi_lat(ntens),d2phi_lat(ntens,ntens),dpsi_sdp(ntens),
-     $     dpsi_sp(ntens)
-      real*8 phi_lat,dphi_lat,d2phi_lat,phi_lat_norm,dpsi_sdp,dpsi_sp,
-     $     psi_sdp,psi_sp
+      dimension dphi_h(ntens),d2phi_h(ntens,ntens),dpsi_dspp(ntens),
+     $     dpsi_dsp(ntens)
+      real*8 phi_h,dphi_h,d2phi_h,dpsi_dspp,dpsi_dsp,
+     $     psi_spp,psi_sp
 c     local-cross
       dimension dphi_x(ntens),d2phi_x(ntens,ntens)
       real*8 phi_x,dphi_x,d2phi_x,phi_omega
@@ -77,25 +77,24 @@ cf2py intent(in) iyld_choice,yldc,nyldc,yldp,nylpd
 cf2py intent(in) sdev,phi_chi,dphi_chi,d2phi_chi,ntens
 cf2py intent(out) phi,dphi,d2phi
 
-c-----------------------------------------------------------------------
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       imsg = 0
-
 c     Fooling the compiler - by-pass warning of unused arguments.
       d2phi(:,:)     = d2phi(:,:)
       d2phi_chi(:,:) = d2phi_chi(:,:)
-      d2phi_lat(:,:) = d2phi_lat(:,:)
+      d2phi_h(:,:) = d2phi_h(:,:)
       d2phi_x(:,:)   = d2phi_x(:,:)
       dphi(:)        = dphi(:)
       dphi_chi(:)    = dphi_chi(:)
-      dphi_lat(:)    = dphi_lat(:)
+      dphi_h(:)    = dphi_h(:)
       dphi_x(:)      = dphi_x(:)
       phi_omega      = phi_omega
       phi_x          = phi_x
       phibs(:)       = phibs(:)
-      sdp(:)         = sdp(:)
+      spp(:)         = spp(:)
       sp(:)          = sp(:)
       target(:)      = target(:)
-c -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c$$$c     obtain deviatoric stress
       call deviat(ntens,cauchy,sdev,hydro)
       if (idiaw) then
@@ -107,8 +106,7 @@ c$$$c     obtain deviatoric stress
          call fill_line(imsg,'-',23)
 c     call exit(-1)
       endif
-
-c-----------------------------------------------------------------------
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c     Restore yldp into state variables/parameters
       call hah_io(0,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
      $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,krs,target)
@@ -145,15 +143,15 @@ c         call exit(-1)
 c      call exit(-1)
 
 c---  anisotropic yield surface with latent hardening + cross hardening
-c     phi_lat = sqrt(phi(sp)**2 + phi(sdp)**2)
-c     phi_lat being the homogeneous function of degree 1.
+c     phi_h = (phi(sp)**2 + phi(spp)**2)^{1/2}
+c     phi_h being the homogeneous function of degree 1.
       call latent(iyld_choice,ntens,ndi,nshr,nyldp,nyldc,
-     $     cauchy,yldp,yldc,dpsi_sdp,dpsi_sp,psi_sdp,psi_sp,
-     $     phi_lat)
-      phi_lat_norm = phi_lat**yldc(9)
+     $     cauchy,yldp,yldc,dpsi_dspp,dpsi_dsp,psi_spp,psi_sp,
+     $     phi_h)
+      if (idiaw) call w_val(imsg,'phi_h     :',phi_h)
+      phi_h = phi_h**yldc(9)
       if (idiaw) then
-         call w_val(imsg,'phi_lat     :',phi_lat)
-         call w_val(imsg,'phi_lat_norm:',phi_lat_norm)
+         call w_val(imsg,'phi_h_norm:',phi_h)
          call fill_line(imsg,'-',23)
 c         call exit(-1)
       endif
@@ -161,7 +159,7 @@ c         call exit(-1)
 c---  anisotropic yield surface with full HAH
       call bauschinger(ntens,ndi,nshr,emic,sdev,f_ks,yldc(9),phi_bs(1),
      $     phi_bs(2))
-      fht = phi_lat_norm+phi_bs(1)+phi_bs(2)
+      fht = phi_h+phi_bs(1)+phi_bs(2)
 c      phi = (1.d0/fht)**(1d0/yldc(9))
       phi = (ref1/fht)**(1d0/yldc(9))
       if (idiaw) then
@@ -176,6 +174,17 @@ c      phi = (1.d0/fht)**(1d0/yldc(9))
          call w_empty_lines(imsg,2)
 c         call exit(-1)
       endif
+
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c     Calculate the derivatives of the yield surface
+c     with respect to the cauchy stress.
+      !! dphi_hah is the guess.
+      !! dphi_hah_fin is the newly found dphi_hah_fin
+      call hah_deriv(nyldp,cauchy,yldp,yldc(9),phi_h,dphi_h,psi_spp,
+     $     dpsi_dspp,psi_sp,dpsi_dsp,phi,dphi_hah,dphi_hah_fin)
+c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      dphi(1:2) = dphi_hah_fin(1:2)
+      dphi(3)   = dphi_hah_fin(3)
 
       return
       end subroutine hah_yieldsurface

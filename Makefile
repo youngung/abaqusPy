@@ -5,24 +5,23 @@ OBJDIR:=objdir
 
 # -fno-automatic
 
-FLAGS=-g -Wall -fcheck=all -Waliasing -Warray-bounds \
+FLAGS=-g -fcheck=all -Waliasing -Warray-bounds \
 	-fbacktrace -fstack-arrays -finit-local-zero -Winteger-division\
-	-Werror -Wfatal-errors
-
-
+	-Wfatal-errors # -Werror -Wall
 objects_hah_test=$(addprefix $(OBJDIR)/,hah_test.o bauschinger_lib.o \
 	hah_lib.o bauschinger.o hah.o \
 	hah_yieldsurface.o yld.o vm.o cnv.o hill48.o yld2000_2d.o\
 	hah_update.o algb.o dev.o lib_write.o is.o lib.o yld_lib.o\
-	latent.o microd.o)
+	latent.o microd.o crossh.o deriv_lib.o elast.o)
 objects_hahd_test=$(addprefix $(OBJDIR)/,hah_test.o bauschinger_lib.o \
 	hah_lib.o bauschinger.o hah.o \
 	hah_yieldsurface.o yld.o vm.o cnv.o hill48.o yld2000_2d.o\
 	hah_update.o algb.o dev.o lib_write.o is.o lib.o yld_lib.o\
-	latent.o microd.o deriv_lib.o elast.o)
+	latent.o microd.o deriv_lib.o elast.o crossh.o)
 objects_yld_test=$(addprefix $(OBJDIR)/,yld.o yld_uten_test.o yld2000_2d.o bauschinger.o \
 	hah.o hah_update.o dev.o algb.o cnv.o vm.o hill48.o \
-	hah_yieldsurface.o hah_lib.o lib_write.o is.o lib.o latent.o)
+	hah_yieldsurface.o hah_lib.o lib_write.o is.o lib.o latent.o deriv_lib.o \
+	crossh.o elast.o microd.o)
 
 objs+=$(objects_hah_test)
 objs+=$(objects_hahd_test)
@@ -88,6 +87,8 @@ $(OBJDIR)/yld_lib.o: umats/yld/yld_lib.f
 	$(FC) $(FLAGS) -c umats/yld/yld_lib.f -o $(OBJDIR)/yld_lib.o
 $(OBJDIR)/latent.o: umats/yld/hah/latent.f
 	$(FC) $(FLAGS) -c umats/yld/hah/latent.f -o $(OBJDIR)/latent.o
+$(OBJDIR)/crossh.o: umats/yld/hah/crossh.f
+	$(FC) $(FLAGS) -c umats/yld/hah/crossh.f -o $(OBJDIR)/crossh.o
 $(OBJDIR)/deriv_lib.o: umats/yld/hah/deriv_lib.f
 	$(FC) $(FLAGS) -c umats/yld/hah/deriv_lib.f -o $(OBJDIR)/deriv_lib.o
 $(OBJDIR)/elast.o: umats/lib/elast.f

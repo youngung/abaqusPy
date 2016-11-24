@@ -293,7 +293,7 @@ c***  cross hardening
          c_ks      = yldp(ntens*2+20)
          ss        = yldp(ntens*2+21)
 c***  microstructure deviator rotation
-         ekrs(:)    = yldp(ntens*2+22:ntens*2+26)
+         ekrs(:)   = yldp(ntens*2+22:ntens*2+26)
          target(:) = yldp(ntens*2+27:ntens*3+26)
 c     diagnose
          if (dabs(gL).lt.1e-3) then

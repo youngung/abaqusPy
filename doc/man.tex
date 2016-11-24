@@ -75,7 +75,7 @@ More specifically, this has been characterized by the $\cos \chi$ value, which r
 Furthermore, in the most recent version of the HAH model \cite{barlat2014}, the evolutionary behavior of the microstructure deviator is written with respect to the equivalent strain increment such that
 \begin{equation}
   \label{eq:dmicro1}
-  \frac{\partial\hat{\mathbf{h}}}{\partial \bar{\varepsilon}} = k_{R1}\ \text{sgn}(\cos\chi)\big[|\frac{\cos\chi}{H}|^{1/k_{R2}} +g_R \big] \big(\hat{\mathbf{t}}-\cos\chi \hat{\mathbf{h}}\big),
+  \frac{\partial\hat{\mathbf{h}}}{\partial \bar{\varepsilon}} = k_{R1}\ \text{sgn}(\cos\chi)\big[\big|\frac{\cos\chi}{H}\big|^{1/k_{R2}} +g_R \big] \big(\hat{\mathbf{t}}-\cos\chi \hat{\mathbf{h}}\big),
 \end{equation}
 where $g_R$ evolves according to
 \begin{equation}
@@ -94,13 +94,13 @@ In the original version of the HAH model, the stress tensor is decomposed into t
 The col-linear component is defined as below:
 \begin{equation}
   \label{eq:decomp1}
-  \mathbf{s_c} = \frac{8}{3} (\mathbf{s}\cdot\hat{\mathbf{h}}) \mathbf{h}
+  \mathbf{s}_c = \frac{8}{3} (\mathbf{s}\cdot\hat{\mathbf{h}}) \mathbf{h}
 \end{equation}
-The derivative of $\mathbf{s_c}$ with respect to $\mathbf{s}$ is
+The derivative of $\mathbf{s}_c$ with respect to $\mathbf{s}$ is
 \begin{eqnarray}
   \begin{split}
   \label{eq:decomp2}
-  \frac{\partial\mathbf{s_c}}{\partial\mathbf{s}} &= \frac{8}{3}\bigg\{  \frac{\partial(\mathbf{s}\cdot\hat{\mathbf{h}})}{\partial\mathbf{s}} \otimes \hat{\mathbf{h}}+ (\mathbf{s}\cdot\hat{\mathbf{h}}) \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{s}}\bigg\}\\
+  \frac{\partial\mathbf{s}_c}{\partial\mathbf{s}} &= \frac{8}{3}\bigg\{  \frac{\partial(\mathbf{s}\cdot\hat{\mathbf{h}})}{\partial\mathbf{s}} \otimes \hat{\mathbf{h}}+ (\mathbf{s}\cdot\hat{\mathbf{h}}) \frac{\partial\hat{\mathbf{h}}}{\partial\mathbf{s}}\bigg\}\\
   \bigg( \frac{\partial s_c}{\partial s}\bigg)_{ij}&= \frac{8}{3}\Bigg\{ \bigg(\frac{\partial(s_{k}\hat{h}_{k})}{\partial s_i}\bigg)\hat{h}_j +(s_k\hat{h}_k)\frac{\partial\hat{h}_i}{\partial s_j} \Bigg\}
   \end{split}
 \end{eqnarray}
@@ -136,7 +136,7 @@ To that end, Eq. \ref{eq:decomp2} can be expressed as:
 The orthogonal component is the remaining portion as defined below:
 \begin{eqnarray}
   \label{eq:decomp3}
-  \mathbf{s_o} = \mathbf{s} - \mathbf{s}_c.
+  \mathbf{s}_o = \mathbf{s} - \mathbf{s}_c.
 \end{eqnarray}
 The derivative of $\mathbf{s}_o$ with respect to $\mathbf{s}$ is then
 \begin{eqnarray}
@@ -175,18 +175,26 @@ Now, the derivatives with respect to Cauchy stress is given below,
 \begin{equation}
   \label{eq:dsp_dsig}
   \begin{split}
-    \bigg(\frac{\partial s_c}{\partial \sigma}\bigg)_{ij}&=\frac{8}{3}\Bigg\{\bigg( \frac{\partial (s_m\hat{h}_m)}{\partial s_i}\hat{h}_k\frac{\partial s_k}{\partial\sigma_j} +(s_m\hat{h}_m) \frac{\partial \hat{h}_i}{\partial \bar{\varepsilon}}\frac{\partial\bar{\varepsilon}}{\partial\sigma} \bigg)  \Bigg\}\\
+    \bigg(\frac{\partial s_c}{\partial \sigma}\bigg)_{ij}&=\frac{8}{3}\Bigg\{\Bigg( \frac{\partial (s_m\hat{h}_m)}{\partial s_i}\hat{h}_k\frac{\partial s_k}{\partial\sigma_j} +(s_m\hat{h}_m) \bigg(\frac{\partial\hat{h}}{\partial\bar{\varepsilon}}\bigg)_i\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_j\Bigg)\Bigg\}\\
     \bigg(\frac{\partial s_o}{\partial \sigma}\bigg)_{ij}&=\bigg(\frac{\partial s}{\partial\sigma}\bigg)_{ij}-\bigg(\frac{\partial s_c}{\partial \sigma}\bigg)_{ij}\\
     \bigg(\frac{\partial s_p}{\partial \sigma}\bigg)_{ij}&=\bigg(\frac{\partial s_p}{\partial s}\bigg)_{ik} \bigg(\frac{\partial s}{\partial \sigma}\bigg)_{kj}= -4(s_o)_i\otimes\frac{\partial g_S}{\partial \bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_j + 4(1-g_S) \bigg(\frac{\partial s_o}{\partial \sigma}\bigg)_{ij}\\
-    \bigg(\frac{\partial s^{\prime\prime}}{\partial\sigma}\bigg)_{ij}&=\bigg(\frac{\partial s_c}{\partial\sigma}\bigg)_{ij}-g_L^{-2}\frac{\partial g_L}{\partial\bar{\varepsilon}}\frac{\partial\bar{\varepsilon}}{\partial \sigma}\mathbf{s}_o+g_L^{-1}\frac{\partial s_o}{\partial\sigma}
+    \bigg(\frac{\partial s^{\prime\prime}}{\partial\sigma}\bigg)_{ij}&=\bigg(\frac{\partial s_c}{\partial\sigma}\bigg)_{ij}-g_L^{-2}\frac{\partial g_L}{\partial\bar{\varepsilon}}\bigg(\frac{\partial\bar{\varepsilon}}{\partial\sigma}\bigg)_{i}(\mathbf{s}_o)_j+g_L^{-1}\bigg(\frac{\partial s_o}{\partial\sigma}\bigg)_{ij}
   \end{split}
 \end{equation}
 where $\dfrac{\partial g_L}{\partial\bar{\varepsilon}}$ is given as:
 \begin{equation}
   \label{eq:dgl_de}
   \dfrac{\partial g_L}{\partial\bar{\varepsilon}}=k_L\bigg[\frac{\bar{\sigma}(\bar{\varepsilon})-\bar{\sigma}(0)}{\bar{\sigma}(\bar{\varepsilon})}
-  \bigg(\sqrt{L(1-\cos^2\chi)+\cos^2\chi)}-1\bigg)+1-g_L\bigg]
+  \Big(\sqrt{L(1-\cos^2\chi)+\cos^2\chi)}-1\Big)+1-g_L\bigg].
 \end{equation}
+Note that in the recent work of Jeong et al. \cite{Jeong2016}, it was found that the target direction $\hat{\mathbf{t}}$ should be parallel to the direction of $\dot{\mathbf{\varepsilon}}$ to properly account for the effects of crystallographic texture on Bauschinger effect.
+In the associated flow rule, $\dot{\mathbf{\varepsilon}}=\dot{\lambda}\dfrac{\partial\Phi}{\partial\mathbf{\sigma}}$ thus $\hat{\mathbf{t}}=\hat{\dfrac{\partial\Phi}{\partial\mathbf{\sigma}}}$.
+As a result, Eq. \ref{eq:dmicro1} is expressed as:
+\begin{equation}
+  \label{eq:dmicro3}
+  \frac{\partial\hat{\mathbf{h}}}{\partial \bar{\varepsilon}} = k_{R1}\ \text{sgn}(\cos\chi)\bigg[\Big|\frac{\cos\chi}{H}\Big|^{1/k_{R2}} +g_R \bigg] \bigg(\hat{\dfrac{\partial\Phi}{\partial\mathbf{\sigma}}}-\cos\chi \hat{\mathbf{h}}\bigg),
+\end{equation}
+
 \newpage
 \section{Derivatives associated with Bauschinger effect}
 \label{sec:bauschinger}
@@ -414,10 +422,10 @@ where $A_{i}=\sum_j\bigg(\dfrac{\partial\phi}{\partial\mathbf{s}^{\prime\prime}}
 Since $\dfrac{\partial\bar{\varepsilon}}{\partial\sigma}=\bigg\{-\mathbb{C}^{el}\cdot\dfrac{\partial\Phi}{\partial\mathbf{\sigma}}\bigg\}^{-1}$, Eq. \ref{eq:hah_yieldsurface_derivative_aux} is an implicit function.
 Moreover, each of $A_i, B_i, C_i$ and $D_i$ is individually dependent on $\dfrac{\partial\Phi}{\partial\sigma}$. Therefore Eq. \ref{eq:hah_yieldsurface_derivative_short} is an implicit function.
 The solution of $\dfrac{\partial\Phi}{\partial\sigma}$ should be iteratively obtained.
-For the very initial state, all state variables are zeros thus $\dfrac{\partial\Phi(\mathbf{\sigma})}{\partial\mathbf{\sigma}}=\dfrac{\partial \phi_h}{\partial\sigma}$.
-To obtain the general step $n+1$, previous state variables (such as $g_L^{(n)}, g_S^{(n)}, g_1^{(n)},$ and $g_2^{(n)}$) and $\bigg(\dfrac{\partial\Phi(\mathbf{\sigma})}{\partial\mathbf{\sigma}}\bigg)^{(n)}$ can be useful.
-For the currently 'guessed' plastic strain increment $\Delta\lambda^{(k)}$, the corrected equivalent plastic strain increment should be updated for the step n-1.
-This value is subjected to the iterative estimation, during which the relevant state variables are denoted with the symbol such that
+At the very initial state, $\dfrac{\partial\Phi(\mathbf{\sigma})}{\partial\mathbf{\sigma}}=\dfrac{\partial \phi_h}{\partial\sigma}$.
+To obtain the general step $n+1$, previous state variables (such as $\hat{\mathbf{h}}^{(n)}, g_L^{(n)}, g_S^{(n)}, g_1^{(n)},$ and $g_2^{(n)}$) as well as the  stress derivative of yield surface $\bigg(\dfrac{\partial\Phi(\mathbf{\sigma})}{\partial\mathbf{\sigma}}\bigg)^{(n)}$ is useful when seeking for the numerical solution of $n+1$ step.
+For the currently 'guessed' plastic strain increment $\Delta\lambda^{(k)}$, the corrected equivalent plastic strain increment should be updated for the step $n+1$.
+This value is subjected to the iterative estimation, during which the relevant state variables are denoted with the upper tilde symbol {\raise.17ex\hbox{$\scriptstyle\sim$}} such that
 $\Delta\tilde{\lambda}^{(n+1)}=\Delta\lambda^{(n)}+\Delta\lambda^{(k)}$
 Note that $\Delta\lambda^{(k=0)}$ is obtained using the elastic predictor.
 Now that the $\Delta\tilde{\lambda}^{(n+1)}$ is estimated, the corresponding state variables should be obtained, which are listed as $\tilde{g_L}^{(n+1)}, \tilde{g_S}^{(n+1)}, \tilde{g_1}^{(n+1)},$ and $\tilde{g_2}^{(n+1)}$.
@@ -441,10 +449,10 @@ We start to calculate $\cos\chi$ and $\partial \hat{\mathbf{h}}/\partial \bar{\v
 \begin{enumerate}
 \item Use $\partial \hat{\mathbf{h}}/\partial \bar{\varepsilon}$ to obtain $\partial \hat{\mathbf{h}}/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib6}. This also requires $\mathbb{C}^{el}$ and $\partial\Phi/\partial\mathbf{\sigma}$, which gives $\dfrac{\partial\bar{\varepsilon}}{\partial\sigma}$.
 \item Obtain $\partial\big(\hat{\mathbf{h}}:\mathbf{s}\big)/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib3}
-\item Also, obtain $\partial \mathbf{s_c}/\partial \mathbf{s}$ and $\partial \mathbf{s_o}/\partial\mathbf{s}$ in Eqs. \ref{eq:decomp2} and \ref{eq:decomp4}, respectively.
-\item Obtain $\partial \mathbf{s_p}/\partial\mathbf{s}$ using Eq. \ref{eq:cross_linear2}.
-\item Obtain $\partial\mathbf{s}^{\prime\prime}/\partial\mathbf{s}$ using $\partial \mathbf{s_c}/\partial \mathbf{s}$.
-\item Plug $\partial\mathbf{s}^{\prime\prime}/\partial\mathbf{s}$ and  $\partial \mathbf{s_p}/\partial\mathbf{s}$ into Eq. \ref{eq:derv3} to obtain $\partial\phi_h/\partial\mathbf{\sigma}$.
+\item Also, obtain $\partial \mathbf{s}_c/\partial \mathbf{s}$ and $\partial \mathbf{s}_o/\partial\mathbf{s}$ in Eqs. \ref{eq:decomp2} and \ref{eq:decomp4}, respectively.
+\item Obtain $\partial \mathbf{s}_p/\partial\mathbf{s}$ using Eq. \ref{eq:cross_linear2}.
+\item Obtain $\partial\mathbf{s}^{\prime\prime}/\partial\mathbf{s}$ using $\partial \mathbf{s}_c/\partial \mathbf{s}$.
+\item Plug $\partial\mathbf{s}^{\prime\prime}/\partial\mathbf{s}$ and  $\partial \mathbf{s}_p/\partial\mathbf{s}$ into Eq. \ref{eq:derv3} to obtain $\partial\phi_h/\partial\mathbf{\sigma}$.
 \item Obtain $\partial f_k/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib8}.
 \item Calculate $\partial \phi_b/\partial \mathbf{\sigma}$ in Eq. \ref{eq:dphib1_}
 \item Plug $\partial \phi_b/\partial\mathbf{\sigma}$ and $\partial\phi_h/\partial\mathbf{\sigma}$ into Eq. \ref{eq:hah_deriv}.
