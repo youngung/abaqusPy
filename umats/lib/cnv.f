@@ -115,9 +115,9 @@ c-----------------------------------------------------------------------
       dimension a(3),b(6)
       real*8, intent(in) ::  a
       real*8, intent(out) ::  b
+      b(:)=0d0
       b(1:2) = a(1:2)
       b(3)   = -b(1)-b(2)
-      b(4:5) = 0d0
       b(6)   = a(3)
       end subroutine cnv_3to6_dev
 c-----------------------------------------------------------------------
@@ -129,12 +129,37 @@ cf2py intent(out) a6
       a6(:) = 0d0
       a6(1) = a3(1)
       a6(2) = a3(2)
-      a6(3) = 0d0
-      a6(4) = 0d0
-      a6(5) = 0d0
       a6(6) = a3(3)
       return
       end subroutine reduce_3to6
+c-----------------------------------------------------------------------
+      subroutine reduce_33to66(a33,a66)
+      dimension a66(6,6),a33(3,3)
+      real*8 a66,a33
+      integer i,j
+cf2py intent(in) a33
+cf2py intent(out) a66
+      a66(:  ,:  )=0d0
+      a66(1:2,1:2)=a33(1:2,1:2)
+      a66(1:2,6  )=a33(1:2,3  )
+      a66(  6,1:2)=a33(  3,1:2)
+      a66(  6,6  )=a33(  3,3  )
+      return
+      end subroutine reduce_33to66
+c-----------------------------------------------------------------------
+      subroutine reduce_66to33(a66,a33)
+      dimension a66(6,6),a33(3,3)
+      real*8 a66,a33
+      integer i,j
+cf2py intent(in) a33
+cf2py intent(out) a66
+      a33(:  ,:  )=0d0
+      a33(1:2,1:2)=a66(1:2,1:2)
+      a33(1:2,3  )=a66(1:2,6  )
+      a33(  3,1:2)=a66(  6,1:2)
+      a33(  3,3  )=a66(  6,6  )
+      return
+      end subroutine reduce_66to33
 c-----------------------------------------------------------------------
 c     Convert 4 dimensional plane-stress tensor
 c     - convention:

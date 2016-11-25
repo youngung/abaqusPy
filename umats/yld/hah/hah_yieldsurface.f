@@ -58,6 +58,9 @@ c     local
       dimension sc(ntens),so(ntens),spp(ntens),sp(ntens),dphi_hah(6),
      $     dphi_hah_fin(6)
       real*8 sc,so,spp,sp,ref0,ref1,dphi_hah,dphi_hah_fin
+
+      dimension cauchy6(ntens),dpsi_dspp6(ntens),dpsi_dsp6(ntens)
+      real*8 cauchy6,dpsi_dspp6,dpsi_dsp6
 c     local-latent
       dimension dphi_h(ntens),d2phi_h(ntens,ntens),dpsi_dspp(ntens),
      $     dpsi_dsp(ntens)
@@ -180,9 +183,29 @@ c     Calculate the derivatives of the yield surface
 c     with respect to the cauchy stress.
       !! dphi_hah is the guess.
       !! dphi_hah_fin is the newly found dphi_hah_fin
-      call hah_deriv(nyldp,ntens,ndi,nshr,cauchy,yldp,yldc(9),phi_h,
-     $     dphi_h,psi_spp,dpsi_dspp,psi_sp,dpsi_dsp,phi,dphi_hah,
-     $     dphi_hah_fin)
+
+c     hah_deriv is compatible with full-dimensional stress space.
+
+      if (ntens.eq.3) then
+         call reduce_3to6(cauchy   ,cauchy6)
+         call reduce_3to6(dpsi_dspp,dpsi_dspp6)
+         call reduce_3to6(dpsi_dsp ,dpsi_dsp6)
+      elseif(ntens.eq.6) then
+         cauchy6(:)   =cauchy(:)
+         dpsi_dspp6(:)=dpsi_dspp(:)
+         dpsi_dsp6(:) =dpsi_dsp(:)
+      endif
+
+c     !! use derivatives of isotropic yield surface kernel
+      if (ntens.eq.3) then
+         call reduce_3to6(dphi_chi,dphi_hah)
+      elseif(ntens.eq.6) then
+         dphi_hah(:)=dphi_chi(:)
+      endif
+
+      call hah_deriv(nyldp,cauchy6,yldp,yldc(9),phi_h,
+     $     dphi_h,psi_spp,dpsi_dspp,psi_sp,dpsi_dsp,phi,
+     $     dphi_hah,dphi_hah_fin)
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       dphi(1:2) = dphi_hah_fin(1:2)
       dphi(3)   = dphi_hah_fin(3)
