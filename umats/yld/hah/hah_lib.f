@@ -281,8 +281,8 @@ c***  Reference size (current yield stress in the reference stress state)
          ref1     = yldp(3)
 c***  Microstructure deviator/increment/target
          do 5 i=1,ntens
-            emic(i)  = yldp(i+3)
-            demic(i) = yldp(i+9)
+            emic(i)   = yldp(i+3)
+            demic(i)  = yldp(i+9)
             target(i) = yldp(i+15)
  5       continue
          dgR = yldp(22)
@@ -320,6 +320,12 @@ c***  Microstructure deviator
             yldp(i+9)  = demic(i)
             yldp(i+15) = target(i)
  15      continue
+
+c     emic,demic,target are all 'deviatoric'
+         yldp(6) = -emic(1) -emic(2)
+         yldp(12)=-demic(1)-demic(2)
+         yldp(18)=-target(1)-target(2)
+
          yldp(22) = dgR
 c***  Bauschinger effect
          yldp(23:26) = gk(:)    ! state variables

@@ -40,7 +40,7 @@ c     locals
 c     ! calculate deviatoric stress
       call deviat(ntens,cauchy,sdev,hydro)
       call emod_iso(200d9,0.3d0,Cel,ndi,nshr) !! to be improved later.
-      call calc_sdev_deriv(ntens,ndi,nshr,nyldp,yldp,sdev,
+      call calc_sdev_deriv(ntens,ndi,nshr,nyldp,yldp,cel,sdev,
      $     dphi_dsig,dsp_dsig,dspp_dsig)
       return
       end subroutine hah_deriv
@@ -53,7 +53,7 @@ c     Calculate d(sp)/d(Cauchy)
 c     Calculate d(spp)/d(Cauchy)
 
 c     Eq 14 in Ref [1]
-      subroutine calc_sdev_deriv(ntens,ndi,nshr,nyldp,yldp,sdev,
+      subroutine calc_sdev_deriv(ntens,ndi,nshr,nyldp,yldp,cel,sdev,
      $     dphi_dsig,dsp_dsig,dspp_dsig)
 c     Arguments
 c     ntens

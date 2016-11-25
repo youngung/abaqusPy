@@ -203,6 +203,12 @@ c     !! use derivatives of isotropic yield surface kernel
          dphi_hah(:)=dphi_chi(:)
       endif
 
+c     Store state variables/parameters into yldp
+      call hat(8d0/3d0,dphi_chi,target)
+      call hah_io(1,nyldp,ntens,yldp,emic,demic,dgr,gk,e_ks,f_ks,eeq,
+     $     ref0,ref1,gL,ekL,eL,gS,c_ks,ss,krs,target)
+
+
       call hah_deriv(nyldp,cauchy6,yldp,yldc(9),phi_h,
      $     dphi_h,psi_spp,dpsi_dspp,psi_sp,dpsi_dsp,phi,
      $     dphi_hah,dphi_hah_fin)
