@@ -180,8 +180,9 @@ c     Calculate the derivatives of the yield surface
 c     with respect to the cauchy stress.
       !! dphi_hah is the guess.
       !! dphi_hah_fin is the newly found dphi_hah_fin
-      call hah_deriv(nyldp,cauchy,yldp,yldc(9),phi_h,dphi_h,psi_spp,
-     $     dpsi_dspp,psi_sp,dpsi_dsp,phi,dphi_hah,dphi_hah_fin)
+      call hah_deriv(nyldp,ntens,ndi,nshr,cauchy,yldp,yldc(9),phi_h,
+     $     dphi_h,psi_spp,dpsi_dspp,psi_sp,dpsi_dsp,phi,dphi_hah,
+     $     dphi_hah_fin)
 c- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       dphi(1:2) = dphi_hah_fin(1:2)
       dphi(3)   = dphi_hah_fin(3)
