@@ -8,32 +8,32 @@ c     [3] The manual of abaqusPy
 c     Youngung Jeong
 c     youngung.jeong@gmail.com
 c-----------------------------------------------------------------------
-c     Decompose a stress tensor to the orthogonal and collinear
-c     components with respect to the microstructure deviator <emic>
+c     Decompose a deviatoric stress tensor to the orthogonal and collinear
+c     components with respect to the microstructure deviator <hhat>
 c     Refer to Eqs 4&5 in Ref [1]
-      subroutine hah_decompose(ntens,ndi,nshr,tensor,emic,tensor_colin,
-     $     tensor_ortho)
+      subroutine hah_decompose(ntens,ndi,nshr,sdev,hhat,sdev_colin,
+     $     sdev_ortho)
 c     Arguments
-c     ntens        : Len of <tensor>
+c     ntens        : Len of <sdev>
 c     ndi          : Number of normal components
 c     nshr         : Number of shear components
-c     tensor       : subjected tensor (deviatoric)
-c     emic         : microstructure deviator
-c     tensor_colin : colinear component of <tensor>
-c     tensor_ortho : orthogonal component of <tensor>
+c     sdev       : subjected sdev (deviatoric)
+c     hhat         : microstructure deviator
+c     sdev_colin : colinear component of <sdev>
+c     sdev_ortho : orthogonal component of <sdev>
       implicit none
       integer, intent(in)::ntens,ndi,nshr
-      dimension tensor(ntens),tensor_colin(ntens),tensor_ortho(ntens),
-     $     emic(ntens)
-      real*8,intent(in) ::tensor,emic
-      real*8,intent(out)::tensor_colin,tensor_ortho
+      dimension sdev(ntens),sdev_colin(ntens),sdev_ortho(ntens),
+     $     hhat(ntens)
+      real*8,intent(in) ::sdev,hhat
+      real*8,intent(out)::sdev_colin,sdev_ortho
 c      dimension aux6(6),bux6(6)
       real*8 dot_prod,H,dd!,aux6,bux6
-      integer imsg
+      integer i,imsg
       logical idiaw
-cf2py intent(in) ntens,ndi,nshr,tensor, emic
-cf2py intent(out) tensor_colin, tensor_ortho
-cf2py depend(ntens) tensor,emic,tensor_colin,tensor_ortho
+cf2py intent(in) ntens,ndi,nshr,sdev, hhat
+cf2py intent(out) sdev_colin, sdev_ortho
+cf2py depend(ntens) sdev,hhat,sdev_colin,sdev_ortho
 c      idiaw=.true.
       idiaw=.false.
       imsg = 0
@@ -41,25 +41,32 @@ c      idiaw=.true.
          call w_empty_lines(imsg,2)
          call fill_line(imsg,'-',52)
          call w_chr(imsg,'Beginning of subroutine HAH_DEDCOMPOSE')
-         call w_chr(imsg,'Given <tensor>')
-         call w_dim(imsg,tensor,ntens,1d0,.true.)
-         call w_chr(imsg,'Given microstructure deviator <emic>')
-         call w_dim(imsg,emic,ntens,1d0,.true.)
+         call w_chr(imsg,'Given <sdevr>')
+         call w_dim(imsg,sdev,ntens,1d0,.true.)
+         call w_chr(imsg,'Given microstructure deviator <hhat>')
+         call w_dim(imsg,hhat,ntens,1d0,.true.)
       endif
       H  = 8d0/3d0
-      dd = dot_prod(ntens,ndi,nshr,tensor,emic)
+      if    (ntens.eq.6) then
+         dd=0d0
+         do i=1,3
+            dd=dd+sdev(i)*hhat(i)
+            dd=dd+sdev(i+3)*hhat(i+3)*2d0
+         enddo
+      elseif(ntens.eq.3.and.ndi.eq.2) then
+         dd=sdev(1)*hhat(1)+sdev(2)*hhat(2)+
+     $        (-sdev(1)-sdev(2))*(-hhat(1)-hhat(1))+
+     $        sdev(3)*hhat(3)*2d0
+      endif
       if (idiaw) call w_val(imsg,'dd',dd)
 c     Eqs 4&5 in Ref [1]
-      tensor_colin(:) = H * dd * emic(:)
-      tensor_ortho(:) = tensor(:) - tensor_colin(:)
-
-      if (.true.) then
-!         calculate dsc_ds (i.e., partial tensor_colin / tensor)
-c         if emic is not dependent on 'stress' (original case)
-c
-      endif
-
-
+      sdev_colin(:) = H * dd * hhat(:)
+      sdev_ortho(:) = sdev(:) - sdev_colin(:)
+c$$$      if (.true.) then
+c$$$!         calculate dsc_ds (i.e., partial tensor_colin / tensor)
+c$$$c         if hhat is not dependent on 'stress' (original case)
+c$$$c
+c$$$      endif
       if (idiaw) then
          call w_chr(imsg,'Exit HAH_DEDCOMPOSE')
          call fill_line(imsg,'-',52)
@@ -230,8 +237,8 @@ cf2py intent(out) s1,s2
       return
       end subroutine pi_proj
 c-----------------------------------------------------------------------
-c     subroutine that converts back and forth
-c     Used to convert/restore yldp of HAH case.
+c     subroutine that converts back and forth used to convert/restore
+c     yldp of HAH case.
 c     When yldp is used for HAH model, this subroutine must be used.
       subroutine hah_io(iopt,nyldp,ntens,yldp,emic,demic,dgR,gk,e_ks,
      $     f_ks,eeq,ref0,ref1,gL,ekL,eL,gS,c_ks,ss,ekrs,target)
@@ -272,29 +279,29 @@ c***  equivalent plastic strain (cumulative)
 c***  Reference size (current yield stress in the reference stress state)
          ref0     = yldp(2)
          ref1     = yldp(3)
-c***  Microstructure deviator
+c***  Microstructure deviator/increment/target
          do 5 i=1,ntens
             emic(i)  = yldp(i+3)
-            demic(i) = yldp(i+3+ntens)
+            demic(i) = yldp(i+9)
+            target(i) = yldp(i+15)
  5       continue
-         dgR = yldp(ntens*2+4)
+         dgR = yldp(22)
 c***  Bauschinger effect
-         gk(:)   = yldp(ntens*2+5:ntens*2+8)   ! state variables
-         e_ks(:) = yldp(ntens*2+9:ntens*2+13)  ! k1,k2,k3,k4,k5 constants
+         gk(:)   = yldp(23:26)  ! state variables
+         e_ks(:) = yldp(27:31)  ! k1,k2,k3,k4,k5 constants
          do 10 i=1,2
-            f_ks(i) = yldp(ntens*2+13+i) ! f_k state parameters
+            f_ks(i) = yldp(31+i) ! f_k state parameters
  10      continue
 ***  Latent hardening
-         gL        = yldp(ntens*2+16)
-         ekL       = yldp(ntens*2+17)
-         eL        = yldp(ntens*2+18)
+         gL        = yldp(34)
+         ekL       = yldp(35)
+         eL        = yldp(36)
 c***  cross hardening
-         gS        = yldp(ntens*2+19)
-         c_ks      = yldp(ntens*2+20)
-         ss        = yldp(ntens*2+21)
+         gS        = yldp(37)
+         c_ks      = yldp(38)
+         ss        = yldp(39)
 c***  microstructure deviator rotation
-         ekrs(:)   = yldp(ntens*2+22:ntens*2+26)
-         target(:) = yldp(ntens*2+27:ntens*3+26)
+         ekrs(:)   = yldp(40:44)
 c     diagnose
          if (dabs(gL).lt.1e-3) then
             write(*,*)'Error: The value of gL found to be too small'
@@ -309,28 +316,27 @@ c***  Reference size
          yldp(3)   = ref1
 c***  Microstructure deviator
          do 15 i=1,ntens
-            yldp(i+3)       = emic(i)
-            yldp(i+3+ntens) = demic(i)
+            yldp(i+3)  = emic(i)
+            yldp(i+9)  = demic(i)
+            yldp(i+15) = target(i)
  15      continue
-         yldp(ntens*2+4) = dgR
+         yldp(22) = dgR
 c***  Bauschinger effect
-         yldp(ntens*2+5:ntens*2+8) = gk(:)      ! state variables
-         yldp(ntens*2+9:ntens*2+13) = e_ks(:)  ! k1,k2,k3,k4,k5 constants
+         yldp(23:26) = gk(:)    ! state variables
+         yldp(27:31) = e_ks(:)  ! k1,k2,k3,k4,k5 constants
          do 20 i=1,2
-            yldp(ntens*2+13+i) = f_ks(i) ! f_k state parameters
+            yldp(31+i) = f_ks(i) ! f_k state parameters
  20      continue
 c***  Latent hardening
-         yldp(ntens*2+16) = gL
-         yldp(ntens*2+17) = ekL
-         yldp(ntens*2+18) = eL
+         yldp(34) = gL
+         yldp(35) = ekL
+         yldp(36) = eL
 c***  cross hardening
-         yldp(ntens*2+19) = gS
-
-         yldp(ntens*2+20) = c_ks
-         yldp(ntens*2+21) = ss
+         yldp(37) = gS
+         yldp(38) = c_ks
+         yldp(39) = ss
 c***  microstructure deviator rotation
-         yldp(ntens*2+22:ntens*2+26) = ekrs(:)
-         yldp(ntens*2+27:ntens*3+26) = target(:)
+         yldp(40:44) = ekrs(:)
       endif
 c     yield surface constants
       return
