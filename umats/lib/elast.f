@@ -30,43 +30,59 @@ c     Multiplier
 c      call w_mdim(0,cel,3,1d0)
       return
       end subroutine
-c     -------------------------------------
-      subroutine emod_iso(e,nu,c,ndi,nshr)
+c----------------------------------------------------------------------c
+      subroutine emod_iso(e,enu,cel,ndi,nshr)
+c     Arguments
+c     ---------
+c     e   : Young's modulus
+c     enu : Poisson ratio
+c     Cel : Elastic modulus
+c     ndi : Number of direct components
+c     nshr: Number of shear components
+c     Obtain elastic modulus tensor using
+c       1. Young's modulus (e)
+c       2. poisson ratio   (enu)
+c     sigma_i = Cel_ij g_j
+c     where e_j is the engineering strain for which the shear strain components
+c     are such that g_j = 2 * e_j (here j index loops over only shear components)
       implicit none
-c     intent(in): e,nu,ndi,nshr
-c     intent(out): c
       integer, intent(in) :: ndi,nshr
-      dimension c(ndi+nshr,ndi+nshr)
-      real*8, intent(in) ::  e, nu
-      real*8, intent(out) :: c
+      dimension cel(ndi+nshr,ndi+nshr)
+      real*8, intent(in) :: e,enu
+      real*8, intent(out) :: cel
       real*8 x
       integer i,j,imsg,ntens
+c     intent(in): e,enu,ndi,nshr
+c     intent(out): cel
       ntens=ndi+nshr
       imsg=7
 
 c     initialization
-      c(:,:)=0d0
-c$$$      do 20 i=1,ntens
-c$$$      do 20 j=1,ntens
-c$$$         c(i,j) = 0d0
-c$$$ 20   continue
+      cel(:,:)=0d0
 c      write(imsg,*) 'after initialization c matrix'
 c
 c     construct elastic tensor (6x6) with assuming that
 c     \gamma_ij = 2\varepsilon_ij is the engineering shear strain
 c
 c     Multiplier
-      x = e/(1d0+nu)/(1d0-2d0*nu)
-c     off-diagonal terms
-      do 50 i=1,3
-      do 50 j=1,3
-         c(i,i) = nu * x
+      x = e/(1d0+enu)/(1d0-2d0*enu)
+c     off-diagonal terms for 'direct' components
+      do 50 i=1,ndi
+      do 50 j=1,ndi
+         cel(i,j) = enu * x
  50   continue
-      do 100 i=1,3
-         c(i,i)     = (1d0-nu)*x    !! overwrite the diganogal term
-         c(i+3,i+3) = (1d0-2d0*nu)/2d0 * x
- 100  continue
-c      write(imsg,*) 'just before returning'
+      do 60 i=1,ndi
+         cel(i,i) = (1d0-enu)*x !! overwrite the diganogal term
+ 60   continue
+      do 70 i=ndi+1,ndi+nshr
+         cel(i,i) = (1d0-2d0*enu)/2d0 * x
+ 70   continue
+      call fill_line(0,'-',40)
+      call w_val(0,'mod:',e)
+      call w_val(0,'nu:',enu)
+      call w_chr(0,'Cel:')
+      call w_mdim(0,cel,ntens,1d0)
+      call fill_line(0,'-',40)
       return
       end subroutine emod_iso
 c----------------------------------------------------------------------c

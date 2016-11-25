@@ -83,6 +83,7 @@ c     intent(out) cij
       end subroutine mult_array2
 c------------------------------------------------------------------------
       subroutine inner_dot_voigt(ntens,ndi,nshr,a,b,c)
+      implicit none
       integer i
       integer, intent(in)::ndi,nshr,ntens
       dimension a(ntens), b(ntens)
