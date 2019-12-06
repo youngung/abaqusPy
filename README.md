@@ -67,5 +67,6 @@ UVARM7 : s11
 UVARM8 : s22
 UVARM9 : s12
 
-Youngung Jeong
-youngung.jeong@gmail.com
+Youngung Jeong @ Changwon National University
+School of Materials Science and Engineering
+yjeong@changwon.ac.kr
