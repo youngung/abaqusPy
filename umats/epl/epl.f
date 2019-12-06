@@ -116,7 +116,7 @@ c     print head
 c     restore stran_el, stran_pl, and yldp
       call restore_statev(statev,nstatv,eeq_ns(0),stran_el_ns(0,:),
      $     stran_pl_ns(0,:),ntens,yldp_ns(0,:),nyldp,0,.false.,idia,
-     $     .false.,kinc,noel,npt,time(0),stress)
+     $     .false.,kinc,noel,npt,time(1),stress)
 
 c     yld parameters pertaining to step n - need to find
 c     the updated yld parameters for step n+1 later...
@@ -213,7 +213,7 @@ c        Return mapping subroutine updates stress/statev
             call restore_statev(statev,nstatv,eeq_ns(1),
      $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
      $           nyldp,0,.true.,idia,
-     $           .false.,kinc,noel,npt,time(0),stress)
+     $           .false.,kinc,noel,npt,time(1),stress)
          endif
          if (idiaw) call w_chr(idia,'** Begin return-mapping **')
          call return_mapping(Cel,stress_ns(1,:),phi_ns(0),eeq_ns(0),
@@ -242,7 +242,7 @@ c        Return mapping subroutine updates stress/statev
             call restore_statev(statev,nstatv,eeq_ns(1),
      $           stran_el_ns(1,:),stran_pl_ns(1,:),ntens,yldp_ns(1,:),
      $           nyldp,0,.true.,idia,
-     $           .false.,kinc,noel,npt,time(0),stress)
+     $           .false.,kinc,noel,npt,time(1),stress)
             call w_chr( idia,'* stress at n   [MPa]')
             call w_dim( idia,stress_ns(0,:),ntens,1d0/empa,.true.)
             call w_chr( idia,'* spr           [MPa]')

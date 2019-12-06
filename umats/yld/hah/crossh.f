@@ -1,25 +1,29 @@
 c------------------------------------------------------------------------
-      subroutine cross_hardening(kS,ss,gS,emic,ntens,tensor_ref,dgS)
+c     References
+c     [1] Barlat et al. IJP 58, 2014 p201-218
+c------------------------------------------------------------------------
+      subroutine cross_hardening(ntens,emic,target,c_kS,ss,
+     $     gS,dgS_deps)
 c     Arguments
-c     kS         : ks parameter
+c     ntens      : Len of tensor
+c     emic       : microstructure deviator
+c     target     : reference tensor (does not have to be a hat tensor)
+c     c_kS       : ks parameter
 c     ss         : S parameter
 c     gS         : gS parameter
-c     emic       : microstructure deviator
-c     ntens      : Len of tensor
-c     tensor_ref : reference tensor
-c     dgS        : incremental gS
-      integer ntens
-      dimension emic(ntens),tensor_ref(ntens)
-      real*8 ks,ss,gS,emic
-      real*8 dgS
+c     dgS_deps   : dgs/deps
+      integer, intent(in) :: ntens
+      dimension emic(ntens),target(ntens)
+      real*8, intent(in)  :: c_kS,ss,gS,emic
+      real*8, intent(out) :: dgS_deps
 c     local
-      real*8 cos2chi
-c     intent(in) kS,ss,gS,emic,ntens,tensor_ref
-c     intent(out) dgS
+      real*8 coschi
+c     intent(in) c_kS,ss,gS,emic,ntens,target
+c     intent(out) dgS_deps
 
-      call calc_cos2chi(tensor_ref,mic,ntens,cos2chi)
-      dgS = kS * (1d0 + (ss-1d0) * cos2chi - gS)
-
+      call calc_coschi(ntens,target,emic,coschi)
+c     Equation 29 in Ref [1]
+      dgS_deps = c_kS * (1d0 + (ss-1d0) * (coschi*coschi) - gS)
       return
       end subroutine cross_hardening
 c------------------------------------------------------------------------

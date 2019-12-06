@@ -24,7 +24,7 @@ c        hrdp(1) : equivalent plastic strain
          dflow_stress = dflow_stress*fact
       else
          write(*,*) 'Err: Unexpected hardening law given in uhard.f'
-         stop -1
+         call exit(-1)
       endif
 
       return

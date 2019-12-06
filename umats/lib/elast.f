@@ -30,55 +30,74 @@ c     Multiplier
 c      call w_mdim(0,cel,3,1d0)
       return
       end subroutine
-c     -------------------------------------
-      subroutine emod_iso(e,nu,c,ndi,nshr)
-c     intent(in): e,nu,ndi,nshr
-c     intent(out): c
-      integer ndi,nshr
-      real*8 e, nu, c(ndi+nshr,ndi+nshr), x
-      integer i,j,imsg
-
+c----------------------------------------------------------------------c
+      subroutine emod_iso(e,enu,cel,ndi,nshr)
+c     Arguments
+c     ---------
+c     e   : Young's modulus
+c     enu : Poisson ratio
+c     Cel : Elastic modulus
+c     ndi : Number of direct components
+c     nshr: Number of shear components
+c     Obtain elastic modulus tensor using
+c       1. Young's modulus (e)
+c       2. poisson ratio   (enu)
+c     sigma_i = Cel_ij g_j
+c     where e_j is the engineering strain for which the shear strain components
+c     are such that g_j = 2 * e_j (here j index loops over only shear components)
+      implicit none
+      integer, intent(in) :: ndi,nshr
+      dimension cel(ndi+nshr,ndi+nshr)
+      real*8, intent(in) :: e,enu
+      real*8, intent(out) :: cel
+      real*8 x
+      integer i,j,imsg,ntens
+c     intent(in): e,enu,ndi,nshr
+c     intent(out): cel
+      ntens=ndi+nshr
       imsg=7
 
 c     initialization
-      do i=1,ntens
-         do j=1,ntens
-            c(i,j) = 0.d0
-         enddo
-      enddo
-
+      cel(:,:)=0d0
 c      write(imsg,*) 'after initialization c matrix'
 c
 c     construct elastic tensor (6x6) with assuming that
 c     \gamma_ij = 2\varepsilon_ij is the engineering shear strain
 c
 c     Multiplier
-      x = e/(1.+nu)/(1.-2.*nu)
-c     off-diagonal terms
-      do i=1,3
-         do j=1,3
-            c(i,i) = nu * x
-         enddo
-      enddo
-      do i=1,3
-         c(i,i) = (1.-nu)*x     !! overwrite the diganogal term
-         c(i+3,i+3) = (1.-2.*nu)/2. * x
-      enddo
-c      write(imsg,*) 'just before returning'
+      x = e/(1d0+enu)/(1d0-2d0*enu)
+c     off-diagonal terms for 'direct' components
+      do 50 i=1,ndi
+      do 50 j=1,ndi
+         cel(i,j) = enu * x
+ 50   continue
+      do 60 i=1,ndi
+         cel(i,i) = (1d0-enu)*x !! overwrite the diganogal term
+ 60   continue
+      do 70 i=ndi+1,ndi+nshr
+         cel(i,i) = (1d0-2d0*enu)/2d0 * x
+ 70   continue
+      call fill_line(0,'-',40)
+      call w_val(0,'mod:',e)
+      call w_val(0,'nu:',enu)
+      call w_chr(0,'Cel:')
+      call w_mdim(0,cel,ntens,1d0)
+      call fill_line(0,'-',40)
       return
       end subroutine emod_iso
 c----------------------------------------------------------------------c
-      subroutine el_iso_jacobian(e,nu,hard,flow,syield,predictor,
+      subroutine el_iso_jacobian(e,nu,flow,syield,predictor,
      $     ndi,ntens,ddsdde)
-c     intent(in): e,nu,hard,flow,syield,ndi,ntens
-c     intent(out): ddsdde
+c     intent(in):: e,nu,flow,syield,ndi,ntens
+c     intent(out):: ddsdde
       parameter(one=1.d0,two=2.d0,three=3.d0)
       dimension flow(ntens), ddsdde(ntens,ntens), c(ntens,ntens)
-      real*8 e, nu, hard, syield, predictor
+      real*8 e, nu, syield, predictor,ddsdde
       real*8 mu, k              !! elastic constants (shear modulus and bulk modulus)
-      integer i,j,ndi,ntens
-      real*8 mustar, lamstar, fact1,fact2,fact3
-      call emod_iso(e,nu,c)
+      integer i,j,ndi,ntens,nshr
+      real*8 mustar, lamstar, fact1,fact2,fact3,c
+      nshr = ntens - ndi
+      call emod_iso(e,nu,c,ndi,nshr)
       k=e/(three*(one-two*nu))
       mu=e/(  two*(one+    nu))
       mustar = mu * syield / predictor
@@ -86,21 +105,18 @@ c     intent(out): ddsdde
       fact1 = one*lamstar
       fact2 = two*mustar
       fact3 = (h/(one+h/three/mu)-three*mustar)
-      do i=1,ndi
-         do j=1,ndi
-            ddsdde(i,j) = fact1
-         enddo
-      enddo
-      do i=1,ntens
-         do j=1,ntens
-            ddsdde(i,j) = ddsdde(i,j) + fact2
-         enddo
-      enddo
-      do i=1,ntens
-         do j=1,ntens
-            ddsdde(i,j) = ddsdde(i,j) + fact3 * flow(i) * flow(j)
-         enddo
-      enddo
+      do 10 i=1,ndi
+      do 10 j=1,ndi
+         ddsdde(i,j) = fact1
+ 10   continue
+      do 20 i=1,ntens
+      do 20 j=1,ntens
+         ddsdde(i,j) = ddsdde(i,j) + fact2
+ 20   continue
+      do 30 i=1,ntens
+      do 30 j=1,ntens
+         ddsdde(i,j) = ddsdde(i,j) + fact3 * flow(i) * flow(j)
+ 30   continue
       end subroutine el_iso_jacobian
 c----------------------------------------------------------------------c
 
@@ -108,4 +124,3 @@ c     Place holder for anisotropic elasticity
       subroutine emod_aniso
       return
       end subroutine emod_aniso
-

@@ -107,7 +107,7 @@ c-----------------------------------------------------------------------
          write(*,*)'ntens:',ntens
          write(*,*)'Err: unexpected dimension of tensor given',ntens
          call fill_line(0,'*',72)
-         stop -1
+         call exit(-1)
       endif
 
       empa=1d6
@@ -167,7 +167,8 @@ c***  --------------------------------
             call w_val(idia,'eeq_ks(k)   :',eeq_ks(k))
             call w_val(idia,'phi_k [MPa] :',phi_ks(k)/empa)
             call w_val(idia,'h_flow_ks [MPa] :',h_flow_ks(k)/empa)
-            call w_val(idia,'hf(k)/hf(1): [%]',h_flow_ks(k)/h_flow_ks(1)*1d2)
+            call w_val(idia,'hf(k)/hf(1): [%]',
+     $           h_flow_ks(k)/h_flow_ks(1)*1d2)
             call w_val(idia,'dh_ks [MPa] :',dh_ks(k)/empa)
          endif
 c-----------------------------------------------------------------------
@@ -262,7 +263,7 @@ c-----------------------------------------------------------------------
 c***  update state variables
       call restore_statev(statev,nstatv,eeq_n+dlamb_ks(k),
      $     stran_el_ks(k,:),stran_pl_ks(k,:),ntens,yldp_ns(1,:),
-     $     nyldp,1,.false.,idia,.false.,kinc,noel,npt,time(0),
+     $     nyldp,1,.false.,idia,.false.,kinc,noel,npt,time(1),
      $     spr_ks(k+1,:))
 c***  new stress
       snew(:)=spr_ks(k,:)

@@ -1,8 +1,11 @@
 c-----------------------------------------------------------------------
       real*8 function get_mx(array,ndi)
       implicit none
-      integer i,ndi
-      real*8 array(ndi)
+      dimension array(ndi)
+      real*8, intent(in):: array
+      integer, intent(in):: ndi
+      integer i
+
       get_mx=array(1)
       do i=2,ndi
          if (array(i).gt.get_mx) then
@@ -14,16 +17,17 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       real*8 function get_mmx(array,ncol,nrow)
       implicit none
-      integer i,j,ncol,nrow
-      real*8 array(ncol,nrow)
+      integer, intent(in) :: ncol,nrow
+      dimension array(ncol,nrow)
+      real*8, intent(in) ::  array
+      integer i,j
       get_mmx=array(1,1)
-      do i=1,ncol
-         do j=1,nrow
-            if (array(i,j).gt.get_mmx) then
-               get_mmx=array(i,j)
-            endif
-         enddo
-      enddo
+      do 5 i=1,ncol
+      do 5 j=1,nrow
+         if (array(i,j).gt.get_mmx) then
+            get_mmx=array(i,j)
+         endif
+ 5    continue
       return
       end function get_mmx
 c-----------------------------------------------------------------------

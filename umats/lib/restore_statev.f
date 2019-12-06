@@ -80,7 +80,7 @@ c-----------------------------------------------------------------------
       if (iw) then
          fnstv='/home/younguj/repo/abaqusPy/examples/one/statev.txt'
          open(425,position='append',file=fnstv)
-         write(ncc,'(i)')ntens+nstatv
+         write(ncc,'(i120)')ntens+nstatv
          fmt='('//trim(adjustl(ncc))//'(e12.4,1x))'
          write(425,fmt,advance='no') time
          write(425,fmt) (stress(i),i=1,ntens),(statev(i),i=1,nstatv)

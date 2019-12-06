@@ -1,0 +1,10 @@
+c###  Dimension for
+      integer iopt,nyldp,ntens,i
+      dimension yldp(nyldp),emic(ntens),demic(ntens),gk(4),e_ks(5),
+     $     f_ks(2),ekrs(5),target(ntens)
+      real*8 yldp,emic,demic,dgR,gk,e_ks,f_ks,eeq,ref0,ref1,gL,
+     $      ekL,eL,gS,c_ks,ss,ekrs,target
+c      dimension yldp(nyldp),emic(ntens),demic(ntens),gk(4),e_ks(5),
+c     $     f_ks(2),ekrs(5),target(ntens)
+c      real*8 yldp,emic,demic,gk,e_ks,f_ks,ekrs,target,eeq,dgR,ref0,ref1,gL,
+c     $     ekL,eL,gS,c_ks,ss
