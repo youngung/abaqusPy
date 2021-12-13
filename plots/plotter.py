@@ -36,7 +36,7 @@ def strstr(fn=None,ref_dat=None,label=None,fig=None,**kwargs):
         fig = plt.figure(figsize=(7,3))
         ax  = fig.add_subplot(121)
     elif len(fig.axes)!=1:
-        raise SyntaxError, 'Expected a single axis'
+        raise SyntaxError('Expected a single axis')
     else:
         ax=fig.axes[0]
 

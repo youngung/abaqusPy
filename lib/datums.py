@@ -15,7 +15,7 @@ def returnPointDatumCoords(myPart,coords):
     elif type(coords)==np.ndarray or type(coords)==list:
         coords=tuple(coords)
     else:
-        raise SyntaxError,'Unexpected type of coords given'
+        raise SyntaxError('Unexpected type of coords given')
 
     ## Below returns a feature
     f=myPart.DatumPointByCoordinate(coords=coords)

@@ -10,11 +10,14 @@ def draw_arc(mySketch,xyCoords,radius,iref,i0,i1,opt='up',):
     i1  : arc end index
     opt : 'up' or 'down' depending on the reletive location of circle center to specimen.
     """
+    import sys
+    sys.stdout.write('iref:%i'%iref)
+    print('iref:',iref)
     xyArc=xyCoords[iref]
 
     if opt=='up':    centerArc = (xyArc[0],xyArc[1]+radius)
     elif opt=='down':centerArc = (xyArc[0],xyArc[1]-radius)
-    else: raise IOError, 'Unexpected opt given'
+    else: raise IOError('Unexpected opt given')
 
     p1=(xyCoords[i0][0],xyCoords[i0][1])
     p2=(xyCoords[i1][0],xyCoords[i1][1])
@@ -29,7 +32,7 @@ def draw_line(mySketch,xyCoords,i0,i1):
     i1
     """
     n=i1-i0
-    for i in xrange(n):
+    for i in range(n):
         I0=i0+i
         I1=I0+1
         p1=(xyCoords[I0][0],xyCoords[I0][1])

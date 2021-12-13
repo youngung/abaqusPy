@@ -66,7 +66,7 @@ def drawE8_Sketch(
     # plot(xyCoords[0,0],xyCoords[1,0],'x')
 
     xyTot=[[],[]]
-    for i in xrange(len(sym)):
+    for i in range(len(sym)):
         symOp = sym[i][:,:]# (2,2)
         temp = np.tensordot(symOp,xyCoords,axes=[1,0])
         if i==1 or i==3:
@@ -75,7 +75,7 @@ def drawE8_Sketch(
         elif i==0 or i==2:
             temp=temp[::]
 
-        for j in xrange(len(temp[0])):
+        for j in range(len(temp[0])):
             xyTot[0].append(temp[0][j])
             xyTot[1].append(temp[1][j])
 
@@ -108,7 +108,7 @@ def tensileBar(pl=57,   ## Parallel length
     xyt=xy.T
     x,y=xy
     XYS=[]
-    for i in xrange(len(xyt)-1):
+    for i in range(len(xyt)-1):
         x0,y0 = xyt[i]
         x1,y1 = xyt[i+1]
         if (x1-x0)==0 and (y1-y0)==0:
@@ -119,3 +119,38 @@ def tensileBar(pl=57,   ## Parallel length
     XYS.append(XYS[0])
     xyt=np.array(XYS).T
     return xyt
+
+
+
+def draw_tensilebar():
+    mm = 1e-3
+    pl=57.
+    gw=12.5
+    tw=20.
+    tl=20.0
+    rd=12.5
+    xyCoords = tensileBar(pl=pl,gw=gw,tw=tw,tl=tl,rd=rd).T
+    sys.stdout.write('len(xyCoords):%i'%len(xyCoords))
+
+    myModel = mdb.Model(name='UT_%s'%label)
+    mySketch = myModel.ConstrainedSketch(
+        name='E8_Sketch',sheetSize=1.0)
+
+    ## total length of specimen.
+    totalLength=np.max(xyCoords[:,0])-np.min(xyCoords[:,0])
+
+    for i in range(len(xyCoords)):
+        mySketch.Spot(point=xyCoords[i])
+
+    draw_arc(mySketch, xyCoords,gw,0,0,1,'up')
+    draw_arc(mySketch, xyCoords,gw,6,5,6,'down')
+    draw_arc(mySketch, xyCoords,gw,8,8,9,'down')
+    draw_arc(mySketch, xyCoords,gw,14,13,14,'up')
+    #draw_arc(mySketch, xyCoords,gw,8,7,8,'down')
+    #draw_arc(mySketch, xyCoords,gw,10,10,11,'down')
+    #draw_arc(mySketch, xyCoords,gw,18,17,18,'up')
+
+    draw_line(mySketch,xyCoords,1,5)
+    draw_line(mySketch,xyCoords,6,8)
+    draw_line(mySketch,xyCoords,9,13)
+    draw_line(mySketch,xyCoords,14,16)

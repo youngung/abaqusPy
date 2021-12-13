@@ -30,7 +30,7 @@ def virtual_test(alphas,exponent):
     s6lab[0] = 1.
     s33lab = voigt2(s6lab)
 
-    for i in xrange(len(ths)):
+    for i in range(len(ths)):
         ## stress in material coordinates
         s33mat = inplane_rot(ths[i],s33lab)
         ## convert to 6D convenction

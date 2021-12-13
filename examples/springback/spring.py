@@ -13,7 +13,7 @@ Youngung Jeong
 youngung.jeong@gmail.com
 """
 
-print __doc__
+print(__doc__)
 
 
 ## add the site-package of my own...
@@ -60,8 +60,8 @@ myModel.fieldOutputRequests['F-Output-2'].setValues(frequency=1)
 myModel.fieldOutputRequests['F-Output-2'].setValues(variables=('S', 'E','UVARM'))
 
 # write restart
-for i in xrange(len(myModel.steps.keys())-1):
-    s=myModel.steps.keys()[i+1]
+for i in range(len(list(myModel.steps.keys()))-1):
+    s=list(myModel.steps.keys())[i+1]
     myModel.steps[s].Restart(frequency=10,numberIntervals=0,overlay=OFF,timeMarks=OFF)
 
 myModel.steps['Step-3'].setValues(maxNumInc=2000)
@@ -115,6 +115,6 @@ myJob_ref = mdb.jobs[jobName_ref]
 
 umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
 myJob.setValues(userSubroutine=umatFN)
-print 'User material has been specified: %s'%umatFN
+print('User material has been specified: %s'%umatFN)
 myJob.submit(consistencyChecking=OFF)
 myJob.waitForCompletion()

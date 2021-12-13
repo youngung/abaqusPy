@@ -120,8 +120,8 @@ def TensileOneElement(
     ### Sketch details.
     ## Connecting the four corners.
     totalLength=np.max(xyCoords[:,0])-np.min(xyCoords[:,0])
-    for i in xrange(len(xyCoords)): mySketch.Spot(point=xyCoords[i])
-    for i in xrange(len(xyCoords)-1):
+    for i in range(len(xyCoords)): mySketch.Spot(point=xyCoords[i])
+    for i in range(len(xyCoords)-1):
         p1=tuple(xyCoords[i])
         p2=tuple(xyCoords[i+1])
         mySketch.Line(point1=p1,point2=p2)
@@ -351,7 +351,7 @@ def TensileOneElement(
 
     ## Flag to use a User Material subroutine
     if type(umatFN)!=type(None):
-        print 'User material has been specified.'
+        print('User material has been specified.')
         myJob.setValues(userSubroutine=umatFN)
 
     if isub:
@@ -382,7 +382,7 @@ def runTensions(nth, **kwargs):
     **kwargs
     """
     ths=np.linspace(0,90,nth)
-    for i in xrange(nth):
+    for i in range(nth):
         myModel, myJob = TensileOneElement(
             Theta=ths[i],**kwargs)
 
@@ -394,7 +394,7 @@ def runVarMats(**kwargs):
     """
     myMatFuncs=[abaquspy.mats.ifsteel.isoe,
                 abaquspy.mats.ifsteel.isoep]
-    for imat in xrange(len(myMatFuncs)):
+    for imat in range(len(myMatFuncs)):
         runSingle(myMatFunc=myMatFuncs[imat],**kwargs)
 
 if __name__=='main':

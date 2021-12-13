@@ -20,25 +20,25 @@ def compile_f2py(files):
     iflag=p.poll()
     stdout.close();stderr.close()
 
-    print 'iflag:',iflag
-    print 'stdout:',stdout.name
-    print 'stderr:',stderr.name
+    print('iflag:',iflag)
+    print('stdout:',stdout.name)
+    print('stderr:',stderr.name)
     return iflag
 
 def main():
     ## Fortran source code Compile test
-    print '** Bauschinger/latent/hah compile test'
+    print('** Bauschinger/latent/hah compile test')
     files=['bauschinger.f','latent.f','hah.f']
     iflag = compile_f2py(files)
-    if iflag==0: print '* success'
-    else: print '* fail'
+    if iflag==0: print('* success')
+    else: print('* fail')
 
     ## hah.f test
-    print '** hah_test.f compile test'
+    print('** hah_test.f compile test')
     files=['hah_test.f']
     iflag = compile_f2py(files)
-    if iflag==0: print '* success'
-    else: print '* fail'
+    if iflag==0: print('* success')
+    else: print('* fail')
 
 if __name__=='__main__':
     main()

@@ -24,7 +24,7 @@ def comb(fns):
     fig=plt.figure(figsize=(7,3))
     ax1=fig.add_subplot(121)
     ax2=fig.add_subplot(122)
-    for i in xrange(len(fns)):
+    for i in range(len(fns)):
         dat=np.loadtxt(fns[i]).T
         label = fns[i].split('.')[0]
         ax1.plot(dat[0],dat[1],label=label,ls=ls[i])
@@ -35,7 +35,7 @@ def comb(fns):
     ax2.legend(fontsize=6,ncol=3,bbox_to_anchor=(1,1.2))
     ax1.set_aspect('equal'); ax2.set_aspect('equal')
     fnPdf='all_ys.pdf'
-    print 'Figure saved to <%s>'%fnPdf
+    print('Figure saved to <%s>'%fnPdf)
 
     vpscyld.lib_dat.pi_rad(ax2,150)
     fig.savefig(fnPdf,bbox_inches='tight')

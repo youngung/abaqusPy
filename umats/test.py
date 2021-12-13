@@ -13,8 +13,8 @@ def loadModules():
     for module in modules:
         cmd ='%s %s'%(cmd,module)
 
-    print 'cmd:'
-    print cmd
+    print('cmd:')
+    print(cmd)
     os.system(cmd)
 
 
@@ -34,10 +34,10 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
 
     loadModules()
 
-    print '-'*40
-    print 'UMAT file name'
-    print umat
-    print '-'*40
+    print('-'*40)
+    print('UMAT file name')
+    print(umat)
+    print('-'*40)
 
     nind=6 ## number of indentation used in the fortran fixed form...
     mxLineNo=20 ## max line number to comment out 'include' command
@@ -47,7 +47,7 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
     ## Find <include 'aba_param.inc'> and comment that line out.
     LinesUnderExamine = umatSubrLines[:mxLineNo]
     ## Detect aba_param.inc and comment that line out.
-    for i in xrange(len(LinesUnderExamine)):
+    for i in range(len(LinesUnderExamine)):
         line = LinesUnderExamine[i]
         if line[nind:nind+7].upper()=='INCLUDE':
             umatSubrLines[i]='C %s'%LinesUnderExamine[i]
@@ -60,37 +60,37 @@ def main(umat='/home/younguj/repo/abaqusPy/umats/el/iso.f',
     umatProgram = mainLines+umatSubrLines
 
     s=''
-    for i in xrange(len(umatProgram)):
+    for i in range(len(umatProgram)):
         s='%s%s\n'%(s,umatProgram[i])
 
     ## construct a temp file...
     import MP.lib.temp
     fnTempUmat = MP.lib.temp.gen_tempfile(prefix='UMAT-TEST',ext='f',tmp='/scratch1/younguj/')
-    print 'fn:',fnTempUmat
+    print('fn:',fnTempUmat)
     with open(fnTempUmat,'w') as fo:
         fo.write(s)
         pass
 
-    if verbose: print s
+    if verbose: print(s)
 
     ## compiling option
     # compiler='gfortran'  ## GNU fortran compiler
     compiler='ifort'     ## intel fortran compiler
 
     cmd='%s %s > compile.log'%(compiler,fnTempUmat)
-    print 'cmd:'
-    print cmd
+    print('cmd:')
+    print(cmd)
     iflag=os.system(cmd)
     if iflag!=0:
-        print 'Compile failed'
+        print('Compile failed')
     else:
         cmd='./a.out'
         iflag_run=os.system(cmd)
         if iflag_run!=0:
-            print 'Running error'
+            print('Running error')
         else:
-            print 'Running success'
-            print 'printout fort.7 the msg file'
+            print('Running success')
+            print('printout fort.7 the msg file')
             cmd='cat fort.7'
             os.system(cmd)
 
@@ -113,11 +113,11 @@ if __name__=='__main__':
     ## add more libraries as progress
     libraries=['/home/younguj/repo/abaqusPy/umats/el/iso.f',
                '/home/younguj/repo/abaqusPy/umats/epl/mises.f']
-    print '-'*72
-    print 'Available libraries'
+    print('-'*72)
+    print('Available libraries')
     for lib in libraries:
-        print lib
-    print '-'*72
+        print(lib)
+    print('-'*72)
 
 
 

@@ -18,7 +18,7 @@ fnsRst=glob.glob('OneElement_??_*.txt')
 fig=None
 rd=None
 line_style=['-','--','-.',':','|']
-for i in xrange(len(fnsRst)):
+for i in range(len(fnsRst)):
     # if i==0: rd=ref_dat
     # else: rd=None
     fn = fnsRst[i]
@@ -30,4 +30,4 @@ for i in xrange(len(fnsRst)):
 fnFig='OneElementResult.pdf'
 fig.tight_layout()
 fig.savefig(fnFig,bbox_to_inches='tight')
-print 'Flow stress curve saved to %s'%(fnFig)
+print('Flow stress curve saved to %s'%(fnFig))

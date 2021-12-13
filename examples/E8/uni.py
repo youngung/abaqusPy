@@ -15,9 +15,13 @@ import sketch, part, regionToolset, os
 import numpy as np
 
 ## import local site-packages to use my packages.
+
+## __py_pack_dir__='/home/younguj/anaconda2/lib/python2.7/site-packages/'
+__py_pack_dir__='c:/Users/user/AppData/Local/Programs/Python/Python37/lib/site-packages/'
 import os
-os.sys.path.append('/home/younguj/anaconda2/lib/python2.7/site-packages/')
-import abaquspy.sketches.E8, abaquspy.sketches.drawTool, abaquspy.lib.sets
+os.sys.path.append(__py_pack_dir__)
+import abaquspy.sketches.E8, abaquspy.sketches.drawTool
+import abaquspy.lib.sets
 import abaquspy.lib.datums
 tensileBar=abaquspy.sketches.E8.tensileBar
 draw_arc=abaquspy.sketches.drawTool.draw_arc
@@ -70,6 +74,14 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
     isub  = False
     iwait = False
     """
+    import logging
+    logging.basicConfig(filename='c:/users/user/repo/abaquspy/examples/E8/log.txt',
+                        filemode='w',
+                        datefmt='%H:%M:%S')
+    logging.info('** starts main')
+    logging.shutdown()
+
+    import sys
     label='%2.2i'%int(Theta)
     if type(umatFN)==type(None):
         label='%s_UMAT_None'%label
@@ -89,6 +101,7 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
     tl=20.0   * mm
     rd=12.5   * mm ## Radius
     xyCoords = tensileBar(pl=pl,gw=gw,tw=tw,tl=tl,rd=rd).T
+    sys.stdout.write('len(xyCoords):%i'%len(xyCoords))
 
     myModel = mdb.Model(name='UT_%s'%label)
     mySketch = myModel.ConstrainedSketch(name='E8_Sketch',sheetSize=1.0)
@@ -96,18 +109,21 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
     ## total length of specimen.
     totalLength=np.max(xyCoords[:,0])-np.min(xyCoords[:,0])
 
-    for i in xrange(len(xyCoords)):
+    for i in range(len(xyCoords)):
         mySketch.Spot(point=xyCoords[i])
 
-    draw_arc(mySketch, xyCoords,gw, 0,0,1,'up')
-    draw_arc(mySketch, xyCoords,gw,8,7,8,'down')
-    draw_arc(mySketch, xyCoords,gw,10,10,11,'down')
-    draw_arc(mySketch, xyCoords,gw,18,17,18,'up')
+    draw_arc(mySketch, xyCoords,gw,0,0,1,'up')
+    draw_arc(mySketch, xyCoords,gw,6,5,6,'down')
+    draw_arc(mySketch, xyCoords,gw,8,8,9,'down')
+    draw_arc(mySketch, xyCoords,gw,14,13,14,'up')
+    #draw_arc(mySketch, xyCoords,gw,8,7,8,'down')
+    #draw_arc(mySketch, xyCoords,gw,10,10,11,'down')
+    #draw_arc(mySketch, xyCoords,gw,18,17,18,'up')
 
-    draw_line(mySketch,xyCoords,1,7)
-    draw_line(mySketch,xyCoords,8,10)
-    draw_line(mySketch,xyCoords,11,17)
-    draw_line(mySketch,xyCoords,18,20)
+    draw_line(mySketch,xyCoords,1,5)
+    draw_line(mySketch,xyCoords,6,8)
+    draw_line(mySketch,xyCoords,9,13)
+    draw_line(mySketch,xyCoords,14,16)
 
     ###### ----------Generating specimen dimensions.
     myPart = myModel.Part(name='E8', dimensionality=THREE_D,
@@ -159,8 +175,8 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
     datPs=np.empty((2,3),dtype='object')
     xs=[tl,tl+pl+2.*roundLength]
     ys=[0,tw/2.,tw]
-    for i in xrange(2):
-        for j in xrange(3):
+    for i in range(2):
+        for j in range(3):
             datPs[i,j] = rDC(myPart=myPart,coords=(xs[i],ys[j],0))
 
     SysDefault = myPart.DatumCsysByDefault(CARTESIAN)
@@ -244,7 +260,7 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
                               toName='gRightPlane')
 
     # MidSpan
-    SpecimenNameInAssembly=myAssembly.instances.items()[0][0]
+    SpecimenNameInAssembly=list(myAssembly.instances.items())[0][0]
     edges=myAssembly.instances[SpecimenNameInAssembly].edges
 
     ## trans line sets.
@@ -281,8 +297,8 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
     totalDisplace=Lf-L0
     deltaTime=totalDisplace/vel ## total delta Time
 
-    print 'minInc:', minTimeInc
-    print 'maxInc:', maxTimeInc
+    print('minInc:', minTimeInc)
+    print('maxInc:', maxTimeInc)
 
     myModel.StaticStep(
         name='TensionContinue',previous='Tension',
@@ -338,8 +354,8 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
     pickedRegions =(faces, )
     myPart.setElementType(regions=pickedRegions,
                           elemTypes=(elemType1, elemType2))
-    myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
-    #myPart.seedPart(size=0.001, minSizeFactor=0.1) ## finer meshing
+    #myPart.seedPart(size=0.005, minSizeFactor=0.1) ## coarse meshing
+    myPart.seedPart(size=0.001, minSizeFactor=0.1) ## finer meshing
     myPart.generateMesh()
 
     ## Create Job
@@ -355,7 +371,7 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
 
     ## Flag to use a User Material subroutine
     if type(umatFN)!=type(None):
-        print 'User material has been specified.'
+        print('User material has been specified.')
         myJob.setValues(userSubroutine=umatFN)
     if isub:
         ## submit the job
@@ -367,5 +383,7 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
     return myModel, myJob
 
 
-umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
+#umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
+umatFN='c:/Users/user/repo/abaquspy/umats/epl/epl.f'
 main(umatFN=umatFN,Theta=0.)
+#main(umatFN=None,Theta=0.)

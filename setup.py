@@ -35,5 +35,5 @@ setup(name='abaqusPy',
           'abaquspy.yld':'umats/yld'
           },
 
-      ext_modules=[ext1]
+      #ext_modules=[ext1]
 )

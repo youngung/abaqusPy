@@ -16,7 +16,7 @@ def setNodeCoord(myPart,dat=None,name='Nodal-Set-1',offset=1e-4):
     """
     import numpy as np
     if type(dat).__name__!='DatumPoint':
-        raise SyntaxError, 'Datum should be DatumPoint type'
+        raise SyntaxError('Datum should be DatumPoint type')
 
     coordinate = np.array(dat.pointOn)
     x,y,z=tuple(coordinate)

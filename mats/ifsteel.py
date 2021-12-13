@@ -11,14 +11,14 @@ def hard(iopt=0,emx=0.1,nstp=1000):
         ## use voce fit?
         ## Voce BB fit [MPa]
         params='403.23447661  273.35755903   11.95412158  191.28660496'
-        params=map(float,params.split())
+        params=list(map(float,params.split()))
 
     elif iopt==1:
         ## Voce UR fit [MPa]
         params='255.51670864  129.97608057   28.98133641  454.07524122'
-        params=map(float,params.split())
+        params=list(map(float,params.split()))
     else:
-        raise SyntaxError, 'Unexpected iopt given'
+        raise SyntaxError('Unexpected iopt given')
 
     eps=np.linspace(0,emx,nstp)
     sig=func_hard.func_voce(eps,*params)
