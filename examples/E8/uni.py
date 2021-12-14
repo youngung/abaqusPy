@@ -4,6 +4,9 @@ Abaqus Python script feature
 
 Youngung Jeong
 youngung.jeong@gmail.com
+
+
+abaqus cae -noGUI uni.py
 """
 
 from abaqus import *
@@ -58,13 +61,304 @@ def returnDatumCoords(myPart,coords):
     ## convert feature to datum
     return myPart.datums[f.id]
 
-# [SI unit system]
-# length in meters]
-# Pressure in Pa: N/m^2
-
 ## dimension in meter (default values are given in millimeters).
 ## thus a factor of 1e-3 is required.
-def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
+#def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
+# """
+# Arguments
+# ---------
+# Theta
+# umatFN
+# myMatFunc
+# isub  = False
+# iwait = False
+# """
+import logging
+logging.basicConfig(filename='c:/users/user/repo/abaquspy/examples/E8/log.txt',
+                    filemode='w',
+                    datefmt='%H:%M:%S')
+logging.info('** starts main')
+logging.shutdown()
+
+import sys
+
+
+#def main(job_name='tmp',thick=2.,seedsize=5):
+
+job_name='tmp'
+thick=2.
+seedsize=0.8  ##7884 # three layers
+seedsize=1.0  ##3712 # two layers
+#seedsize=2.0  ##0464 # single layer
+#seedsize=3.0  ##0200 # single layer
+#seedsize=5.0  ##0096 # single layer
+
+
+Theta=0
+label='%2.2i'%int(Theta)
+label='%s_UMAT_None'%label
+
+pl=57.
+gw=12.5
+tw=20.
+tl=20.0
+rd=12.5   ## Radius
+
+xyCoords = tensileBar(pl=pl,gw=gw,tw=tw,tl=tl,rd=rd).T
+xMax=np.max(xyCoords[:,0])
+roundLength=(xMax-tl*2.-pl)/2.
+rDC=returnDatumCoords # alias
+
+myModel = mdb.Model(name='UT_%s'%label)
+mySketch = myModel.ConstrainedSketch(name='E8_Sketch',sheetSize=thick)
+
+## total length of specimen.
+totalLength=np.max(xyCoords[:,0])-np.min(xyCoords[:,0])
+
+for i in range(len(xyCoords)):
+    mySketch.Spot(point=xyCoords[i])
+
+draw_arc(mySketch, xyCoords,gw,0,0,1,'up')
+draw_arc(mySketch, xyCoords,gw,6,5,6,'down')
+draw_arc(mySketch, xyCoords,gw,8,8,9,'down')
+draw_arc(mySketch, xyCoords,gw,14,13,14,'up')
+
+draw_line(mySketch,xyCoords,1,5)
+draw_line(mySketch,xyCoords,6,8)
+draw_line(mySketch,xyCoords,9,13)
+draw_line(mySketch,xyCoords,14,16)
+
+###### ----------Generating specimen dimensions.
+myPart = myModel.Part(name='E8', dimensionality=THREE_D,
+                      type=DEFORMABLE_BODY)
+
+## Features.
+if False:
+    featShell=myPart.BaseShell(sketch=mySketch)
+    myPart.features.changeKey(fromName=featShell.name,toName='myBaseShell')
+else:
+    featSolid=myPart.BaseSolidExtrude(sketch=mySketch,depth=2)
+    myPart.features.changeKey(fromName=featSolid.name,toName='myBaseSolid')
+
+L=totalLength
+arcl=(L-pl-tl*2)/2. ## length of arc
+gauge_bot_y = 0.5*tw-0.5*gw
+gauge_top_y = 0.5*tw+0.5*gw
+gby=gauge_bot_y
+gty=gauge_top_y
+
+faces=myPart.faces
+cells=myPart.cells
+
+rdc=returnDatumCoords # alias
+## (a,b,c)
+a=rdc(myPart,coords=(tl,tw,0))
+b=rdc(myPart,coords=(tl,tw/2.,thick))
+c=rdc(myPart,coords=(tl,0,0))
+## (d,e,f)
+d=rdc(myPart,coords=(tl+arcl,gty,0))
+e=rdc(myPart,coords=(tl+arcl,tw/2.,thick))
+f=rdc(myPart,coords=(tl+arcl,gby,0))
+## (g,h,i)
+g=rdc(myPart,coords=(tl+arcl+pl/4.,gty,0))
+h=rdc(myPart,coords=(tl+arcl+pl/4.,tw/2.,thick))
+i=rdc(myPart,coords=(tl+arcl+pl/4.,gby,0))
+## (j,k,l)
+j=rdc(myPart,coords=(tl+arcl+3*pl/4.,gty,0))
+k=rdc(myPart,coords=(tl+arcl+3*pl/4.,tw/2.,thick))
+l=rdc(myPart,coords=(tl+arcl+3*pl/4.,gby,0))
+## (m,n,o)
+m=rdc(myPart,coords=(tl+arcl+pl,gty,0))
+n=rdc(myPart,coords=(tl+arcl+pl,tw/2.,thick))
+o=rdc(myPart,coords=(tl+arcl+pl,gby,0))
+## (p,q,r)
+p=rdc(myPart,coords=(tl+arcl*2+pl,tw,0))
+q=rdc(myPart,coords=(tl+arcl*2+pl,tw/2.,thick))
+r=rdc(myPart,coords=(tl+arcl*2+pl,0,0))
+
+
+# cell=myPart.cells
+p1=myPart.DatumPlaneByThreePoints(point1=a,point2=b,point3=c)
+p2=myPart.DatumPlaneByThreePoints(point1=d,point2=e,point3=f)
+p3=myPart.DatumPlaneByThreePoints(point1=g,point2=h,point3=i)
+p4=myPart.DatumPlaneByThreePoints(point1=j,point2=k,point3=l)
+p5=myPart.DatumPlaneByThreePoints(point1=m,point2=n,point3=o)
+p6=myPart.DatumPlaneByThreePoints(point1=p,point2=q,point3=r)
+
+##-- set "entire specimen"
+# c0=myPart.cells.findAt((0.,0,0))
+#myPart.Set(cells=c0,name='Entire_Specimen')
+
+## partitionning by planes
+if True:
+    c0=myPart.cells.findAt((0.0,0,0))
+    myPart.PartitionCellByPlaneThreePoints(c0,a,b,c)
+    c0=myPart.cells.findAt((L,0,0))
+    myPart.PartitionCellByPlaneThreePoints(c0,d,e,f)
+    c0=myPart.cells.findAt((L,0,0))
+    myPart.PartitionCellByPlaneThreePoints(c0,g,h,i)
+    c0=myPart.cells.findAt((L,0,0))
+    myPart.PartitionCellByPlaneThreePoints(c0,j,k,l)
+    c0=myPart.cells.findAt((L,0,0))
+    myPart.PartitionCellByPlaneThreePoints(c0,m,n,o)
+    c0=myPart.cells.findAt((L,0,0))
+    myPart.PartitionCellByPlaneThreePoints(c0,p,q,r)
+
+    myPart.seedPart(size=seedsize, deviationFactor=0.1, minSizeFactor=0.1)
+
+
+    #elemType1 = mesh.ElemType(elemCode=S4R, elemLibrary=STANDARD)
+
+
+    myPart.generateMesh()
+
+    allcells=myPart.cells.findAt(
+        ((0.01,tw/2.,0),),
+        ((tl+0.01,tw/2.,0),),
+        ((tl+arcl+0.01,tw/2.,0),),
+        ((tl+arcl+pl/4.+0.01,tw/2.,0),),
+        ((tl+arcl+3*pl/4.+0.01,tw/2.,0),),
+        ((tl+arcl+pl+0.01,tw/2.,0),),
+        ((L-0.01,tw/2.,0),),
+    )
+
+
+myMat = myModel.Material('myUMAT')
+myMat.UserMaterial(mechanicalConstants=(0.,))
+myMat.Depvar(n=7) ## Number of state variables
+
+
+myMat_IFSTEEL = myModel.Material(name='ifsteel')
+myMat_IFSTEEL.Plastic(table=((300.0, 0.0), (400.0, 0.1)))
+myMat_IFSTEEL.Elastic(table=((200000.0, 0.3), ))
+myMat_IFSTEEL.Density(table=((0.3,),))
+
+
+
+a = myModel.rootAssembly
+a.DatumCsysByDefault(CARTESIAN)
+a.Instance(name='myInstance', part=myPart, dependent=ON)
+myInstance=a.instances['myInstance']
+
+
+## generate faces to which boundary condition is applied
+if True:
+    face1=myInstance.faces.findAt(((0,tw/2.,thick/2.),))
+    a.Set(faces=face1,name='leftEndFace')
+    face1=myInstance.faces.findAt(((L,tw/2.,thick/2.),))
+    a.Set(faces=face1,name='rightEndFace')
+    verts1 = myInstance.vertices.findAt(((0.0, 0.0, 0.0), ))
+    a.Set(vertices=verts1, name='Ori')
+
+    # n1 = a.instances['myInstance'].nodes
+    n1=myInstance.nodes.getClosest(coordinates=((tl+arcl+pl/4.,tw/2.,0),))
+    n0=n1[0].label-1
+    a.Set(nodes=myInstance.nodes[n0:n0+1],name='South')
+    n1=myInstance.nodes.getClosest(coordinates=((tl+arcl+3*pl/4.,tw/2.,0),))
+    n0=n1[0].label-1
+    a.Set(nodes=myInstance.nodes[n0:n0+1],name='North')
+    n1=myInstance.nodes.getClosest(coordinates=((tl+arcl+pl/2.,gty,0),))
+    n0=n1[0].label-1
+    a.Set(nodes=myInstance.nodes[n0:n0+1],name='West')
+    n1=myInstance.nodes.getClosest(coordinates=((tl+arcl+pl/2.,gby,0),))
+    n0=n1[0].label-1
+    a.Set(nodes=myInstance.nodes[n0:n0+1],name='East')
+    n1=myInstance.nodes.getClosest(coordinates=((tl+arcl+pl/2.,tw/2.,0),))
+    n0=n1[0].label-1
+    a.Set(nodes=myInstance.nodes[n0:n0+1],name='Center')
+
+
+
+
+
+
+
+    # verts1 = myInstance.vertices.findAt(((0.0, 0.0, 0.0), ))
+    # a.Set(vertices=verts1, name='North')
+    # verts1 = myInstance.vertices.findAt(((0.0, 0.0, 0.0), ))
+    # a.Set(vertices=verts1, name='South')
+    # verts1 = myInstance.vertices.findAt(((0.0, 0.0, 0.0), ))
+    # a.Set(vertices=verts1, name='East')
+    # verts1 = myInstance.vertices.findAt(((0.0, 0.0, 0.0), ))
+    # a.Set(vertices=verts1, name='West')
+    # verts1 = myInstance.vertices.findAt(((0.0, 0.0, 0.0), ))
+    # a.Set(vertices=verts1, name='Center')
+
+
+
+
+myModel.HomogeneousSolidSection(
+    name='MySection',
+    #material='myUMAT',
+    material='ifsteel',
+    thickness=None)
+
+region=regionToolset.Region(cells=allcells)
+myPart.SectionAssignment(region=region, sectionName='MySection', offset=0.0,
+                    offsetType=MIDDLE_SURFACE, offsetField='',
+                    thicknessAssignment=FROM_SECTION)
+
+## Create a static general step
+if True:
+    myModel.StaticStep(
+        name='Tension',previous='Initial',description='Uniaxial tension',
+        timePeriod=1,adiabatic=OFF,maxNumInc=100,stabilization=None,
+        timeIncrementationMethod=AUTOMATIC,initialInc=1e-1,minInc=1e-1,
+        maxInc=1e-1,matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
+else:
+    myModel.ImplicitDynamicsStep(
+        name='Tension',previous='Initial',description='Uniaxial tension',
+        timeIncrementationMethod=FIXED, initialInc=0.1,
+        nohaf=OFF, noStop=OFF)
+
+
+## history output
+sets=['South','North','West','East','Center']
+for s in sets:
+    regionDef=a.sets[s]
+    myModel.HistoryOutputRequest(
+        name='H-Output-%s'%s,
+        createStepName='Tension', variables=(
+            'MISES', 'RF1', 'RF2', 'RF3', 'RM1',
+            'RM2', 'RM3', 'RT', 'TF1', 'TF2', 'TF3', 'TM1', 'TM2', 'TM3'),
+        region=regionDef, sectionPoints=DEFAULT, rebar=EXCLUDE)
+
+
+myModel.DisplacementBC(
+    name='BC-1',
+    createStepName='Initial', region=a.sets['leftEndFace'], u1=0.0, u2=0, u3=0,
+    ur1=0.0, ur2=0.0, ur3=0.0, amplitude=UNSET, fixed=OFF,
+    distributionType=UNIFORM, fieldName='', localCsys=None)
+
+region = a.sets['rightEndFace']
+myModel.VelocityBC(
+    name='BC-2', createStepName='Tension',
+    region=region, v1=0.002, v2=0, v3=0, vr1=0.0, vr2=0.0, vr3=0.0,
+    amplitude=UNSET, localCsys=None, distributionType=UNIFORM, fieldName='')
+
+region = a.sets['Ori']
+myModel.EncastreBC(
+    name='BC-3', createStepName='Initial',
+    region=region, localCsys=None)
+
+
+##save cae.
+session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
+# mdb.saveAs(pathName='c:/Users/user/repo/abaquspy/examples/E8/ddum')
+
+##
+mdb.Job(name=job_name, model='UT_00_UMAT_None', description='', type=ANALYSIS,
+    atTime=None, waitMinutes=0, waitHours=0, queue=None, memory=90,
+    memoryUnits=PERCENTAGE, getMemoryFromAnalysis=True,
+    explicitPrecision=SINGLE, nodalOutputPrecision=SINGLE, echoPrint=OFF,
+    modelPrint=OFF, contactPrint=OFF, historyPrint=OFF, userSubroutine='',
+    scratch='', resultsFormat=ODB, multiprocessingMode=DEFAULT, numCpus=1,
+    numGPUs=0)
+
+mdb.jobs[job_name].writeInput(consistencyChecking=OFF)
+mdb.jobs[job_name].submit(consistencyChecking=OFF)
+
+def main_old(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
     """
     Arguments
     ---------
@@ -130,8 +424,13 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
                           type=DEFORMABLE_BODY)
 
     ## Features.
-    featShell=myPart.BaseShell(sketch=mySketch)
-    myPart.features.changeKey(fromName=featShell.name,toName='myBaseShell')
+    if False:
+        featShell=myPart.BaseShell(sketch=mySketch)
+        myPart.features.changeKey(fromName=featShell.name,toName='myBaseShell')
+    else:
+        featSolid=myPart.BaseSolidExtrude(sketch=mySketch,depth=2)
+        myPart.features.changeKey(fromName=featSolid.name,toName='myBaseSolid')
+
     session.viewports['Viewport: 1'].setValues(displayedObject=myPart)
 
     edge0=myPart.edges.findAt((0,0.0001,0))
@@ -360,14 +659,14 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
 
     ## Create Job
     jobName='UniE8_%s'%label
-    mdb.Job(name=jobName,model=myModel.name,
-            description='PythonScriptedUniaxialTensile_%s'%jobName)
+    mdb.Job(
+        name=jobName,model=myModel.name,
+        description='PythonScriptedUniaxialTensile_%s'%jobName)
     myJob=mdb.jobs[jobName]
     myAssembly.regenerate()
     setNodeCoord(myPart=myPart,dat=datC,name='Center',offset=1e-4)
     myAssembly.regenerate()
     mdb.saveAs(myModel.name)
-
 
     ## Flag to use a User Material subroutine
     if type(umatFN)!=type(None):
@@ -382,8 +681,7 @@ def main(Theta=0.,umatFN=None,myMatFunc=None,isub=False,iwait=False):
 
     return myModel, myJob
 
-
 #umatFN='/home/younguj/repo/abaqusPy/umats/epl/epl.f'
-umatFN='c:/Users/user/repo/abaquspy/umats/epl/epl.f'
-main(umatFN=umatFN,Theta=0.)
-#main(umatFN=None,Theta=0.)
+#umatFN='c:/Users/user/repo/abaquspy/umats/epl/epl.f'
+#main_old(umatFN=umatFN,Theta=0.)
+#main(job_name='tmp',seedsize=5.0)
