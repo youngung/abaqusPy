@@ -85,22 +85,27 @@ import sys
 
 #def main(job_name='tmp',thick=2.,seedsize=5):
 
-job_name='tmp'
-thick=2.
+
+thick=0.7
 seedsize=0.8  ##7884 # three layers
-seedsize=1.0  ##3712 # two layers
+#seedsize=1.0  ##3712 # two layers
 #seedsize=2.0  ##0464 # single layer
 #seedsize=3.0  ##0200 # single layer
-#seedsize=5.0  ##0096 # single layer
+seedsize=5.0  ##0096 # single layer
+
+val1=int(seedsize)
+val2=round((seedsize-round(seedsize))*100)
+
+job_name='uni_py_%2.2i_%2.2i'%(val1,val2)
 
 
 Theta=0
 label='%2.2i'%int(Theta)
 label='%s_UMAT_None'%label
 
-pl=57.
+pl=57.0
 gw=12.5
-tw=20.
+tw=20.0
 tl=20.0
 rd=12.5   ## Radius
 
@@ -204,13 +209,6 @@ if True:
     c0=myPart.cells.findAt((L,0,0))
     myPart.PartitionCellByPlaneThreePoints(c0,p,q,r)
 
-    myPart.seedPart(size=seedsize, deviationFactor=0.1, minSizeFactor=0.1)
-
-
-    #elemType1 = mesh.ElemType(elemCode=S4R, elemLibrary=STANDARD)
-
-
-    myPart.generateMesh()
 
     allcells=myPart.cells.findAt(
         ((0.01,tw/2.,0),),
@@ -223,9 +221,35 @@ if True:
     )
 
 
+    myPart.seedPart(size=seedsize, deviationFactor=0.1, minSizeFactor=0.1)
+
+    elemType1 = mesh.ElemType(
+        elemCode=C3D8, elemLibrary=STANDARD,
+        secondOrderAccuracy=OFF, distortionControl=DEFAULT)
+    elemType2 = mesh.ElemType(
+        elemCode=C3D6, elemLibrary=STANDARD,
+        secondOrderAccuracy=OFF, distortionControl=DEFAULT)
+    elemType3 = mesh.ElemType(
+        elemCode=C3D4, elemLibrary=STANDARD,
+        secondOrderAccuracy=OFF, distortionControl=DEFAULT)
+
+
+    pickedRegions =(allcells, )
+    myPart.setElementType(regions=pickedRegions, elemTypes=(
+        elemType1, elemType2,
+        elemType3))
+
+    myPart.generateMesh()
+
+
+
+
+
+
 myMat = myModel.Material('myUMAT')
 myMat.UserMaterial(mechanicalConstants=(0.,))
-myMat.Depvar(n=7) ## Number of state variables
+myMat.Depvar(n=1000) ## Number of state variables
+myMat.UserOutputVariables(n=20)
 
 
 myMat_IFSTEEL = myModel.Material(name='ifsteel')
@@ -305,6 +329,10 @@ if True:
         timePeriod=1,adiabatic=OFF,maxNumInc=100,stabilization=None,
         timeIncrementationMethod=AUTOMATIC,initialInc=1e-1,minInc=1e-1,
         maxInc=1e-1,matrixSolver=SOLVER_DEFAULT,extrapolation=DEFAULT)
+
+
+    myModel.steps['Tension'].setValues(nlgeom=ON)
+
 else:
     myModel.ImplicitDynamicsStep(
         name='Tension',previous='Initial',description='Uniaxial tension',
@@ -312,16 +340,22 @@ else:
         nohaf=OFF, noStop=OFF)
 
 
-## history output
+## output requests
+myModel.fieldOutputRequests['F-Output-1'].setValues(variables=('LE','U','S','COORD',))
 sets=['South','North','West','East','Center']
 for s in sets:
     regionDef=a.sets[s]
     myModel.HistoryOutputRequest(
         name='H-Output-%s'%s,
         createStepName='Tension', variables=(
-            'MISES', 'RF1', 'RF2', 'RF3', 'RM1',
-            'RM2', 'RM3', 'RT', 'TF1', 'TF2', 'TF3', 'TM1', 'TM2', 'TM3'),
+            'MISES', 'E',),
         region=regionDef, sectionPoints=DEFAULT, rebar=EXCLUDE)
+
+    regionDef=a.sets[s]
+    myModel.FieldOutputRequest(
+        name='F-Output-%s'%s,
+        createStepName='Tension', variables=('U', 'COORD','RF',), region=regionDef,
+        sectionPoints=DEFAULT, rebar=EXCLUDE)
 
 
 myModel.DisplacementBC(
